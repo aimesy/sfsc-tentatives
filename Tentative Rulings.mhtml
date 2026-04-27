@@ -1,0 +1,3503 @@
+From: <Saved by Blink>
+Snapshot-Content-Location: https://webapps.sftc.org/tr/tr.dll?RulingID=2&SessionID=B2A6EA9BF654CD233784EF540E2BC102772B4B0C
+Subject: Tentative Rulings
+Date: Mon, 27 Apr 2026 15:32:00 -0700
+MIME-Version: 1.0
+Content-Type: multipart/related;
+	type="text/html";
+	boundary="----MultipartBoundary--h0ek0A3zIDCGtt1ZYc6nnXoPLcyjKuJxpqD7MTsMGd----"
+
+
+------MultipartBoundary--h0ek0A3zIDCGtt1ZYc6nnXoPLcyjKuJxpqD7MTsMGd----
+Content-Type: text/html
+Content-ID: <frame-F337D56101EFA0AF837B850F2D0A1E94@mhtml.blink>
+Content-Transfer-Encoding: quoted-printable
+Content-Location: https://webapps.sftc.org/tr/tr.dll?RulingID=2&SessionID=B2A6EA9BF654CD233784EF540E2BC102772B4B0C
+
+<!DOCTYPE html><html><head><meta http-equiv=3D"Content-Type" content=3D"tex=
+t/html; charset=3DUTF-8"><link rel=3D"stylesheet" type=3D"text/css" href=3D=
+"cid:css-23f026e6-8e4c-4756-8ea8-eb73e39f0294@mhtml.blink" /><link rel=3D"s=
+tylesheet" type=3D"text/css" href=3D"cid:css-1f1c444b-450b-4c7b-b5a1-e83480=
+69ae7a@mhtml.blink" /><link rel=3D"stylesheet" type=3D"text/css" href=3D"ci=
+d:css-9458e0e0-da11-4967-a32b-7000e5d73907@mhtml.blink" /><link rel=3D"styl=
+esheet" type=3D"text/css" href=3D"cid:css-0f3ea42c-9114-4699-afdf-a5b9e2bac=
+cc1@mhtml.blink" />
+  <title>Tentative Rulings</title>
+ =20
+  <meta http-equiv=3D"Content-Language" content=3D"en-us">
+  <!-- <meta http-equiv=3D"X-UA-Compatible" content=3D"IE=3DEdge" > -->
+  <link rel=3D"stylesheet" href=3D"https://cdnjs.cloudflare.com/ajax/libs/j=
+queryui/1.12.1/jquery-ui.min.css" crossorigin=3D"anonymous" referrerpolicy=
+=3D"no-referrer">
+  <link rel=3D"stylesheet" type=3D"text/css" href=3D"https://webapps.sftc.o=
+rg/site/css/styles.css" media=3D"all">
+    <link rel=3D"stylesheet" type=3D"text/css" href=3D"https://webapps.sftc=
+.org/site/css/blue.css" media=3D"all">
+   =20
+   =20
+ =20
+
+ =20
+
+</head>
+<body class=3D"homepage">
+  <div id=3D"mainContainer">
+    <div id=3D"headerWrap">
+      <div class=3D"contact">
+        <a href=3D"http://sfsuperiorcourt.org/general-info/contact" name=3D=
+"Contact_Us">Contact Us</a>
+      </div>
+      <div class=3D"toolbar">
+      </div>
+      <div class=3D"logo">
+          <a href=3D"http://sfsuperiorcourt.org/"><img src=3D"https://webap=
+ps.sftc.org/site/img/logo.gif" width=3D"335" height=3D"41" alt=3D"Superior =
+Court of California - County of San Francisco" title=3D"Superior Court of C=
+alifornia - County of San Francisco"></a>
+      </div>
+    </div>
+    <div class=3D"cleaner"></div>
+     <div id=3D"logo">
+      <div id=3D"formWindow">
+        <form>
+          <h2>Tentative Rulings</h2>
+          <h4>Law &amp; Motion/Discovery Department 302</h4>
+          <p>You can search by <b>Case Number</b>, <b>Court Date</b> or a c=
+ombination of <b>Court Date</b> and <b>Case Number</b>.</p>
+          <div class=3D"formCol1">
+            <p>Case Number: <input type=3D"text" class=3D"colInput" id=3D"C=
+aseNum" name=3D"CaseNum"></p>
+            <p>And/Or </p>
+            <p>Court Date: <input type=3D"text" class=3D"colInput hasDatepi=
+cker" name=3D"DatePick" id=3D"DatePick"></p>
+          </div>
+          <button type=3D"button" id=3D"SearchBtn">Search</button>
+        </form>
+      </div>
+      <p></p>
+      <div id=3D"resultsBlock" style=3D"display: block;">
+        <div id=3D"resultsCount">Total Records Found 16</div>
+        <p></p>
+        <div id=3D"resultsRulings" style=3D"display: block;"><tr><td class=
+=3D"dataHeader" width=3D"120" style=3D"white-space:nowrap">Case Number:</td=
+><td></td><td><a href=3D"https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=
+=3DCGC24613682&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C" ta=
+rget=3D"_blank">CGC24613682</a></td></tr><tr><td class=3D"dataHeader" width=
+=3D"120" style=3D"white-space:nowrap">Case Title:</td><td></td><td>GEOFFREY=
+ LYNCH VS. WELLS FARGO BANK, N.A. ET AL</td></tr><tr><td class=3D"dataHeade=
+r" width=3D"120" style=3D"white-space:nowrap">Court Date:</td><td></td><td>=
+2026-04-27 09:00 AM</td></tr><tr><td class=3D"dataHeader" width=3D"120" sty=
+le=3D"white-space:nowrap">Calendar Matter:</td><td></td><td>Notice Of Motio=
+n For An Order (1) Deeming Rfas Served On Plaintiff And (2) Imposing Moneta=
+ry Sanctions</td></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"w=
+hite-space:nowrap">Rulings:</td><td></td><td>
+
+Set for Law and Motion/Discovery Calendar on Monday, April 27, 2026, Line 1=
+.
+
+2 - DEFENDANT WELLS FARGO BANK, N.A.  Motion For An Order (1) Deeming Rfas =
+Served On Plaintiff And (2) Imposing Monetary Sanctions.
+
+After considering the moving and reply papers and supporting declarations, =
+the unopposed motion of Defendant Wells Fargo Bank, N.A. to compel response=
+s to Form Interrogatories (Set 2) and for sanctions, is GRANTED.=20
+
+Plaintiff is ordered to respond to Wells Fargo's Form Interrogatory No. 17.=
+1 without objections within ten days of notice of entry of this order.=20
+
+Plaintiff is ordered to pay monetary sanctions in the amount of $1,662.50 w=
+ithin ten days of notice of entry of this order.=20
+
+For the 9:00 a.m. calendar, all attorneys and parties may appear in Departm=
+ent 302 remotely or in person.  Remote hearings will be conducted by videoc=
+onference using Zoom. (Dept. 302 Zoom ID 160 409 7690; Passcode 516287.)  T=
+o appear remotely at the hearing, go to the court's website at sfsuperiorco=
+urt.org under "Online Services," navigate to "Tentative Rulings," and click=
+ on the appropriate link, or dial the corresponding phone number.
+=20
+Any party who contests a tentative ruling must send an email to contestdept=
+302tr@sftc.org with a copy to all other parties by 4pm stating, without arg=
+ument, the portion(s) of the tentative ruling that the party contests.  The=
+ subject line of the email shall include the line number, case name and cas=
+e number.  The text of the email shall include the name and contact informa=
+tion, including email address, of the attorney or party who will appear at =
+the hearing.  Counsel for the prevailing party is required to prepare a pro=
+posed order which repeats verbatim the substantive portion of the tentative=
+ ruling and must email it to contestdept302tr@sftc.org prior to the hearing=
+ even if the tentative ruling is not contested.=20
+=20
+The court no longer provides a court reporter in the Law &amp; Motion Depar=
+tment.  Parties may retain their own reporter, who may appear in the courtr=
+oom or remotely.  A retained reporter must be a California certified court =
+reporter (CSR), for only a CSR's transcript may be used in California court=
+s.  If a CSR is being retained, include in your email all of the following:=
+ their name, CSR and telephone numbers, and their individual work email add=
+ress.
+=3D(302/RCD)</td></tr><tr><td><p></p><p></p></td></tr><tr><td class=3D"data=
+Header" width=3D"120" style=3D"white-space:nowrap">Case Number:</td><td></t=
+d><td><a href=3D"https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=3DCGC2461=
+3682&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C" target=3D"_b=
+lank">CGC24613682</a></td></tr><tr><td class=3D"dataHeader" width=3D"120" s=
+tyle=3D"white-space:nowrap">Case Title:</td><td></td><td>GEOFFREY LYNCH VS.=
+ WELLS FARGO BANK, N.A. ET AL</td></tr><tr><td class=3D"dataHeader" width=
+=3D"120" style=3D"white-space:nowrap">Court Date:</td><td></td><td>2026-04-=
+27 09:00 AM</td></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"wh=
+ite-space:nowrap">Calendar Matter:</td><td></td><td>Notice Of Motion And Mo=
+tion For An Order (1) Compelling Plaintiff Responses To Frogs And (2) Impos=
+ing Monetary Sanctions</td></tr><tr><td class=3D"dataHeader" width=3D"120" =
+style=3D"white-space:nowrap">Rulings:</td><td></td><td>
+
+Set for Law and Motion/Discovery Calendar on Monday, April 27, 2026, Line 1=
+.
+
+1 - DEFENDANT WELLS FARGO BANK, N.A. Motion For An Order (1) Compelling Pla=
+intiff Responses To Frogs And (2) Imposing Monetary Sanctions.
+
+After considering the moving and reply papers and supporting declarations, =
+the unopposed motion of Defendant Wells Fargo Bank, N.A. to deem Requests f=
+or Admission (Set 2) admitted, and for sanctions, is GRANTED.=20
+
+Each request in Wells Fargo's Requests for Admission (Set 2) served on Plai=
+ntiff are deemed admitted.=20
+Plaintiff is ordered to pay monetary sanctions in the amount of $1,977.50 w=
+ithin ten days of notice of entry of this order.=20
+
+For the 9:00 a.m. calendar, all attorneys and parties may appear in Departm=
+ent 302 remotely or in person.  Remote hearings will be conducted by videoc=
+onference using Zoom. (Dept. 302 Zoom ID 160 409 7690; Passcode 516287.)  T=
+o appear remotely at the hearing, go to the court's website at sfsuperiorco=
+urt.org under "Online Services," navigate to "Tentative Rulings," and click=
+ on the appropriate link, or dial the corresponding phone number.
+=20
+Any party who contests a tentative ruling must send an email to contestdept=
+302tr@sftc.org with a copy to all other parties by 4pm stating, without arg=
+ument, the portion(s) of the tentative ruling that the party contests.  The=
+ subject line of the email shall include the line number, case name and cas=
+e number.  The text of the email shall include the name and contact informa=
+tion, including email address, of the attorney or party who will appear at =
+the hearing.  Counsel for the prevailing party is required to prepare a pro=
+posed order which repeats verbatim the substantive portion of the tentative=
+ ruling and must email it to contestdept302tr@sftc.org prior to the hearing=
+ even if the tentative ruling is not contested.=20
+=20
+The court no longer provides a court reporter in the Law &amp; Motion Depar=
+tment.  Parties may retain their own reporter, who may appear in the courtr=
+oom or remotely.  A retained reporter must be a California certified court =
+reporter (CSR), for only a CSR's transcript may be used in California court=
+s.  If a CSR is being retained, include in your email all of the following:=
+ their name, CSR and telephone numbers, and their individual work email add=
+ress.
+=3D(302/RCD)</td></tr><tr><td><p></p><p></p></td></tr><tr><td class=3D"data=
+Header" width=3D"120" style=3D"white-space:nowrap">Case Number:</td><td></t=
+d><td><a href=3D"https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=3DCGC2461=
+5336&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C" target=3D"_b=
+lank">CGC24615336</a></td></tr><tr><td class=3D"dataHeader" width=3D"120" s=
+tyle=3D"white-space:nowrap">Case Title:</td><td></td><td>JAIME NOVELO VS. G=
+WENDOLIN KWAN ET AL</td></tr><tr><td class=3D"dataHeader" width=3D"120" sty=
+le=3D"white-space:nowrap">Court Date:</td><td></td><td>2026-04-27 09:00 AM<=
+/td></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"white-space:no=
+wrap">Calendar Matter:</td><td></td><td>Notice Of Motion And Defendants Mot=
+ion To Compel Physical Examination Of Plaintiff</td></tr><tr><td class=3D"d=
+ataHeader" width=3D"120" style=3D"white-space:nowrap">Rulings:</td><td></td=
+><td>
+
+Set for Law and Motion/Discovery Calendar on Monday, April 27, 2026, Line 2=
+.
+
+DEFENDANT GWENDOLIN KWAN's Motion To Compel Physical Examination Of Plainti=
+ff.
+
+Defendant's motion for a physical examination of plaintiff under CCP Sectio=
+n 2032.310 is GRANTED. The requested examination of plaintiff is directly r=
+elevant to the subject matter of the action, including the nature and exten=
+t of plaintiff's alleged injuries and the amount of damages.  Defendant has=
+ demonstrated good cause for the travel required for the examination. The e=
+xamination of plaintiff shall take place on June 24, 2026 at 10:00 a.m. at =
+2855 Telegraph Avenue, Suite 303, in Berkeley, California. The examination =
+shall be conducted by an orthopedist, Dr. David Chang, M.D., and shall incl=
+ude the following diagnostic tests and procedures:=20
+
+"	Medical history of plaintiff=20
+"	Diagnostic examination and manipulation of those portions of plaintiff's =
+body in which he alleges to have suffered injury, or that are otherwise all=
+eged to have been affected by that injury.
+"	X-rays and/or MRI images necessary for Dr. Chang to evaluate the injuries=
+ placed in controversy by plaintiff
+"	Laboratory tests necessary for Dr. Chang to evaluate the injuries placed =
+in controversy by plaintiff.=20
+
+Pursuant to CCP Section 2032.320(e)(2), this order is conditioned upon the =
+advancement by defendant of the reasonable expenses and costs associated wi=
+th travel to the Bay Area for the examination.  Within ten days of the date=
+ of this Order, plaintiff shall provide defendant (through counsel) with an=
+ estimate of the costs of traveling to San Francisco, including airfare (co=
+ach), two days of hotel accommodations in San Francisco or Alameda County, =
+and ground transportation, along supporting documentation
+
+For the 9:00 a.m. calendar, all attorneys and parties may appear in Departm=
+ent 302 remotely or in person.  Remote hearings will be conducted by videoc=
+onference using Zoom. (Dept. 302 Zoom ID 160 409 7690; Passcode 516287.)  T=
+o appear remotely at the hearing, go to the court's website at sfsuperiorco=
+urt.org under "Online Services," navigate to "Tentative Rulings," and click=
+ on the appropriate link, or dial the corresponding phone number.
+=20
+Any party who contests a tentative ruling must send an email to contestdept=
+302tr@sftc.org with a copy to all other parties by 4pm stating, without arg=
+ument, the portion(s) of the tentative ruling that the party contests.  The=
+ subject line of the email shall include the line number, case name and cas=
+e number.  The text of the email shall include the name and contact informa=
+tion, including email address, of the attorney or party who will appear at =
+the hearing.  Counsel for the prevailing party is required to prepare a pro=
+posed order which repeats verbatim the substantive portion of the tentative=
+ ruling and must email it to contestdept302tr@sftc.org prior to the hearing=
+ even if the tentative ruling is not contested.=20
+=20
+The court no longer provides a court reporter in the Law &amp; Motion Depar=
+tment.  Parties may retain their own reporter, who may appear in the courtr=
+oom or remotely.  A retained reporter must be a California certified court =
+reporter (CSR), for only a CSR's transcript may be used in California court=
+s.  If a CSR is being retained, include in your email all of the following:=
+ their name, CSR and telephone numbers, and their individual work email add=
+ress.
+=3D(302/RCD)</td></tr><tr><td><p></p><p></p></td></tr><tr><td class=3D"data=
+Header" width=3D"120" style=3D"white-space:nowrap">Case Number:</td><td></t=
+d><td><a href=3D"https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=3DCGC2461=
+6382&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C" target=3D"_b=
+lank">CGC24616382</a></td></tr><tr><td class=3D"dataHeader" width=3D"120" s=
+tyle=3D"white-space:nowrap">Case Title:</td><td></td><td>ZAHIR NASERI VS. O=
+FFICE OF THE MAYOR</td></tr><tr><td class=3D"dataHeader" width=3D"120" styl=
+e=3D"white-space:nowrap">Court Date:</td><td></td><td>2026-04-27 09:00 AM</=
+td></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"white-space:now=
+rap">Calendar Matter:</td><td></td><td>Notice Of Motion And Motion To Compe=
+l Production Of Documents; Memorandum Of Points And Authorities</td></tr><t=
+r><td class=3D"dataHeader" width=3D"120" style=3D"white-space:nowrap">Rulin=
+gs:</td><td></td><td>
+
+Set for Law and Motion/Discovery Calendar on Monday, April 27, 2026, Line 3=
+.
+
+PLAINTIFF ZAHIR NASERI's Motion To Compel Production Of Documents.
+
+Plaintiff's motion to compel further responses to the requests for producti=
+on is DENIED.  First, plaintiff did not meet and confer in good faith.  The=
+ parties agreed to defer discovery until the court ruled on the motion for =
+judgment on the pleadings.  (Fong Decl., pars. 10-11, Ex. C.)  Even though =
+the motion for judgment on the pleadings dismissed most of plaintiff's case=
+ and rendered much of the discovery irrelevant, plaintiff failed to meet an=
+d confer again after the court's ruling.  "When a party seeks pretrial disc=
+overy in a proceeding to enforce the California Public Records Act'the tria=
+l court must determine whether the discovery sought is necessary to resolve=
+ whether the agency has a duty to disclose, and  additionally consider whet=
+her the request is justified given the need for an expeditious resolution.'=
+" (County of San Benito v. Superior Court (2023) 96 Cal.App.5th 243, 249.) =
+ Discovery in an action under the California Public Records Act is "circums=
+cribed by its relevance to the 'narrow issue: whether a public agency has a=
+n obligation to disclose the records that the petitioner has requested'"  (=
+County of San Benito, 96 Cal.App.5th at 254.)  Second, plaintiff failed to =
+file a separate statement in compliance with CRC 3.1345(a)(5) [separate sta=
+tement required to compel further production of documents].
+	=20
+For the 9:00 a.m. calendar, all attorneys and parties may appear in Departm=
+ent 302 remotely or in person.  Remote hearings will be conducted by videoc=
+onference using Zoom. (Dept. 302 Zoom ID 160 409 7690; Passcode 516287.)  T=
+o appear remotely at the hearing, go to the court's website at sfsuperiorco=
+urt.org under "Online Services," navigate to "Tentative Rulings," and click=
+ on the appropriate link, or dial the corresponding phone number.
+=20
+Any party who contests a tentative ruling must send an email to contestdept=
+302tr@sftc.org with a copy to all other parties by 4pm stating, without arg=
+ument, the portion(s) of the tentative ruling that the party contests.  The=
+ subject line of the email shall include the line number, case name and cas=
+e number.  The text of the email shall include the name and contact informa=
+tion, including email address, of the attorney or party who will appear at =
+the hearing.  Counsel for the prevailing party is required to prepare a pro=
+posed order which repeats verbatim the substantive portion of the tentative=
+ ruling and must email it to contestdept302tr@sftc.org prior to the hearing=
+ even if the tentative ruling is not contested.=20
+=20
+The court no longer provides a court reporter in the Law &amp; Motion Depar=
+tment.  Parties may retain their own reporter, who may appear in the courtr=
+oom or remotely.  A retained reporter must be a California certified court =
+reporter (CSR), for only a CSR's transcript may be used in California court=
+s.  If a CSR is being retained, include in your email all of the following:=
+ their name, CSR and telephone numbers, and their individual work email add=
+ress.
+=3D(302/RCD)</td></tr><tr><td><p></p><p></p></td></tr><tr><td class=3D"data=
+Header" width=3D"120" style=3D"white-space:nowrap">Case Number:</td><td></t=
+d><td><a href=3D"https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=3DCGC2461=
+8034&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C" target=3D"_b=
+lank">CGC24618034</a></td></tr><tr><td class=3D"dataHeader" width=3D"120" s=
+tyle=3D"white-space:nowrap">Case Title:</td><td></td><td>LVNV FUNDING LLC V=
+S. VINCENT FUQUA ET AL</td></tr><tr><td class=3D"dataHeader" width=3D"120" =
+style=3D"white-space:nowrap">Court Date:</td><td></td><td>2026-04-27 09:00 =
+AM</td></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"white-space=
+:nowrap">Calendar Matter:</td><td></td><td>Notice Of Motion And Motion To S=
+et Aside Default Judgment (Ccp 473.5)</td></tr><tr><td class=3D"dataHeader"=
+ width=3D"120" style=3D"white-space:nowrap">Rulings:</td><td></td><td>
+
+Set for Law and Motion/Discovery Calendar on Monday, April 27, 2026, Line 4=
+.
+
+DEFENDANT VINCENT FUQUA's Motion To Set Aside Default Judgment (Ccp 473.5).
+
+Off calendar.  Defendant fails to show that he served the plaintiff with th=
+is motion in compliance with CCP 1005(b).
+
+For the 9:00 a.m. calendar, all attorneys and parties may appear in Departm=
+ent 302 remotely or in person.  Remote hearings will be conducted by videoc=
+onference using Zoom. (Dept. 302 Zoom ID 160 409 7690; Passcode 516287.)  T=
+o appear remotely at the hearing, go to the court's website at sfsuperiorco=
+urt.org under "Online Services," navigate to "Tentative Rulings," and click=
+ on the appropriate link, or dial the corresponding phone number.
+=20
+Any party who contests a tentative ruling must send an email to contestdept=
+302tr@sftc.org with a copy to all other parties by 4pm stating, without arg=
+ument, the portion(s) of the tentative ruling that the party contests.  The=
+ subject line of the email shall include the line number, case name and cas=
+e number.  The text of the email shall include the name and contact informa=
+tion, including email address, of the attorney or party who will appear at =
+the hearing.  Counsel for the prevailing party is required to prepare a pro=
+posed order which repeats verbatim the substantive portion of the tentative=
+ ruling and must email it to contestdept302tr@sftc.org prior to the hearing=
+ even if the tentative ruling is not contested.=20
+=20
+The court no longer provides a court reporter in the Law &amp; Motion Depar=
+tment.  Parties may retain their own reporter, who may appear in the courtr=
+oom or remotely.  A retained reporter must be a California certified court =
+reporter (CSR), for only a CSR's transcript may be used in California court=
+s.  If a CSR is being retained, include in your email all of the following:=
+ their name, CSR and telephone numbers, and their individual work email add=
+ress.
+=3D(302/RCD)</td></tr><tr><td><p></p><p></p></td></tr><tr><td class=3D"data=
+Header" width=3D"120" style=3D"white-space:nowrap">Case Number:</td><td></t=
+d><td><a href=3D"https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=3DCGC2562=
+3032&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C" target=3D"_b=
+lank">CGC25623032</a></td></tr><tr><td class=3D"dataHeader" width=3D"120" s=
+tyle=3D"white-space:nowrap">Case Title:</td><td></td><td>KIMBERLY GOMEZ ET =
+AL VS. CRISTEN C. BLANDING ET AL</td></tr><tr><td class=3D"dataHeader" widt=
+h=3D"120" style=3D"white-space:nowrap">Court Date:</td><td></td><td>2026-04=
+-27 09:00 AM</td></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"w=
+hite-space:nowrap">Calendar Matter:</td><td></td><td>Notice Of Motion And M=
+otion To Compel Further Responses To Plaintiff'S Requests For Production Ag=
+ainst Defendant Cristen C. Blanding And Their Counsel</td></tr><tr><td clas=
+s=3D"dataHeader" width=3D"120" style=3D"white-space:nowrap">Rulings:</td><t=
+d></td><td>
+
+Set for Law and Motion/Discovery Calendar on Monday, April 27, 2026, Line 5=
+.
+
+5 - Plaintiff's motion to compel further responses to the request for produ=
+ction served on defendant Cristen Blanding is GRANTED IN PART and DENIED IN=
+ PART.  The motion to compel further responses is DENIED as moot.  Plaintif=
+f's motion targets discovery responses served on January 30, 2026.  (Neff D=
+ecl., par. 7.)  On April 8, 2026, defendant served amended responses that s=
+upersede the prior responses.  (Nguyen Decl., pars. 15.)  Per CRC 3.1348(a)=
+, the court awards $850 in sanctions.  Defendant's delay in providing its r=
+esponses lacked substantial justification.  Defendant and counsel are joint=
+ly and severally liable for the sanctions and they shall be paid to plainti=
+ff within 10 days of notice of entry of this order.
+
+For the 9:00 a.m. calendar, all attorneys and parties may appear in Departm=
+ent 302 remotely or in person.  Remote hearings will be conducted by videoc=
+onference using Zoom. (Dept. 302 Zoom ID 160 409 7690; Passcode 516287.)  T=
+o appear remotely at the hearing, go to the court's website at sfsuperiorco=
+urt.org under "Online Services," navigate to "Tentative Rulings," and click=
+ on the appropriate link, or dial the corresponding phone number.
+=20
+Any party who contests a tentative ruling must send an email to contestdept=
+302tr@sftc.org with a copy to all other parties by 4pm stating, without arg=
+ument, the portion(s) of the tentative ruling that the party contests.  The=
+ subject line of the email shall include the line number, case name and cas=
+e number.  The text of the email shall include the name and contact informa=
+tion, including email address, of the attorney or party who will appear at =
+the hearing.  Counsel for the prevailing party is required to prepare a pro=
+posed order which repeats verbatim the substantive portion of the tentative=
+ ruling and must email it to contestdept302tr@sftc.org prior to the hearing=
+ even if the tentative ruling is not contested.=20
+=20
+The court no longer provides a court reporter in the Law &amp; Motion Depar=
+tment.  Parties may retain their own reporter, who may appear in the courtr=
+oom or remotely.  A retained reporter must be a California certified court =
+reporter (CSR), for only a CSR's transcript may be used in California court=
+s.  If a CSR is being retained, include in your email all of the following:=
+ their name, CSR and telephone numbers, and their individual work email add=
+ress.
+=3D(302/RCD)</td></tr><tr><td><p></p><p></p></td></tr><tr><td class=3D"data=
+Header" width=3D"120" style=3D"white-space:nowrap">Case Number:</td><td></t=
+d><td><a href=3D"https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=3DCGC2562=
+3032&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C" target=3D"_b=
+lank">CGC25623032</a></td></tr><tr><td class=3D"dataHeader" width=3D"120" s=
+tyle=3D"white-space:nowrap">Case Title:</td><td></td><td>KIMBERLY GOMEZ ET =
+AL VS. CRISTEN C. BLANDING ET AL</td></tr><tr><td class=3D"dataHeader" widt=
+h=3D"120" style=3D"white-space:nowrap">Court Date:</td><td></td><td>2026-04=
+-27 09:00 AM</td></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"w=
+hite-space:nowrap">Calendar Matter:</td><td></td><td>Notice Of Motion And M=
+otion To Compel Further Responses To Plaintiffs' Special Interrogatories Ag=
+ainst Defendant Cristin Cummings And Their Counsel</td></tr><tr><td class=
+=3D"dataHeader" width=3D"120" style=3D"white-space:nowrap">Rulings:</td><td=
+></td><td>
+
+Set for Law and Motion/Discovery Calendar on Monday, April 27, 2026, Line 5=
+.
+
+2 - Plaintiff's motion to compel further responses to the special interroga=
+tories served on defendant Cristin Cummings is GRANTED IN PART and DENIED I=
+N PART.  The motion to compel further responses is DENIED as moot.  Plainti=
+ff's motion targets discovery responses served on January 30, 2026.  (Neff =
+Decl., par. 7.)  On April 8, 2026, defendant served amended responses that =
+supersede the prior responses.  (Nguyen Decl., par. 13.)  Per CRC 3.1348(a)=
+, the court awards $850 in sanctions.  Defendant's delay in providing its r=
+esponses lacked substantial justification.  Defendant and counsel are joint=
+ly and severally liable for the sanctions and they shall be paid to plainti=
+ff within 10 days of notice of entry of this order.
+
+For the 9:00 a.m. calendar, all attorneys and parties may appear in Departm=
+ent 302 remotely or in person.  Remote hearings will be conducted by videoc=
+onference using Zoom. (Dept. 302 Zoom ID 160 409 7690; Passcode 516287.)  T=
+o appear remotely at the hearing, go to the court's website at sfsuperiorco=
+urt.org under "Online Services," navigate to "Tentative Rulings," and click=
+ on the appropriate link, or dial the corresponding phone number.
+=20
+Any party who contests a tentative ruling must send an email to contestdept=
+302tr@sftc.org with a copy to all other parties by 4pm stating, without arg=
+ument, the portion(s) of the tentative ruling that the party contests.  The=
+ subject line of the email shall include the line number, case name and cas=
+e number.  The text of the email shall include the name and contact informa=
+tion, including email address, of the attorney or party who will appear at =
+the hearing.  Counsel for the prevailing party is required to prepare a pro=
+posed order which repeats verbatim the substantive portion of the tentative=
+ ruling and must email it to contestdept302tr@sftc.org prior to the hearing=
+ even if the tentative ruling is not contested.=20
+=20
+The court no longer provides a court reporter in the Law &amp; Motion Depar=
+tment.  Parties may retain their own reporter, who may appear in the courtr=
+oom or remotely.  A retained reporter must be a California certified court =
+reporter (CSR), for only a CSR's transcript may be used in California court=
+s.  If a CSR is being retained, include in your email all of the following:=
+ their name, CSR and telephone numbers, and their individual work email add=
+ress.
+=3D(302/RCD)</td></tr><tr><td><p></p><p></p></td></tr><tr><td class=3D"data=
+Header" width=3D"120" style=3D"white-space:nowrap">Case Number:</td><td></t=
+d><td><a href=3D"https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=3DCGC2562=
+3032&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C" target=3D"_b=
+lank">CGC25623032</a></td></tr><tr><td class=3D"dataHeader" width=3D"120" s=
+tyle=3D"white-space:nowrap">Case Title:</td><td></td><td>KIMBERLY GOMEZ ET =
+AL VS. CRISTEN C. BLANDING ET AL</td></tr><tr><td class=3D"dataHeader" widt=
+h=3D"120" style=3D"white-space:nowrap">Court Date:</td><td></td><td>2026-04=
+-27 09:00 AM</td></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"w=
+hite-space:nowrap">Calendar Matter:</td><td></td><td>Notice Of Motion And M=
+otion To Compel Further Responses To Plaintiffs' Requests For Production Ag=
+ainst Defendant James Blanding And Their Counsel</td></tr><tr><td class=3D"=
+dataHeader" width=3D"120" style=3D"white-space:nowrap">Rulings:</td><td></t=
+d><td>
+
+Set for Law and Motion/Discovery Calendar on Monday, April 27, 2026, Line 5=
+.
+
+6 - Plaintiff's motion to compel further responses to the request for produ=
+ction served on defendant James Blanding is GRANTED IN PART and DENIED IN P=
+ART.  The motion to compel further responses is DENIED as moot.  Plaintiff'=
+s motion targets discovery responses served on January 30, 2026.  (Neff Dec=
+l., par. 7.)  On April 8, 2026, defendant served amended responses that sup=
+ersede the prior responses.  (Nguyen Decl., pars. 15.)  Per CRC 3.1348(a), =
+the court awards $850 in sanctions.  Defendant's delay in providing its res=
+ponses lacked substantial justification.  Defendant and counsel are jointly=
+ and severally liable for the sanctions and they shall be paid to plaintiff=
+ within 10 days of notice of entry of this order.
+
+For the 9:00 a.m. calendar, all attorneys and parties may appear in Departm=
+ent 302 remotely or in person.  Remote hearings will be conducted by videoc=
+onference using Zoom. (Dept. 302 Zoom ID 160 409 7690; Passcode 516287.)  T=
+o appear remotely at the hearing, go to the court's website at sfsuperiorco=
+urt.org under "Online Services," navigate to "Tentative Rulings," and click=
+ on the appropriate link, or dial the corresponding phone number.
+=20
+Any party who contests a tentative ruling must send an email to contestdept=
+302tr@sftc.org with a copy to all other parties by 4pm stating, without arg=
+ument, the portion(s) of the tentative ruling that the party contests.  The=
+ subject line of the email shall include the line number, case name and cas=
+e number.  The text of the email shall include the name and contact informa=
+tion, including email address, of the attorney or party who will appear at =
+the hearing.  Counsel for the prevailing party is required to prepare a pro=
+posed order which repeats verbatim the substantive portion of the tentative=
+ ruling and must email it to contestdept302tr@sftc.org prior to the hearing=
+ even if the tentative ruling is not contested.=20
+=20
+The court no longer provides a court reporter in the Law &amp; Motion Depar=
+tment.  Parties may retain their own reporter, who may appear in the courtr=
+oom or remotely.  A retained reporter must be a California certified court =
+reporter (CSR), for only a CSR's transcript may be used in California court=
+s.  If a CSR is being retained, include in your email all of the following:=
+ their name, CSR and telephone numbers, and their individual work email add=
+ress.
+=3D(302/RCD)</td></tr><tr><td><p></p><p></p></td></tr><tr><td class=3D"data=
+Header" width=3D"120" style=3D"white-space:nowrap">Case Number:</td><td></t=
+d><td><a href=3D"https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=3DCGC2562=
+3032&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C" target=3D"_b=
+lank">CGC25623032</a></td></tr><tr><td class=3D"dataHeader" width=3D"120" s=
+tyle=3D"white-space:nowrap">Case Title:</td><td></td><td>KIMBERLY GOMEZ ET =
+AL VS. CRISTEN C. BLANDING ET AL</td></tr><tr><td class=3D"dataHeader" widt=
+h=3D"120" style=3D"white-space:nowrap">Court Date:</td><td></td><td>2026-04=
+-27 09:00 AM</td></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"w=
+hite-space:nowrap">Calendar Matter:</td><td></td><td>Notice Of Motion And M=
+otion To Compel Further Responses To Plaintiffs' Request For Production Aga=
+inst Defendant Bayview Property Managers And Their Counsel</td></tr><tr><td=
+ class=3D"dataHeader" width=3D"120" style=3D"white-space:nowrap">Rulings:</=
+td><td></td><td>
+
+Set for Law and Motion/Discovery Calendar on Monday, April 27, 2026, Line 5=
+.
+
+4 - Plaintiff's motion to compel further responses to the request for produ=
+ction served on defendant Bayview Property Managers is GRANTED IN PART and =
+DENIED IN PART.  The motion to compel further responses is DENIED as moot. =
+ Plaintiff's motion targets discovery responses served on January 30, 2026.=
+  (Neff Decl., par. 7.)  On April 8, 2026, defendant served amended respons=
+es that supersede the prior responses.  (Nguyen Decl., pars. 15.)  Per CRC =
+3.1348(a), the court awards $850 in sanctions.  Defendant's delay in provid=
+ing its responses lacked substantial justification.  Defendant and counsel =
+are jointly and severally liable for the sanctions and they shall be paid t=
+o plaintiff within 10 days of notice of entry of this order.
+
+For the 9:00 a.m. calendar, all attorneys and parties may appear in Departm=
+ent 302 remotely or in person.  Remote hearings will be conducted by videoc=
+onference using Zoom. (Dept. 302 Zoom ID 160 409 7690; Passcode 516287.)  T=
+o appear remotely at the hearing, go to the court's website at sfsuperiorco=
+urt.org under "Online Services," navigate to "Tentative Rulings," and click=
+ on the appropriate link, or dial the corresponding phone number.
+=20
+Any party who contests a tentative ruling must send an email to contestdept=
+302tr@sftc.org with a copy to all other parties by 4pm stating, without arg=
+ument, the portion(s) of the tentative ruling that the party contests.  The=
+ subject line of the email shall include the line number, case name and cas=
+e number.  The text of the email shall include the name and contact informa=
+tion, including email address, of the attorney or party who will appear at =
+the hearing.  Counsel for the prevailing party is required to prepare a pro=
+posed order which repeats verbatim the substantive portion of the tentative=
+ ruling and must email it to contestdept302tr@sftc.org prior to the hearing=
+ even if the tentative ruling is not contested.=20
+=20
+The court no longer provides a court reporter in the Law &amp; Motion Depar=
+tment.  Parties may retain their own reporter, who may appear in the courtr=
+oom or remotely.  A retained reporter must be a California certified court =
+reporter (CSR), for only a CSR's transcript may be used in California court=
+s.  If a CSR is being retained, include in your email all of the following:=
+ their name, CSR and telephone numbers, and their individual work email add=
+ress.
+=3D(302/RCD)</td></tr><tr><td><p></p><p></p></td></tr><tr><td class=3D"data=
+Header" width=3D"120" style=3D"white-space:nowrap">Case Number:</td><td></t=
+d><td><a href=3D"https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=3DCGC2562=
+3032&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C" target=3D"_b=
+lank">CGC25623032</a></td></tr><tr><td class=3D"dataHeader" width=3D"120" s=
+tyle=3D"white-space:nowrap">Case Title:</td><td></td><td>KIMBERLY GOMEZ ET =
+AL VS. CRISTEN C. BLANDING ET AL</td></tr><tr><td class=3D"dataHeader" widt=
+h=3D"120" style=3D"white-space:nowrap">Court Date:</td><td></td><td>2026-04=
+-27 09:00 AM</td></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"w=
+hite-space:nowrap">Calendar Matter:</td><td></td><td>Notice Of Motion And M=
+otion To Compel Further Responses To Plaintiffs' Special Interrogatories Ag=
+ainst Defendant James Blanding And Their Counsel</td></tr><tr><td class=3D"=
+dataHeader" width=3D"120" style=3D"white-space:nowrap">Rulings:</td><td></t=
+d><td>
+
+Set for Law and Motion/Discovery Calendar on Monday, April 27, 2026, Line 5=
+.
+
+3 - Plaintiff's motion to compel further responses to the special interroga=
+tories served on defendant James Blanding is GRANTED IN PART and DENIED IN =
+PART.  The motion to compel further responses is DENIED as moot.  Plaintiff=
+'s motion targets discovery responses served on January 30, 2026.  (Neff De=
+cl., par. 7.)  On April 8, 2026, defendant served amended responses that su=
+persede the prior responses.  (Nguyen Decl., par. 13.)  Per CRC 3.1348(a), =
+the court awards $850 in sanctions.  Defendant's delay in providing its res=
+ponses lacked substantial justification.  Defendant and counsel are jointly=
+ and severally liable for the sanctions and they shall be paid to plaintiff=
+ within 10 days of notice of entry of this order.
+
+For the 9:00 a.m. calendar, all attorneys and parties may appear in Departm=
+ent 302 remotely or in person.  Remote hearings will be conducted by videoc=
+onference using Zoom. (Dept. 302 Zoom ID 160 409 7690; Passcode 516287.)  T=
+o appear remotely at the hearing, go to the court's website at sfsuperiorco=
+urt.org under "Online Services," navigate to "Tentative Rulings," and click=
+ on the appropriate link, or dial the corresponding phone number.
+=20
+Any party who contests a tentative ruling must send an email to contestdept=
+302tr@sftc.org with a copy to all other parties by 4pm stating, without arg=
+ument, the portion(s) of the tentative ruling that the party contests.  The=
+ subject line of the email shall include the line number, case name and cas=
+e number.  The text of the email shall include the name and contact informa=
+tion, including email address, of the attorney or party who will appear at =
+the hearing.  Counsel for the prevailing party is required to prepare a pro=
+posed order which repeats verbatim the substantive portion of the tentative=
+ ruling and must email it to contestdept302tr@sftc.org prior to the hearing=
+ even if the tentative ruling is not contested.=20
+=20
+The court no longer provides a court reporter in the Law &amp; Motion Depar=
+tment.  Parties may retain their own reporter, who may appear in the courtr=
+oom or remotely.  A retained reporter must be a California certified court =
+reporter (CSR), for only a CSR's transcript may be used in California court=
+s.  If a CSR is being retained, include in your email all of the following:=
+ their name, CSR and telephone numbers, and their individual work email add=
+ress.
+=3D(302/RCD)</td></tr><tr><td><p></p><p></p></td></tr><tr><td class=3D"data=
+Header" width=3D"120" style=3D"white-space:nowrap">Case Number:</td><td></t=
+d><td><a href=3D"https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=3DCGC2562=
+3032&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C" target=3D"_b=
+lank">CGC25623032</a></td></tr><tr><td class=3D"dataHeader" width=3D"120" s=
+tyle=3D"white-space:nowrap">Case Title:</td><td></td><td>KIMBERLY GOMEZ ET =
+AL VS. CRISTEN C. BLANDING ET AL</td></tr><tr><td class=3D"dataHeader" widt=
+h=3D"120" style=3D"white-space:nowrap">Court Date:</td><td></td><td>2026-04=
+-27 09:00 AM</td></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"w=
+hite-space:nowrap">Calendar Matter:</td><td></td><td>Notice Of Motion And M=
+otion To Compel Further Responses To Plaintiffs' Special Interrogatories Ag=
+ainst Defendant Bayview Property Managers And Their Counsel</td></tr><tr><t=
+d class=3D"dataHeader" width=3D"120" style=3D"white-space:nowrap">Rulings:<=
+/td><td></td><td>
+
+Set for Law and Motion/Discovery Calendar on Monday, April 27, 2026, Line 5=
+.
+
+1 - Plaintiff's motion to compel further responses to the special interroga=
+tories served on defendant Bayview Property Managers is GRANTED IN PART and=
+ DENIED IN PART.  The motion to compel further responses is DENIED as moot.=
+  Plaintiff's motion targets discovery responses served on January 30, 2026=
+.  (Neff Decl., par. 7.)  On April 8, 2026, defendant served amended respon=
+ses that supersede the prior responses.  (Nguyen Decl., par. 13.)  Per CRC =
+3.1348(a), the court awards $850 in sanctions.  Defendant's delay in provid=
+ing its responses lacked substantial justification.  Defendant and counsel =
+are jointly and severally liable for the sanctions and they shall be paid t=
+o plaintiff within 10 days of notice of entry of this order.
+
+For the 9:00 a.m. calendar, all attorneys and parties may appear in Departm=
+ent 302 remotely or in person.  Remote hearings will be conducted by videoc=
+onference using Zoom. (Dept. 302 Zoom ID 160 409 7690; Passcode 516287.)  T=
+o appear remotely at the hearing, go to the court's website at sfsuperiorco=
+urt.org under "Online Services," navigate to "Tentative Rulings," and click=
+ on the appropriate link, or dial the corresponding phone number.
+=20
+Any party who contests a tentative ruling must send an email to contestdept=
+302tr@sftc.org with a copy to all other parties by 4pm stating, without arg=
+ument, the portion(s) of the tentative ruling that the party contests.  The=
+ subject line of the email shall include the line number, case name and cas=
+e number.  The text of the email shall include the name and contact informa=
+tion, including email address, of the attorney or party who will appear at =
+the hearing.  Counsel for the prevailing party is required to prepare a pro=
+posed order which repeats verbatim the substantive portion of the tentative=
+ ruling and must email it to contestdept302tr@sftc.org prior to the hearing=
+ even if the tentative ruling is not contested.=20
+=20
+The court no longer provides a court reporter in the Law &amp; Motion Depar=
+tment.  Parties may retain their own reporter, who may appear in the courtr=
+oom or remotely.  A retained reporter must be a California certified court =
+reporter (CSR), for only a CSR's transcript may be used in California court=
+s.  If a CSR is being retained, include in your email all of the following:=
+ their name, CSR and telephone numbers, and their individual work email add=
+ress.=20
+=3D(302/RCD)</td></tr><tr><td><p></p><p></p></td></tr><tr><td class=3D"data=
+Header" width=3D"120" style=3D"white-space:nowrap">Case Number:</td><td></t=
+d><td><a href=3D"https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=3DCGC2562=
+4486&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C" target=3D"_b=
+lank">CGC25624486</a></td></tr><tr><td class=3D"dataHeader" width=3D"120" s=
+tyle=3D"white-space:nowrap">Case Title:</td><td></td><td>MICHAEL ZERBE VS. =
+JEFFREY B. NEUSTADT ET AL</td></tr><tr><td class=3D"dataHeader" width=3D"12=
+0" style=3D"white-space:nowrap">Court Date:</td><td></td><td>2026-04-27 09:=
+00 AM</td></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"white-sp=
+ace:nowrap">Calendar Matter:</td><td></td><td>Notice Of Motion And Motion T=
+o Compel Responses To Request For Production, To Compel Production, To Deem=
+ All Objections Waived, For Monetary Sanctions From Plaintiff Michael Zerbe=
+ And Plaintiff'S Counsel Of Record, And For Issue/Evidentiary Sanctions</td=
+></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"white-space:nowra=
+p">Rulings:</td><td></td><td>
+
+Set for Law and Motion/Discovery Calendar on Monday, April 27, 2026, Line 6=
+.
+
+DEFENDANT JEFFREY NEUSTADT , DBA LAW OFFICES OF JEFFRY B. NEUSTADT Motion T=
+o Compel Responses To Request For Production, To Compel Production, To Deem=
+ All Objections Waived, For Monetary Sanctions From Plaintiff Michael Zerbe=
+ And Plaintiff'S Counsel Of Record, And For Issue/Evidentiary Sanctions.
+
+The motion of Defendant Jeffrey Neustadt to compel responses to compel resp=
+onses to requests for production (Set 2), to compel production, to deem obj=
+ections waived, and for monetary sanctions is GRANTED in part and DENIED in=
+ part.=20
+
+(The Court's complete tentative ruling has been emailed to the parties).=20
+
+For the 9:00 a.m. calendar, all attorneys and parties may appear in Departm=
+ent 302 remotely or in person.  Remote hearings will be conducted by videoc=
+onference using Zoom. (Dept. 302 Zoom ID 160 409 7690; Passcode 516287.)  T=
+o appear remotely at the hearing, go to the court's website at sfsuperiorco=
+urt.org under "Online Services," navigate to "Tentative Rulings," and click=
+ on the appropriate link, or dial the corresponding phone number.
+=20
+Any party who contests a tentative ruling must send an email to contestdept=
+302tr@sftc.org with a copy to all other parties by 4pm stating, without arg=
+ument, the portion(s) of the tentative ruling that the party contests.  The=
+ subject line of the email shall include the line number, case name and cas=
+e number.  The text of the email shall include the name and contact informa=
+tion, including email address, of the attorney or party who will appear at =
+the hearing.  Counsel for the prevailing party is required to prepare a pro=
+posed order which repeats verbatim the substantive portion of the tentative=
+ ruling and must email it to contestdept302tr@sftc.org prior to the hearing=
+ even if the tentative ruling is not contested.=20
+=20
+The court no longer provides a court reporter in the Law &amp; Motion Depar=
+tment.  Parties may retain their own reporter, who may appear in the courtr=
+oom or remotely.  A retained reporter must be a California certified court =
+reporter (CSR), for only a CSR's transcript may be used in California court=
+s.  If a CSR is being retained, include in your email all of the following:=
+ their name, CSR and telephone numbers, and their individual work email add=
+ress.
+=3D(302/RCD)
+
+</td></tr><tr><td><p></p><p></p></td></tr><tr><td class=3D"dataHeader" widt=
+h=3D"120" style=3D"white-space:nowrap">Case Number:</td><td></td><td><a hre=
+f=3D"https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=3DCGC25627560&amp;Ses=
+sionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C" target=3D"_blank">CGC256=
+27560</a></td></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"whit=
+e-space:nowrap">Case Title:</td><td></td><td>EQR-ONE HENRY ADAMS LP VS. SUF=
+FOLK CONSTRUCTION COMPANY, INC. ET AL</td></tr><tr><td class=3D"dataHeader"=
+ width=3D"120" style=3D"white-space:nowrap">Court Date:</td><td></td><td>20=
+26-04-27 09:00 AM</td></tr><tr><td class=3D"dataHeader" width=3D"120" style=
+=3D"white-space:nowrap">Calendar Matter:</td><td></td><td>DEMURRER to Amend=
+ed COMPLAINT</td></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"w=
+hite-space:nowrap">Rulings:</td><td></td><td>
+
+Set for Law and Motion/Discovery Calendar on Monday, April 27, 2026, Line 7=
+.
+
+Defendant Kawneer Company, Inc.'s demurrer to the First Amended Complaint (=
+"FAC") is OVERRULED.
+
+(The Court's complete tentative ruling has been emailed to the parties).=20
+
+For the 9:00 a.m. calendar, all attorneys and parties may appear in Departm=
+ent 302 remotely or in person.  Remote hearings will be conducted by videoc=
+onference using Zoom. (Dept. 302 Zoom ID 160 409 7690; Passcode 516287.)  T=
+o appear remotely at the hearing, go to the court's website at sfsuperiorco=
+urt.org under "Online Services," navigate to "Tentative Rulings," and click=
+ on the appropriate link, or dial the corresponding phone number.
+=20
+Any party who contests a tentative ruling must send an email to contestdept=
+302tr@sftc.org with a copy to all other parties by 4pm stating, without arg=
+ument, the portion(s) of the tentative ruling that the party contests.  The=
+ subject line of the email shall include the line number, case name and cas=
+e number.  The text of the email shall include the name and contact informa=
+tion, including email address, of the attorney or party who will appear at =
+the hearing.  Counsel for the prevailing party is required to prepare a pro=
+posed order which repeats verbatim the substantive portion of the tentative=
+ ruling and must email it to contestdept302tr@sftc.org prior to the hearing=
+ even if the tentative ruling is not contested.=20
+=20
+The court no longer provides a court reporter in the Law &amp; Motion Depar=
+tment.  Parties may retain their own reporter, who may appear in the courtr=
+oom or remotely.  A retained reporter must be a California certified court =
+reporter (CSR), for only a CSR's transcript may be used in California court=
+s.  If a CSR is being retained, include in your email all of the following:=
+ their name, CSR and telephone numbers, and their individual work email add=
+ress.
+=3D(302/RCD)
+
+</td></tr><tr><td><p></p><p></p></td></tr><tr><td class=3D"dataHeader" widt=
+h=3D"120" style=3D"white-space:nowrap">Case Number:</td><td></td><td><a hre=
+f=3D"https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=3DCGC25628512&amp;Ses=
+sionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C" target=3D"_blank">CGC256=
+28512</a></td></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"whit=
+e-space:nowrap">Case Title:</td><td></td><td>AD ASTRA LAW GROUP, LLP VS. JA=
+MES MALOT ET AL</td></tr><tr><td class=3D"dataHeader" width=3D"120" style=
+=3D"white-space:nowrap">Court Date:</td><td></td><td>2026-04-27 09:00 AM</t=
+d></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"white-space:nowr=
+ap">Calendar Matter:</td><td></td><td>Motion To Vacate Default Judgement</t=
+d></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"white-space:nowr=
+ap">Rulings:</td><td></td><td>
+
+Set for Law and Motion/Discovery Calendar on Monday, April 27, 2026, Line 8=
+.
+
+DEFENDANT JAMES MALOT's Motion To Vacate Default Judgement.
+
+The court discloses that it has known plaintiff's counsel, Katy Young, for =
+many years through their membership and involvement in the Edward J. McFetr=
+idge Inn of Court, and that they both currently serve on the Executive Comm=
+ittee of that Inn of Court.  The court finds that it is not disqualified fr=
+om hearing this matter.
+
+Defendant Malot's motion to vacate the default entered on October 21, 2025,=
+ is GRANTED.  (CCP 473.)  The court has yet to enter default judgment again=
+st defendant. =20
+
+(The Court's complete tentative ruling has been emailed to the parties).=20
+
+For the 9:00 a.m. calendar, all attorneys and parties may appear in Departm=
+ent 302 remotely or in person.  Remote hearings will be conducted by videoc=
+onference using Zoom. (Dept. 302 Zoom ID 160 409 7690; Passcode 516287.)  T=
+o appear remotely at the hearing, go to the court's website at sfsuperiorco=
+urt.org under "Online Services," navigate to "Tentative Rulings," and click=
+ on the appropriate link, or dial the corresponding phone number.
+=20
+Any party who contests a tentative ruling must send an email to contestdept=
+302tr@sftc.org with a copy to all other parties by 4pm stating, without arg=
+ument, the portion(s) of the tentative ruling that the party contests.  The=
+ subject line of the email shall include the line number, case name and cas=
+e number.  The text of the email shall include the name and contact informa=
+tion, including email address, of the attorney or party who will appear at =
+the hearing.  Counsel for the prevailing party is required to prepare a pro=
+posed order which repeats verbatim the substantive portion of the tentative=
+ ruling and must email it to contestdept302tr@sftc.org prior to the hearing=
+ even if the tentative ruling is not contested.=20
+=20
+The court no longer provides a court reporter in the Law &amp; Motion Depar=
+tment.  Parties may retain their own reporter, who may appear in the courtr=
+oom or remotely.  A retained reporter must be a California certified court =
+reporter (CSR), for only a CSR's transcript may be used in California court=
+s.  If a CSR is being retained, include in your email all of the following:=
+ their name, CSR and telephone numbers, and their individual work email add=
+ress.
+=3D(302/RCD)
+
+
+
+
+</td></tr><tr><td><p></p><p></p></td></tr><tr><td class=3D"dataHeader" widt=
+h=3D"120" style=3D"white-space:nowrap">Case Number:</td><td></td><td><a hre=
+f=3D"https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=3DCGC25629608&amp;Ses=
+sionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C" target=3D"_blank">CGC256=
+29608</a></td></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"whit=
+e-space:nowrap">Case Title:</td><td></td><td>ROBERT BETANCORT VS. MILLER KE=
+LLEY ARCHITECTS, INC. ET AL</td></tr><tr><td class=3D"dataHeader" width=3D"=
+120" style=3D"white-space:nowrap">Court Date:</td><td></td><td>2026-04-27 0=
+9:00 AM</td></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"white-=
+space:nowrap">Calendar Matter:</td><td></td><td>MOTION TO CONSOLIDATE ACTIO=
+NS OF CASE(S) CGC-26-634438 WITH CASE CGC-25-629608</td></tr><tr><td class=
+=3D"dataHeader" width=3D"120" style=3D"white-space:nowrap">Rulings:</td><td=
+></td><td>
+
+Set for Law and Motion/Discovery Calendar on Monday, April 27, 2026, Line 9=
+.
+
+2 - DEFENDANT MILLER KELLEY ARCHITECTS, INC. DOING BUSINESS AS MKTHINK, A C=
+ALIFORNIA CORPORATION, MARK MILLER MOTION TO CONSOLIDATE ACTIONS OF CASE(S)=
+ CGC-26-634438 WITH CASE CGC-25-629608.
+
+The motion to consolidate filed by Plaintiffs Miller Kelley Architects, Inc=
+. d/b/a MKThink, and Mark Miller is denied without prejudice. Should the co=
+mplaint survive demurrer (or other challenges to the legal and/or factual s=
+ufficiency of the causes of action asserted therein), Plaintiffs may renew =
+this consolidation motion.=20
+
+For the 9:00 a.m. calendar, all attorneys and parties may appear in Departm=
+ent 302 remotely or in person.  Remote hearings will be conducted by videoc=
+onference using Zoom. (Dept. 302 Zoom ID 160 409 7690; Passcode 516287.)  T=
+o appear remotely at the hearing, go to the court's website at sfsuperiorco=
+urt.org under "Online Services," navigate to "Tentative Rulings," and click=
+ on the appropriate link, or dial the corresponding phone number.
+=20
+Any party who contests a tentative ruling must send an email to contestdept=
+302tr@sftc.org with a copy to all other parties by 4pm stating, without arg=
+ument, the portion(s) of the tentative ruling that the party contests.  The=
+ subject line of the email shall include the line number, case name and cas=
+e number.  The text of the email shall include the name and contact informa=
+tion, including email address, of the attorney or party who will appear at =
+the hearing.  Counsel for the prevailing party is required to prepare a pro=
+posed order which repeats verbatim the substantive portion of the tentative=
+ ruling and must email it to contestdept302tr@sftc.org prior to the hearing=
+ even if the tentative ruling is not contested.=20
+=20
+The court no longer provides a court reporter in the Law &amp; Motion Depar=
+tment.  Parties may retain their own reporter, who may appear in the courtr=
+oom or remotely.  A retained reporter must be a California certified court =
+reporter (CSR), for only a CSR's transcript may be used in California court=
+s.  If a CSR is being retained, include in your email all of the following:=
+ their name, CSR and telephone numbers, and their individual work email add=
+ress.
+=3D(302/RCD)</td></tr><tr><td><p></p><p></p></td></tr><tr><td class=3D"data=
+Header" width=3D"120" style=3D"white-space:nowrap">Case Number:</td><td></t=
+d><td><a href=3D"https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=3DCGC2562=
+9608&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C" target=3D"_b=
+lank">CGC25629608</a></td></tr><tr><td class=3D"dataHeader" width=3D"120" s=
+tyle=3D"white-space:nowrap">Case Title:</td><td></td><td>ROBERT BETANCORT V=
+S. MILLER KELLEY ARCHITECTS, INC. ET AL</td></tr><tr><td class=3D"dataHeade=
+r" width=3D"120" style=3D"white-space:nowrap">Court Date:</td><td></td><td>=
+2026-04-27 09:00 AM</td></tr><tr><td class=3D"dataHeader" width=3D"120" sty=
+le=3D"white-space:nowrap">Calendar Matter:</td><td></td><td>MOTION FOR LEAV=
+E TO File First Amended Answer; Memorandum Of Points And Authorities In Sup=
+port Thereof</td></tr><tr><td class=3D"dataHeader" width=3D"120" style=3D"w=
+hite-space:nowrap">Rulings:</td><td></td><td>
+
+Set for Law and Motion/Discovery Calendar on Monday, April 27, 2026, Line 9=
+.
+
+1 - DEFENDANT MILLER KELLEY ARCHITECTS, INC. DOING BUSINESS AS MKTHINK, A C=
+ALIFORNIA CORPORATION MOTION FOR LEAVE TO File First Amended Answer.
+
+Defendants' motion for leave to file a First Amended Answer is GRANTED.  Pl=
+aintiff Betancort has not identified any "prior action" in which Defendants=
+ allegedly failed to assert the defense of setoff under CCP Section 431.20.=
+ This order is without prejudice to any challenges by Plaintiff to the lega=
+l and/or factual sufficiency of the newly-asserted affirmative defenses in =
+the First Amended Answer.=20
+
+Defendants shall file and serve their First Amended Answer on or before Apr=
+il 30, 2026.=20
+
+For the 9:00 a.m. calendar, all attorneys and parties may appear in Departm=
+ent 302 remotely or in person.  Remote hearings will be conducted by videoc=
+onference using Zoom. (Dept. 302 Zoom ID 160 409 7690; Passcode 516287.)  T=
+o appear remotely at the hearing, go to the court's website at sfsuperiorco=
+urt.org under "Online Services," navigate to "Tentative Rulings," and click=
+ on the appropriate link, or dial the corresponding phone number.
+=20
+Any party who contests a tentative ruling must send an email to contestdept=
+302tr@sftc.org with a copy to all other parties by 4pm stating, without arg=
+ument, the portion(s) of the tentative ruling that the party contests.  The=
+ subject line of the email shall include the line number, case name and cas=
+e number.  The text of the email shall include the name and contact informa=
+tion, including email address, of the attorney or party who will appear at =
+the hearing.  Counsel for the prevailing party is required to prepare a pro=
+posed order which repeats verbatim the substantive portion of the tentative=
+ ruling and must email it to contestdept302tr@sftc.org prior to the hearing=
+ even if the tentative ruling is not contested.=20
+=20
+The court no longer provides a court reporter in the Law &amp; Motion Depar=
+tment.  Parties may retain their own reporter, who may appear in the courtr=
+oom or remotely.  A retained reporter must be a California certified court =
+reporter (CSR), for only a CSR's transcript may be used in California court=
+s.  If a CSR is being retained, include in your email all of the following:=
+ their name, CSR and telephone numbers, and their individual work email add=
+ress.
+=3D(302/RCD)</td></tr><tr><td><p></p><p></p></td></tr></div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+<div id=3D"ui-datepicker-div" class=3D"ui-datepicker ui-widget ui-widget-co=
+ntent ui-helper-clearfix ui-corner-all"><div class=3D"ui-datepicker-header =
+ui-widget-header ui-helper-clearfix ui-corner-all"><a class=3D"ui-datepicke=
+r-prev ui-corner-all" data-handler=3D"prev" data-event=3D"click" title=3D"P=
+rev"><span class=3D"ui-icon ui-icon-circle-triangle-w">Prev</span></a><a cl=
+ass=3D"ui-datepicker-next ui-corner-all" data-handler=3D"next" data-event=
+=3D"click" title=3D"Next"><span class=3D"ui-icon ui-icon-circle-triangle-e"=
+>Next</span></a><div class=3D"ui-datepicker-title"><span class=3D"ui-datepi=
+cker-month">April</span>&nbsp;<span class=3D"ui-datepicker-year">2026</span=
+></div></div><table class=3D"ui-datepicker-calendar"><thead><tr><th scope=
+=3D"col" class=3D"ui-datepicker-week-end"><span title=3D"Sunday">Su</span><=
+/th><th scope=3D"col"><span title=3D"Monday">Mo</span></th><th scope=3D"col=
+"><span title=3D"Tuesday">Tu</span></th><th scope=3D"col"><span title=3D"We=
+dnesday">We</span></th><th scope=3D"col"><span title=3D"Thursday">Th</span>=
+</th><th scope=3D"col"><span title=3D"Friday">Fr</span></th><th scope=3D"co=
+l" class=3D"ui-datepicker-week-end"><span title=3D"Saturday">Sa</span></th>=
+</tr></thead><tbody><tr><td class=3D" ui-datepicker-week-end ui-datepicker-=
+other-month ui-datepicker-unselectable ui-state-disabled "><span class=3D"u=
+i-state-default">29</span></td><td class=3D" ui-datepicker-other-month " da=
+ta-handler=3D"selectDay" data-event=3D"click" data-month=3D"2" data-year=3D=
+"2026"><a class=3D"ui-state-default ui-priority-secondary" href=3D"https://=
+webapps.sftc.org/tr/tr.dll?RulingID=3D2&amp;SessionID=3DB2A6EA9BF654CD23378=
+4EF540E2BC102772B4B0C#">30</a></td><td class=3D" ui-datepicker-other-month =
+" data-handler=3D"selectDay" data-event=3D"click" data-month=3D"2" data-yea=
+r=3D"2026"><a class=3D"ui-state-default ui-priority-secondary" href=3D"http=
+s://webapps.sftc.org/tr/tr.dll?RulingID=3D2&amp;SessionID=3DB2A6EA9BF654CD2=
+33784EF540E2BC102772B4B0C#">31</a></td><td class=3D" " data-handler=3D"sele=
+ctDay" data-event=3D"click" data-month=3D"3" data-year=3D"2026"><a class=3D=
+"ui-state-default" href=3D"https://webapps.sftc.org/tr/tr.dll?RulingID=3D2&=
+amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C#">1</a></td><td cl=
+ass=3D" " data-handler=3D"selectDay" data-event=3D"click" data-month=3D"3" =
+data-year=3D"2026"><a class=3D"ui-state-default" href=3D"https://webapps.sf=
+tc.org/tr/tr.dll?RulingID=3D2&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC=
+102772B4B0C#">2</a></td><td class=3D" " data-handler=3D"selectDay" data-eve=
+nt=3D"click" data-month=3D"3" data-year=3D"2026"><a class=3D"ui-state-defau=
+lt" href=3D"https://webapps.sftc.org/tr/tr.dll?RulingID=3D2&amp;SessionID=
+=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C#">3</a></td><td class=3D" ui-da=
+tepicker-week-end ui-datepicker-unselectable ui-state-disabled "><span clas=
+s=3D"ui-state-default">4</span></td></tr><tr><td class=3D" ui-datepicker-we=
+ek-end ui-datepicker-unselectable ui-state-disabled "><span class=3D"ui-sta=
+te-default">5</span></td><td class=3D" " data-handler=3D"selectDay" data-ev=
+ent=3D"click" data-month=3D"3" data-year=3D"2026"><a class=3D"ui-state-defa=
+ult" href=3D"https://webapps.sftc.org/tr/tr.dll?RulingID=3D2&amp;SessionID=
+=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C#">6</a></td><td class=3D" " dat=
+a-handler=3D"selectDay" data-event=3D"click" data-month=3D"3" data-year=3D"=
+2026"><a class=3D"ui-state-default" href=3D"https://webapps.sftc.org/tr/tr.=
+dll?RulingID=3D2&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C#"=
+>7</a></td><td class=3D" " data-handler=3D"selectDay" data-event=3D"click" =
+data-month=3D"3" data-year=3D"2026"><a class=3D"ui-state-default" href=3D"h=
+ttps://webapps.sftc.org/tr/tr.dll?RulingID=3D2&amp;SessionID=3DB2A6EA9BF654=
+CD233784EF540E2BC102772B4B0C#">8</a></td><td class=3D" " data-handler=3D"se=
+lectDay" data-event=3D"click" data-month=3D"3" data-year=3D"2026"><a class=
+=3D"ui-state-default" href=3D"https://webapps.sftc.org/tr/tr.dll?RulingID=
+=3D2&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C#">9</a></td><=
+td class=3D" " data-handler=3D"selectDay" data-event=3D"click" data-month=
+=3D"3" data-year=3D"2026"><a class=3D"ui-state-default" href=3D"https://web=
+apps.sftc.org/tr/tr.dll?RulingID=3D2&amp;SessionID=3DB2A6EA9BF654CD233784EF=
+540E2BC102772B4B0C#">10</a></td><td class=3D" ui-datepicker-week-end ui-dat=
+epicker-unselectable ui-state-disabled "><span class=3D"ui-state-default">1=
+1</span></td></tr><tr><td class=3D" ui-datepicker-week-end ui-datepicker-un=
+selectable ui-state-disabled "><span class=3D"ui-state-default">12</span></=
+td><td class=3D" " data-handler=3D"selectDay" data-event=3D"click" data-mon=
+th=3D"3" data-year=3D"2026"><a class=3D"ui-state-default" href=3D"https://w=
+ebapps.sftc.org/tr/tr.dll?RulingID=3D2&amp;SessionID=3DB2A6EA9BF654CD233784=
+EF540E2BC102772B4B0C#">13</a></td><td class=3D" " data-handler=3D"selectDay=
+" data-event=3D"click" data-month=3D"3" data-year=3D"2026"><a class=3D"ui-s=
+tate-default" href=3D"https://webapps.sftc.org/tr/tr.dll?RulingID=3D2&amp;S=
+essionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C#">14</a></td><td class=
+=3D" " data-handler=3D"selectDay" data-event=3D"click" data-month=3D"3" dat=
+a-year=3D"2026"><a class=3D"ui-state-default" href=3D"https://webapps.sftc.=
+org/tr/tr.dll?RulingID=3D2&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102=
+772B4B0C#">15</a></td><td class=3D" " data-handler=3D"selectDay" data-event=
+=3D"click" data-month=3D"3" data-year=3D"2026"><a class=3D"ui-state-default=
+" href=3D"https://webapps.sftc.org/tr/tr.dll?RulingID=3D2&amp;SessionID=3DB=
+2A6EA9BF654CD233784EF540E2BC102772B4B0C#">16</a></td><td class=3D" " data-h=
+andler=3D"selectDay" data-event=3D"click" data-month=3D"3" data-year=3D"202=
+6"><a class=3D"ui-state-default" href=3D"https://webapps.sftc.org/tr/tr.dll=
+?RulingID=3D2&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C#">17=
+</a></td><td class=3D" ui-datepicker-week-end ui-datepicker-unselectable ui=
+-state-disabled "><span class=3D"ui-state-default">18</span></td></tr><tr><=
+td class=3D" ui-datepicker-week-end ui-datepicker-unselectable ui-state-dis=
+abled "><span class=3D"ui-state-default">19</span></td><td class=3D" " data=
+-handler=3D"selectDay" data-event=3D"click" data-month=3D"3" data-year=3D"2=
+026"><a class=3D"ui-state-default" href=3D"https://webapps.sftc.org/tr/tr.d=
+ll?RulingID=3D2&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C#">=
+20</a></td><td class=3D" " data-handler=3D"selectDay" data-event=3D"click" =
+data-month=3D"3" data-year=3D"2026"><a class=3D"ui-state-default" href=3D"h=
+ttps://webapps.sftc.org/tr/tr.dll?RulingID=3D2&amp;SessionID=3DB2A6EA9BF654=
+CD233784EF540E2BC102772B4B0C#">21</a></td><td class=3D" " data-handler=3D"s=
+electDay" data-event=3D"click" data-month=3D"3" data-year=3D"2026"><a class=
+=3D"ui-state-default" href=3D"https://webapps.sftc.org/tr/tr.dll?RulingID=
+=3D2&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C#">22</a></td>=
+<td class=3D" " data-handler=3D"selectDay" data-event=3D"click" data-month=
+=3D"3" data-year=3D"2026"><a class=3D"ui-state-default" href=3D"https://web=
+apps.sftc.org/tr/tr.dll?RulingID=3D2&amp;SessionID=3DB2A6EA9BF654CD233784EF=
+540E2BC102772B4B0C#">23</a></td><td class=3D" " data-handler=3D"selectDay" =
+data-event=3D"click" data-month=3D"3" data-year=3D"2026"><a class=3D"ui-sta=
+te-default" href=3D"https://webapps.sftc.org/tr/tr.dll?RulingID=3D2&amp;Ses=
+sionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C#">24</a></td><td class=3D=
+" ui-datepicker-week-end ui-datepicker-unselectable ui-state-disabled "><sp=
+an class=3D"ui-state-default">25</span></td></tr><tr><td class=3D" ui-datep=
+icker-week-end ui-datepicker-unselectable ui-state-disabled "><span class=
+=3D"ui-state-default">26</span></td><td class=3D" ui-datepicker-days-cell-o=
+ver  ui-datepicker-current-day ui-datepicker-today" data-handler=3D"selectD=
+ay" data-event=3D"click" data-month=3D"3" data-year=3D"2026"><a class=3D"ui=
+-state-default ui-state-highlight ui-state-active ui-state-hover" href=3D"h=
+ttps://webapps.sftc.org/tr/tr.dll?RulingID=3D2&amp;SessionID=3DB2A6EA9BF654=
+CD233784EF540E2BC102772B4B0C#">27</a></td><td class=3D" " data-handler=3D"s=
+electDay" data-event=3D"click" data-month=3D"3" data-year=3D"2026"><a class=
+=3D"ui-state-default" href=3D"https://webapps.sftc.org/tr/tr.dll?RulingID=
+=3D2&amp;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C#">28</a></td>=
+<td class=3D" " data-handler=3D"selectDay" data-event=3D"click" data-month=
+=3D"3" data-year=3D"2026"><a class=3D"ui-state-default" href=3D"https://web=
+apps.sftc.org/tr/tr.dll?RulingID=3D2&amp;SessionID=3DB2A6EA9BF654CD233784EF=
+540E2BC102772B4B0C#">29</a></td><td class=3D" " data-handler=3D"selectDay" =
+data-event=3D"click" data-month=3D"3" data-year=3D"2026"><a class=3D"ui-sta=
+te-default" href=3D"https://webapps.sftc.org/tr/tr.dll?RulingID=3D2&amp;Ses=
+sionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C#">30</a></td><td class=3D=
+" ui-datepicker-other-month " data-handler=3D"selectDay" data-event=3D"clic=
+k" data-month=3D"4" data-year=3D"2026"><a class=3D"ui-state-default ui-prio=
+rity-secondary" href=3D"https://webapps.sftc.org/tr/tr.dll?RulingID=3D2&amp=
+;SessionID=3DB2A6EA9BF654CD233784EF540E2BC102772B4B0C#">1</a></td><td class=
+=3D" ui-datepicker-week-end ui-datepicker-other-month ui-datepicker-unselec=
+table ui-state-disabled "><span class=3D"ui-state-default">2</span></td></t=
+r></tbody></table></div></body></html><!-- Page1 end -->
+------MultipartBoundary--h0ek0A3zIDCGtt1ZYc6nnXoPLcyjKuJxpqD7MTsMGd----
+Content-Type: image/gif
+Content-Transfer-Encoding: base64
+Content-Location: https://webapps.sftc.org/site/img/logo.gif
+
+R0lGODdhTwEpAPQAAMTExE5OTl1dXbW1tfDw8DExMeLi4np6etPT06enp4mJiWxsbJiYmD8/PyIi
+IgAAAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAA
+TwEpAAAF/yAkjmRpnmiqrmzrvnAsz3Rt33guL00jBMBGYQExCBpABCSBbBCNQIGg0EgxAoIFQ2lE
+BgwiQKBxKB6BgUKAIUqgf9R2cPFTjLpJEoGxGC8Adz9YdSsEClEHAAN6fH6AIgNNAiNiZGZRhCIM
+PYJjQyl7fU6PRTyDY2UnhoiKJqkkUGNKgV5cplJxI6GOgZgBdiIGnqQDQWBMqK4uAbMFDovCIgTO
+CSMJDgW6Ds8QBAEoCpMQCA1sItQl2SPO0A0Oqdfq0W0OVRAC77rsJOQKBOPuzJ3jtiAfCgNIwEAA
+8ElEv3/kHAgcgM2EuoGLCqY6sGgat3kmHgKUSGLfQiImEP9+CdPQmgNS+hxUK+Fx0Tpu3kaIjCgQ
+wj6Nd7a9DKoQAsWLlIaysAnBnU2mTkdQtCci6kIUTqQCa8qNBFWuNhlUNFqPktSyZJFa7ZYrzDao
+3I6mCKDU4Te2XwG8hYTWq9e4Y+E+VdV24d6qXQnAHEEXJoK7jB2IK7H2L1Ow3R5Ny3sYs9x1dOt+
+nWqi4GQXlREzJT0iKsoTdAUk+Fc09VerYu2xPs2aImTMIg442CoidmvAv/lt+0fikXDiEIyT/VrV
+MtnkwFE8LyEdMwDoDpeXgDmgoINZ1k1Udj1iO4nuUX179bbt0ei+0syjb5GaK5UeztxWTw8pULRN
+Aa9kV93/ce3IxJdkBJ6VDQE/FJVdQCUoMBZYBPRhIQnXUPdXTxBoqA5rfjHY4UqUdYUVSSSYeJwP
+w50Q4goCdOjAawyesF49YxxHooyqrWhhFfQVoMR91A2gI48s9LcWipidZgIA+Gzzim2WLUDFTGl1
+85uBoZG4ljvQ5TajMySSIJYDzKlXo5toUbkgYkLA2OJlcqbZV3zgQfBmnFeWgcA2H/anYFSToVmC
+mniySZk0dCnJZAmLHOrAhypI6SKVUXGqkzSQ+uSimOlhipaFpAlXAKFr4ZOchls+Ew+hzdWHgqwZ
+GqQXUqgyeKucfJbAa4wGASeqXnWZcEQP20Cn6I8djXDs/wi0CosNrLpUihSVCEE7J3+nqnaWgDYZ
+0GZ0cR4AGT48MkCcoiiqyxeS7iQ4pa6tFVAbN3Ql2GIAcRqAkoEwCaGQAfxq0lNUAROrAsJe+dtj
+pw4QfAdKALzyK6wuKqAQtao2q3CPEbemB12XmuXWqy0w7GA6My+xoamZBgAmCXQwp3NS7wCAwBWE
+omNCPN08NtNnzALAnNHB1aOEIQ3AtE/TuAbjjs4DuFuUcA1MrUDVPGOzBQKHFM0N1kHVrJ3U3Yxt
+tdsnIJRxAl2z+EdJ4xKwlwHCKQS1qTtHHXbcZN+0CNsGwNztfUjNHWiGXvjAcxPVkDOGAGCcEYSV
+Oh0ghf8AfGJJxS+EmuKDheSo8UNW43yuxCYBAHIA5iQMcEQWDKTeBCC0L6bLIUj0junuWmR9RQ9r
+lKA68Eg8QvvmK+juQ/KXj7GuHsSvwdzYApgztvYimDJGDzbdPsZMz5tgPe++jwF97Sr9rMtrwoyx
+kugKADJ+OToIoAAHSMACGvCACEygAhfIwAY68IEQjKAEJ0jBClrwghjMoAY3yMEOevCDIAyhCEdI
+whKa8IQoTCEKH8DCFrrwhTCMoQxnSMMa2vCGOMyhDnfIwx768IdADKIQh/gAFRrxiEhMohKXyMQm
+OvGJUIyiFKdIxSpa8YpYzCIGhzY6BcwGBQQYQDgEcID/L4KIAWhcVxoZYIChbUEVa5TeGueYxkWs
+kSkASKPwrsQAKWiBU3RcowrUNTo2Zi1GKBgAGg/pRjSKSlCBRKNRAvlI9+1xDwwolsPQWDhIjDF8
+fFpj4QgpBUOeQIyF1GQwEiA6AShAlWCkA1PUVY4P8cEmYZxCT/YgmUMCDkaPaYAvhfMKyYwOHz4Y
+neWEkbE4hfEdh6SEbJjTMWjqoSBaSKNwUpCABcxCXZLh5qYS2ZISPIZu19zRGrf5zKoBgJU7iqZX
+BHYH4exHF2LRGD8CcAD0IOB2A1AIAYhZgm5+UyxWekw/Q9eAgHJvoUVgQkNbQI5OjsMZpDiAGsNJ
+Aj2d/8ABsGgmVh4xtBJ4FAKp2AyhpiHPJRwgawxpgIX0shjQhQF0fZzLuI6WrBIwbAU0NZa1TnON
+yZ0FTikQwj3bQyImLNVmIHULTLBkgpxa43A8jWo3BCC8gZ7UBN4w6qEeoQAogWinX+0odzjqLJJ+
+6KRFEUtPODIxYaIAAWrI1WIsitJ1iSgM7gKWHraxPa2iIKggGqrzBGssuabARIeUpE4KAEuxJAUm
+GvXRZCur1ea9DZaCGqcVAMGwSkKgIEVJ6wgMe4+UGWuPIlCtCPChEACYlTJ81UTNEMsCMp4Atpy7
+Rm4zhk4IsPZKzTKWlSybgo415a+aoIs+3dSTI+Dosv8k8O2VrAVda7Whu92IEAoKYFM9gCEcKzjU
+VmRr3Ne6J7uwNe72wiOO6Z7yuBaBDG9XoKHcjmcS0yivcelTLPzqNQVSeBR24Bta2HIyY1UVyKHm
+6xDsYqu44aHwOIqjYbGocsLL0HBTIMNe1nI1OnQ7MQrYG1pFahi9KxAONZs1X5mt4ak8c45oTQDS
+xinJpEClcXatNNG7ioNh9HRYiXoKyRGIJb7IhYmN3/io5ILRyj7dKZ1EHFsRa2i1FDYxIOizMxV/
+VMRCELBiq6cUvTAAAHBOAGMp4YxtlMOXk1Hvih1SgB+vNshvjjNSEuyQBfg3ESMoSGTNQVAnC6Qg
+UB7/T3IZIpQ7JxrLUWYBFlDg2BawOLRgVoGYg9Fn9JiZxyKmSKTvoWapumUQPzAwiMyDjaWW8T1z
+1qpv4iTrV4+OLtkl7xG07NP7qFEgdAGTZO+B6d9iuZtC8TM+Vm2YVROap0n20W0fRZUSv3ay0o7v
+p/ernTnnqrbNanXuCmLXtglFKBY17DX02etqZ3fIkcExSt9d6RMsm8xKjpp/JQ3l8tTjH8IZeDA+
+rd2QQLgFio5xMcP87XP949QmFTG5/V2uo1Flv6C10akyqwfL8bhXKKk3yPEdngUXod1OtvKyi+CM
+2QlELEbN9AquYUdij9flXsltzVsg3BU0AEz8TAFC/yruEoJhvKMab3ZQst0ej0n9Do/0bLB6xanj
+ElTlzb52aNXYSb/Rc+YXVdKyD2VunRch62xguwsCN8gdV3VHKoAzWxxno6/cjpsCe7qG6CDuqFN7
+2krf8cZPgLZdKduiDAMPfunC3OaG3Up0uWdOTiDjR7VpKgqoLnsFwtvGn0A2sx29W9R8AKoXB8ME
+aPeuVYFVt6wr9jXdo3CaPe6rk9rPztrZ4k9gMZo4LvZzESx+6QP2+Ip9HA93dCJPinZ6eNTHOH6M
+hc/BKZb+PvuQydZv7asKfLRJzkTN2D3FsFQN+WOf0PGbKhtzECbfV+F8pqxPUX9W/Ld2PxTCFFdg
+Be8eRRG+5Aw7h2HPdXevMA2wdHDvMTkaQiKtwye8dHOn8gMASDr8IAQW2GlRswC40kctBSJjEHoM
+cDuGlhIHoAZpFHrRVAwZIwVIwCdMgA3vRxO14291xjmPVWeuxwg9gIIKIDKPAoT6phPYhEYHYIRR
+kzGABIT+EyDrglcqwABIWGx29lJuQl5w5g4F0CZGYGdxFxoQVQIkJ4RrgEY8gGjlcyALoBAIsIQp
+6IRqmEZtKDy2pU7y4kUyoBhwZloOAWclKA1w5jQ0QACFaEAGEIgDBGdJGECC+EGV1IiEGAOQyAKW
+iIhApXda9ImgmEQhAAA7
+
+------MultipartBoundary--h0ek0A3zIDCGtt1ZYc6nnXoPLcyjKuJxpqD7MTsMGd----
+Content-Type: text/css
+Content-Transfer-Encoding: quoted-printable
+Content-Location: https://webapps.sftc.org/site/css/blue.css
+
+@charset "utf-8";
+
+#containerHome { background-image: url("img/blue/bg-heroHome.jpg"); }
+
+#containerLanding { background-image: url("img/blue/bg-hero.gif"); }
+
+#leftNav ul li a { background-color: rgb(7, 56, 115); }
+
+#leftNav ul ul { background-color: rgb(93, 129, 172); }
+
+#leftNav ul ul li a { background-color: rgb(93, 129, 172); }
+
+#leftNav ul ul ul { background-color: rgb(190, 205, 222); }
+
+#leftNav ul ul ul li a { background-color: rgb(190, 205, 222); background-i=
+mage: url("img/blue/icon-leftnav.gif"); }
+
+#leftNav ul ul li a.selected, #leftNav ul ul ul li a.selected { background-=
+color: rgb(190, 205, 222); }
+
+#leftNav ul ul ul li a.selected { background-image: url("img/blue/icon-left=
+nav.gif"); }
+
+.txtWrap2 { background-image: url("img/blue/bg-bannerHome2.gif"); }
+
+ol#toc li.current { background-image: url("img/blue/bg-tabVerHero.png"); }
+
+#homeTabs { background-color: rgb(171, 186, 204); background-image: -webkit=
+-gradient(linear, 0% 0%, 0% 100%, from(rgb(125, 148, 175)), to(rgb(217, 225=
+, 233))); }
+
+#homeTabs div { background-color: rgb(189, 200, 214); background-image: -we=
+bkit-gradient(linear, 0% 0%, 0% 100%, from(rgb(132, 153, 178)), to(rgb(247,=
+ 248, 250))); }
+
+#homeTabs h2 { border-bottom: 1px solid rgb(113, 138, 170); background-colo=
+r: rgb(110, 136, 169); background-repeat: repeat-x; background-position: le=
+ft top; background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgb=
+(109, 135, 168)), to(rgb(112, 137, 170))); }
+
+#homeTabs ul { background-color: rgb(195, 205, 215); background-repeat: rep=
+eat-x; background-position: left top; background-image: -webkit-gradient(li=
+near, 0% 0%, 0% 100%, from(rgb(154, 173, 193)), to(rgb(236, 237, 237))); }
+
+#homeTabs ul li.selected { background-image: url("img/blue/bg-tabVerHero.pn=
+g"); }
+
+hometabs ul li ul { background-color: rgb(179, 191, 205); background-image:=
+ -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgb(145, 164, 186)), to(rgb(=
+213, 218, 224))); }
+
+.hero .banner { background-image: url("img/blue/bg-heroBanner.jpg"); }
+
+.bgDivision { background-image: url("img/blue/bg-heroDivisions.jpg"); }
+
+.bgOnline { background-image: url("img/blue/bg-heroOnline.jpg"); }
+
+.bgJury { background-image: url("img/blue/bg-heroJury.jpg"); }
+
+.hero .banner2 { background-image: url("img/blue/bg-hero2.jpg"); }
+
+.formTable .headerSortUp, .formTable .headerSortDown { background-color: rg=
+b(147, 167, 192); }
+
+#mainMenu > li { background-color: rgb(238, 240, 242); border-color: rgb(23=
+8, 240, 242); }
+
+#mainMenu a { color: rgb(7, 56, 115); }
+
+#mainMenu li.selected { background-color: rgb(127, 149, 175); border-color:=
+ rgb(127, 149, 175); }
+
+#mainMenu li:hover, #mainMenu li.hover { background-color: rgb(7, 56, 115);=
+ border-color: rgb(7, 56, 115); }
+
+#mainMenu li:hover span, #mainMenu li.hover span { color: rgb(238, 240, 242=
+); }
+
+h2.tab span.not-selected { background-image: url("img/blue/bg-tabRoundrLeft=
+.gif"); }
+
+#mainMenu li ul { background-color: rgb(99, 142, 193); }
+
+#mainMenu li ul li { background-color: rgb(99, 142, 193); }
+
+#mainMenu li ul li + li { background-image: url("img/blue/menu_sep.gif"); }
+
+h2.tab span.not-selected .inner { background-image: url("img/blue/bg-tabRou=
+ndRight.gif"); }
+
+h2.tab span.selected { background-image: url("img/blue/bg-tabRoundOverLeft.=
+gif"); }
+
+h2.tab span.selected .inner { background-image: url("img/blue/bg-tabRoundOv=
+erRight.gif"); }
+
+#mainMenu li ul li a { background-color: rgb(99, 142, 193); }
+
+#mainMenu li ul li a:hover { background-color: rgb(7, 56, 115); }
+
+th.textSmall { background-color: rgb(7, 56, 115); }
+
+.odd td { color: rgb(7, 56, 115); background-color: rgb(238, 240, 242); }
+
+.even td { background-color: rgb(190, 205, 222); }
+
+.textSmall td { border-color: rgb(7, 56, 115); }
+
+th.text { color: rgb(255, 255, 255); background-color: rgb(127, 149, 175); =
+border-color: rgb(127, 149, 175); }
+
+td.tableText { color: rgb(7, 56, 115); background-color: rgb(238, 240, 242)=
+; border-color: rgb(127, 149, 175); }
+------MultipartBoundary--h0ek0A3zIDCGtt1ZYc6nnXoPLcyjKuJxpqD7MTsMGd----
+Content-Type: image/webp
+Content-Transfer-Encoding: base64
+Content-Location: https://webapps.sftc.org/site/css/img/common/bg-footer.gif
+
+UklGRoQJAABXRUJQVlA4IHgJAAAwEwGdASoABH4EPkkkj0aioiEhIAhIUAkJaW7hdr6gJPdBxACf
+FnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06
+dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp0
+6dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp
+06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnT
+p06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOn
+Tp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dO
+nTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06d
+OnTp06dOnTp06dOnTp06dOnTp06gd9Q4cOHDhw4cOHDhw4cOHDhw4cOHDhw4cOHOWHJvkGuj2LOn
+Tp06dOnTp06dOnTp06dOnTp07B7icQIECBAgQIECBAgQIECBAgQIECBAgQIECAAM1OJH9zfINdHs
+WdOnTp06dOnTp06dOnTp06dOnXgxFFqjm+Qa6PYs6dOnTp06dOnTp06dOnTp06dOoKJhyb5Bro9i
+zp06dOnTp06dOnTp06dOnTp06dHqZo+er72fN9Q4cOHDhw4cOHDhw4cOHDhw4cOHDhw4cRodGBc0
+yZMmTJkyZMmTJkyZMmTJkyZMmTJkyZMmTOvuVEuj2LOnTp06dOnTp06dOnTp06dOnTp06dOuXH3E
+4gQIECBAgQIECBAgQIECBAgQIECBAgQIECgfi9/RsTJkyZMmTJkyZMmTJkyZMmTJkyZMmTJkyehn
+FWn7FnTp06dOnTp06dOnTp06dOnTp06dOnTp1y49jlzI9izp06dOnTp06dOnTp06dOnTp06dOnTp
++7OKtP2LOnTp06dOnTp06dOnTp06dOnTp06dOnTrlx7HLmR7FnTp06dOnTp06dOnTp06dOnTp06d
+OnT9tangC/o2JkyZMmTJkyZMmTJkyZMmTJkyZMmTJkyZPQzijnSNsFdHsWdOnTp06dOnTp06dOnT
+p06dOnTp06dcuPY5cyPYs6dOnTp06dOnTp06dOnTp06dOnTp06PPjkUTDs0zbvqHDhw4cOHDhw4c
+OHDhw4cOHDhw4cOHDhy+bH5xPUOHDhw4cOHDhw4cOHDhw4cOHDhw4cOHDiIpgdicwdOnTp06dOnT
+p06dOnTp06dOnTp06dOnTp+7OKrVnLub5Bro9izp06dOnTp06dOnTp06dOnTp0/dnFVqzl3N8g10
+exZ06dOnTp06dOnTp06dOnTp06PPjpsflg2U6dOnTp06dOnTp06dOnTp06dOnTp06dOnXLj2Ntx9
+Q4cOHDhw4cOHDhw4cOHDhw4cOHDhw4cOIh8DA+ssGynTp06dOnTp06dOnTp06dOnTp06dOnTp065
+QeGgIc6RrpnLub5Bro9izp06dOnTp06dOnTp06dOnTp0efHTY/LBsp06dOnTp06dOnTp06dOnTp0
+6dOnTp06dOuUHhoCVqzl3N8g10exZ06dOnTp06dOnTp06dOnTp06ftrU8AXl/HINdHsWdOnTp06d
+OnTp06dOnTp06dOnTp1yg8NAQ5dpIy4+ocOHDhw4cOHDhw4cOHDhw4cOHDhw4cOHERTA7E5g6dOn
+Tp06dOnTp06dOnTp06dOnTp06dOnT92cVWrOXc3yDXR7FnTp06dOnTp06dOnTp06dOnTp+7OKrVn
+Lub5Bro9izp06dOnTp06dOnTp06dOnTp0/dnFVqzl3N8g10exZ06dOnTp06dOnTp06dOnTp06ftr
+U8AXl/HINdHsWdOnTp06dOnTp06dOnTp06dOnTpvywbHzVW9+vMHTp06dOnTp06dOnTp06dOnTp0
+6dOnTp06OxLwMD6ywbKdOnTp06dOnTp06dOnTp06dOnTp06dOnTflg2PywbKdOnTp06dOnTp06dO
+nTp06dOnTp06dOnTflg2PywbKdOnTp06dOnTp06dOnTp06dOnTp06dOnTflg2PywbKdOnTp06dOn
+Tp06dOnTp06dOnTp06dOnTflg2PywbKdOnTp06dOnTp06dOnTp06dOnTp06dOnTflg2PywbKdOnT
+p06dOnTp06dOnTp06dOnTp06dOnTflg2PmtGItNlOnTp06dOnTp06dOnTp06dOnTp06dOnTpvywb
+H5YNlOnTp06dOnTp06dOnTp06dOnTp06dOnTpvkNxX4veX8cg10exZ06dOnTp06dOnTp06dOnTp0
+6dOm+nI0wOxOYOnTp06dOnTp06dOnTp06dOnTp06dOnTp0cwITY/LBsp06dOnTp06dOnTp06dOnT
+p06dOnTp06dN9ORpgdicwdOnTp06dOnTp06dOnTp06dOnTp06dOnTo7E5gdicwdOnTp06dOnTp06
+dOnTp06dOnTp06dOnTo7E5gdicwdOnTp06dOnTp06dOnTp06dOnTp06dOnTo7E5gdicwdOnTp06d
+OnTp06dOnTp06dOnTp06dOnTo7E5gdicwdOnTp06dOnTp06dOnTp06dOnTp06dOnTo7E5gdicwdO
+nTp06dOnTp06dOnTp06dOnTp06dOnTo7E5gdicwdOnTp06dOnTp06dOnTp06dOnTp06dOnTo7EvA
+wPrLBsp06dOnTp06dOnTp06dOnTp06dOnTp06dN+WDY/LBsp06dOnTp06dOnTp06dOnTp06dOnTp
+06dN+WDVgAD+/+JYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATGJADa0CADIyQEBGaoncAyDQiAhX6e
+AEr/IDEKC671YAZEA1/zWCAAAEBFAHGOJADFgYAONIAAAAAA5tUIAAACNAJsrAAAAKsUA3NGHAAA
+AAABvmKNAAAAAAIEBgmnIAUAYeAAAAAAGfAAIWlBAAADbApADJyK1zgCUPwAASzCASMAQwAdEAx4
+BWACv5AAAB4HTBQA7ABTwCZmQAsoBRQnavwA9/jFWucAGcAIKAN2AXigCG0CAAAAAAA=
+
+------MultipartBoundary--h0ek0A3zIDCGtt1ZYc6nnXoPLcyjKuJxpqD7MTsMGd----
+Content-Type: image/webp
+Content-Transfer-Encoding: base64
+Content-Location: https://webapps.sftc.org/site/css/img/common/bg-ContactUs.gif
+
+UklGRrAAAABXRUJQVlA4IKQAAAAQBgCdASpVAC0APkkgjUQioiGWNAAoBISxgGlzAL8z0IH4qs3/
+AhUVktl4jCHdo2023spqpcs1vngA/vHcj5Z+f0Xepz4VjsWbjGAAAXruTNAz5RWQGi3/iXn4q7C1
+H0Bmv3nOzEgP1+WQdTvY8Uub4wgGjkDPAKrQOX4fCqzBtGoEIkHP0if7FF8+tsehtP1X0jQdqZ3H
+iDzXIiSbW/qfhrVgAA==
+
+------MultipartBoundary--h0ek0A3zIDCGtt1ZYc6nnXoPLcyjKuJxpqD7MTsMGd----
+Content-Type: image/webp
+Content-Transfer-Encoding: base64
+Content-Location: https://webapps.sftc.org/site/css/img/common/bg-body.gif
+
+UklGRnAAAABXRUJQVlA4IGQAAABwBwCdASoABAMAPkkkkUYioiGhIZVYIFAJCWlu4XHQAEipj0bh
+YoAqyLbTLe46wAVZFtplvcdYAKsi20y3uOq6CSavQAD+/3sgeyZUT+lAAAEyWnivwfllPDNuscnu
+JrR2AAAA
+
+------MultipartBoundary--h0ek0A3zIDCGtt1ZYc6nnXoPLcyjKuJxpqD7MTsMGd----
+Content-Type: text/css
+Content-Transfer-Encoding: quoted-printable
+Content-Location: https://webapps.sftc.org/site/css/styles.css
+
+@charset "utf-8";
+
+div, dl, dt, dd, ol, li, pre, hr, form, fieldset, input, th, td { margin: 0=
+px; padding: 0px; }
+
+address, caption, cite, code, dfn, th, var { font-style: normal; font-weigh=
+t: normal; }
+
+table { border-collapse: collapse; border-spacing: 0px; font-size: 100%; }
+
+td, th { padding: 4px; }
+
+select, input, textarea { font: 99% verdana, geneva, sans-serif; }
+
+fieldset, img { border: 0px; }
+
+img { vertical-align: middle; }
+
+select, .inputStyle { border: 1px solid rgb(127, 157, 185); background: rgb=
+(255, 255, 255); padding: 0.1em; margin: 0.1em 0px 0.1em 0.2em; }
+
+legend { display: none; }
+
+.skipNavigation { position: absolute; left: 0px; top: -500px; overflow: hid=
+den; }
+
+select { background: rgb(255, 255, 255); }
+
+.floatLeft { float: left; }
+
+.floatRight { float: right; }
+
+.png { }
+
+.cleaner { clear: both; }
+
+.clear5, .tabClear { clear: both; height: 5px; }
+
+.clear10 { clear: both; height: 10px; }
+
+body { margin: 0px; font-size: 0.75em; line-height: 150%; font-family: Aria=
+l, Helvetica, sans-serif; color: rgb(85, 85, 85); background: url("img/comm=
+on/bg-body.gif") center center repeat-y; }
+
+h1 { margin: 0px 0px 10px; padding: 0px; color: rgb(3, 26, 54); font-size: =
+20px; font-family: "Times New Roman", Times, serif; font-weight: normal; te=
+xt-transform: uppercase; }
+
+h2 { margin: 0px 0px 6px; padding: 0px; color: rgb(3, 26, 54); font-size: 1=
+7px; font-family: "Times New Roman", Times, serif; }
+
+h3 { margin: 4px 0px 8px; padding: 8px 0px; border-bottom: 1px solid rgb(20=
+4, 204, 204); border-top: 1px solid rgb(204, 204, 204); color: rgb(68, 68, =
+68); font-size: 14px; font-family: "Times New Roman", Times, serif; font-we=
+ight: bold; text-transform: uppercase; }
+
+h4 { margin: 0px; padding: 8px 0px 10px; color: rgb(68, 68, 68); font-size:=
+ 14px; font-family: "Times New Roman", Times, serif; font-weight: bold; }
+
+h5 { margin: 12px 0px 0px; padding: 0px; color: rgb(68, 68, 68); font-size:=
+ 12px; font-weight: bold; }
+
+h6 { margin: 0px; padding: 0px; color: rgb(85, 85, 85); font-size: 12px; fo=
+nt-weight: bold; }
+
+p { margin: 0px; padding: 0px 0px 10px; }
+
+ul { margin: 0px 0px 8px; padding: 0px; list-style-type: none; }
+
+ul li { margin: 0px 0px 4px; padding: 0px; }
+
+li ul { margin-left: 25px; }
+
+ol li { margin: 0px 0px 4px 10px; }
+
+p + h3, ul + h3, ol + h3, h1 + h3, h2 + h3, h3 + h3, h4 + h3, h5 + h3 { mar=
+gin-top: 15px; }
+
+h5 + h6 { margin-top: 15px; }
+
+table + h3 { margin-top: 30px; }
+
+th { text-align: left; font-weight: bold; }
+
+table + p { margin-top: 8px; }
+
+td { vertical-align: middle; }
+
+blockquote { margin: 0px 20px; }
+
+label { cursor: pointer; }
+
+.contentCenter h3 + .simpleModuleBlue3 { margin-top: -7px; }
+
+.boxtable { border-left: 1px solid rgb(0, 0, 0); border-top: 1px solid rgb(=
+0, 0, 0); width: 510px; margin: 10px auto; overflow: hidden; }
+
+.boxtable div { padding: 5px; border-right: 1px solid rgb(0, 0, 0); border-=
+bottom: 1px solid rgb(0, 0, 0); float: left; width: 159px; }
+
+.nobreak { white-space: nowrap; }
+
+a { color: rgb(7, 56, 115); text-decoration: none; outline: none; }
+
+a:hover { text-decoration: underline; }
+
+p a { text-decoration: underline; }
+
+p a:hover { text-decoration: none; }
+
+.twoColumns a, .threeColumns a, .threeColumnslast a { text-decoration: none=
+; }
+
+.twoColumns a:hover, .threeColumns a:hover, .threeColumnslast a:hover { tex=
+t-decoration: underline; }
+
+#headerWrap { width: 960px; height: 115px; position: relative; }
+
+#headerWrap .logo { position: absolute; top: 49px; left: 0px; }
+
+#headerWrap .contact { width: 85px; height: 45px; background: url("img/comm=
+on/bg-ContactUs.gif") no-repeat; position: absolute; top: 0px; right: 0px; =
+text-align: center; line-height: 35px; }
+
+#headerWrap .date { width: 70px; font-size: 9px; text-align: right; positio=
+n: absolute; top: 49px; right: 0px; }
+
+#headerWrap .contact a { font-size: 12px; font-weight: bold; text-decoratio=
+n: none; color: rgb(255, 255, 255); }
+
+#headerWrap .contact a:hover { text-decoration: none; }
+
+#headerWrap .toolbar { width: 875px; height: 26px; top: 0px; left: 0px; tex=
+t-align: right; font-size: 11px; line-height: 25px; background: rgb(7, 56, =
+115); position: absolute; color: rgb(255, 255, 255); }
+
+#headerWrap .toolbar img { margin-bottom: 4px; margin-left: 5px; }
+
+#headerWrap .toolbar a.on { font-weight: bold; }
+
+#headerWrap .toolbar a.feedback { background: url("img/common/icon-feedback=
+.gif") left center no-repeat; padding-left: 20px; margin: 0px 7px 0px 0px; =
+color: rgb(255, 255, 255); }
+
+#headerWrap .toolbar a.txttoolbar { margin: 0px 13px; color: rgb(255, 255, =
+255); }
+
+#headerWrap .searchWrap { background: url("img/common/bg-search.gif") no-re=
+peat; width: 261px; height: 33px; position: absolute; top: 65px; right: 0px=
+; }
+
+form#search, form#search-theme-form { position: relative; }
+
+div#searchfieldWrap, div#edit-search-theme-form-1-wrapper { position: relat=
+ive; float: left; margin: 8px 3px 0px 10px; }
+
+* + html div#searchfieldWrap { position: relative; float: left; margin: 7px=
+ 3px 0px 10px; }
+
+input#searchfield, input#edit-search-theme-form-1 { width: 205px; border: 0=
+px; margin: 0px 0px 0px 5px; background: none; font-size: 11px; color: rgb(=
+153, 153, 153); }
+
+#search div#btngoWrap, #search input#edit-submit, #search input#edit-submit=
+-1, #search input#edit-submit-2 { position: relative; float: left; margin: =
+7px 0px 0px 2px; width: 28px; height: 19px; }
+
+#search input#btngo, #search input#edit-submit, #search input#edit-submit-1=
+, #search input#edit-submit-2 { width: 28px; height: 19px; }
+
+#search input#edit-submit, #search input#edit-submit-1, #search input#edit-=
+submit-2 { width: 28px; height: 19px; background: url("img/common/btn-go.gi=
+f") right top no-repeat; border-width: medium; border-style: none; border-c=
+olor: currentcolor; border-image: initial; text-indent: -9999px; text-trans=
+form: capitalize; margin-right: -5px; }
+
+#search input#edit-submit:hover, input#edit-submit.hover, input#edit-submit=
+-2:hover, input#edit-submit-2.hover { cursor: pointer; }
+
+label.overlabel, #edit-search-theme-form-1-wrapper label { position: absolu=
+te; top: 0px; left: 0px; color: rgb(0, 0, 0); font-size: 11px; text-indent:=
+ -1000px; display: none; }
+
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  #headerWrap .searchWrap input.search { border: 0px; width: 205px; margin-=
+left: 10px; padding: 20px 5px 0px; font-size: 11px; color: rgb(153, 153, 15=
+3); background: none; float: left; }
+}
+
+a.normal { font-size: 8px; background: rgb(255, 255, 255); border: 1px soli=
+d rgb(190, 192, 194); padding: 5px 6px 1px; margin-left: 5px; text-decorati=
+on: underline; }
+
+a.medium { font-size: 10px; background: rgb(255, 255, 255); border: 1px sol=
+id rgb(190, 192, 194); padding: 3px 5px 0px; margin-left: 5px; }
+
+a.large { font-size: 12px; font-weight: bold; background: rgb(255, 255, 255=
+); border: 1px solid rgb(190, 192, 194); padding: 1px 5px 0px; margin-left:=
+ 5px; }
+
+#mainContainer { width: 959px; margin: 0px auto; clear: both; background: u=
+rl("img/common/bg-footer.gif") center top no-repeat; padding: 0px 33px 0px =
+32px; }
+
+#containerHome { width: 959px; clear: both; position: relative; background-=
+repeat: no-repeat; background-position: left top; }
+
+#containerLanding { width: 959px; clear: both; position: relative; backgrou=
+nd-repeat: no-repeat; background-position: left top; }
+
+.homepage #mainContentWrap .contentCenter { padding-right: 20px; width: 435=
+px; }
+
+.homepage h3 { border-top-width: medium; border-top-style: none; border-top=
+-color: currentcolor; margin-top: 0px; }
+
+.homepage p + h3, .homepage ul + h3 { border-top: 1px solid rgb(204, 204, 2=
+04); margin-top: 4px; }
+
+.subMenu { width: 960px; clear: both; position: relative; }
+
+.subMenu p { color: rgb(0, 0, 0); padding: 15px 0px 18px 8px; line-height: =
+100%; }
+
+.subMenu a, .subMenu a:visited { color: rgb(255, 255, 255); text-decoration=
+: none; padding: 0px 7px; }
+
+.subMenu a:hover { color: rgb(255, 255, 255); text-decoration: underline; }
+
+.subMenu .selected { font-weight: bold; padding: 0px 7px; }
+
+.subMenu p .this_page a { font-weight: bold; color: rgb(0, 0, 0); }
+
+.subMenu p .this_page a:hover { text-decoration: none; cursor: default; }
+
+#leftNav { width: 212px; margin: 0px; padding: 0px 0px 12px; }
+
+#leftNav ul { margin: 0px; }
+
+#leftNav ul li { display: inline; }
+
+#leftNav ul li a { display: block; width: 212px; height: 36px; font-size: 1=
+5px; font-weight: bold; line-height: 36px; color: rgb(255, 255, 255); text-=
+decoration: none; text-indent: 11px; text-transform: uppercase; font-family=
+: "Times New Roman", Times, serif; }
+
+#leftNav ul li a:hover { text-decoration: underline; }
+
+#leftNav ul ul { padding-bottom: 6px; }
+
+#leftNav ul ul li a { display: block; width: 212px; height: 29px; font-size=
+: 12px; font-weight: bold; line-height: 29px; color: rgb(255, 255, 255); te=
+xt-decoration: none; text-indent: 11px; text-transform: none; background-po=
+sition: center bottom; background-repeat: no-repeat; font-family: Arial, He=
+lvetica, sans-serif; }
+
+#leftNav ul ul li a.last { background: none; }
+
+#leftNav ul ul li a.last:hover { text-decoration: underline; }
+
+#leftNav ul ul li a.selected { display: block; width: 212px; height: 29px; =
+font-size: 12px; font-weight: bold; line-height: 29px; color: rgb(0, 0, 0);=
+ text-decoration: none; text-indent: 11px; }
+
+#leftNav ul ul li a.selected:hover, #leftNav ul ul ul li a.selected:hover {=
+ text-decoration: none; }
+
+#leftNav ul ul ul { padding-bottom: 11px; display: none; }
+
+#leftNav ul ul ul li a { display: block; width: 178px; height: 100%; font-s=
+ize: 12px; font-weight: normal; line-height: 22px; color: rgb(7, 56, 115); =
+text-decoration: none; text-indent: 0px; background-position: 22px 8px; bac=
+kground-repeat: no-repeat; padding-left: 34px; font-family: Arial, Helvetic=
+a, sans-serif; }
+
+#leftNav ul ul ul li a.selected { display: block; width: 178px; height: 100=
+%; font-size: 12px; font-weight: bold; line-height: 22px; color: rgb(0, 0, =
+0); text-decoration: none; text-indent: 0px; padding-left: 34px; background=
+-position: 22px center; background-repeat: no-repeat; font-family: Arial, H=
+elvetica, sans-serif; }
+
+#bannerWrap { width: 960px; background: url("img/common/bg-cleanerbold.gif"=
+) 15px bottom no-repeat; padding-bottom: 20px; clear: both; position: relat=
+ive; }
+
+#bannerWrap .contentLeft { float: left; width: 230px; margin: 18px 0px 0px =
+15px; }
+
+.contentLeft img { margin-bottom: 6px; }
+
+.contentLeft img.btline { padding-bottom: 6px; border-bottom: 1px solid rgb=
+(221, 226, 234); }
+
+.contentLeft ul { margin: 0px; font-weight: bold; }
+
+#containerHome #bannerWrap .contentLeft { width: 212px; padding-right: 18px=
+; }
+
+#containerHome #bannerWrap .contentLeft ul li { margin-bottom: 0px; }
+
+#containerHome #bannerWrap .contentLeft h3 { border-top: 1px solid rgb(221,=
+ 226, 234); border-bottom-width: medium; border-bottom-style: none; border-=
+bottom-color: currentcolor; padding: 6px 0px 0px; margin: 0px; }
+
+.txtWrap { float: left; width: 432px; padding-top: 35px; padding-left: 258p=
+x; }
+
+.txtWrap p { font-size: 14px; color: rgb(102, 102, 102); }
+
+.txtWrap2 { float: left; width: 454px; margin: 17px 0px 0px 240px; height: =
+200px; background-repeat: no-repeat; }
+
+.txtWrap2 .title { font-size: 14px; font-weight: bold; color: rgb(255, 255,=
+ 255); text-transform: uppercase; font-family: "Times New Roman", Times, se=
+rif; line-height: 33px; padding-left: 14px; }
+
+.txtWrap2 .left { float: left; width: 125px; }
+
+.txtWrap2 .right { float: left; width: 300px; margin: 10px 0px 0px 10px; }
+
+.txtWrap2 .right p { font-size: 13px; line-height: 20px; }
+
+ol#toc { margin: 0px 0px 0px 2px; padding: 0px; list-style: none; }
+
+ol#toc li { float: left; line-height: 14px; margin: 0px; }
+
+ol#toc li a { width: 115px; display: block; line-height: 25px; text-indent:=
+ 22px; background: url("img/common/bg-ulSquare.gif") 11px center no-repeat;=
+ }
+
+ol#toc li a:hover { text-decoration: underline; }
+
+ol#toc li.current { }
+
+ol#toc li.current a { font-weight: bold; color: rgb(0, 0, 0); background: u=
+rl("img/common/bg-li_hero2Selected.gif") 11px center no-repeat; }
+
+div.content { width: 295px; height: 170px; float: left; position: relative;=
+ clear: both; }
+
+div.content .more { position: absolute; bottom: 10px; right: 0px; }
+
+ol#toc2 { margin: 0px; padding: 0px; list-style: none; }
+
+* + html ol#toc2 { width: 132px; margin: 0px; padding: 0px; list-style: non=
+e; }
+
+ol#toc2 li { float: left; margin-left: 0px; }
+
+ol#toc2 li a { width: 132px; display: block; line-height: 24px; text-indent=
+: 0px; background: url("img/common/bg-liVerTab2.gif") left bottom no-repeat=
+; }
+
+ol#toc2 li a.last { background: none; }
+
+ol#toc2 li a:hover { text-decoration: underline; }
+
+ol#toc2 li.current { background: rgb(234, 234, 234); }
+
+ol#toc2 li.current a { font-weight: bold; color: rgb(0, 0, 0); }
+
+div.content2 { width: 284px; height: 228px; float: left; clear: both; posit=
+ion: relative; }
+
+div.content2 .more { position: absolute; bottom: 10px; right: 5px; }
+
+#homeTabs { padding: 1px; margin-top: 1px; background-repeat: repeat-x; bac=
+kground-position: left top; }
+
+#homeTabs div { width: 450px; min-height: 206px; padding: 1px; position: re=
+lative; background-repeat: repeat-x; background-position: left top; }
+
+#homeTabs h2 { width: 438px; height: 27px; padding: 4px 0px 0px 12px; margi=
+n: 0px; background-repeat: repeat-x; background-position: left top; color: =
+rgb(255, 255, 255); font-family: "Times New Roman", Times, serif; font-size=
+: 14px; font-weight: bold; text-transform: uppercase; }
+
+#homeTabs ul { margin: 0px; padding: 0px; list-style: none; position: relat=
+ive; overflow: hidden; background-repeat: repeat-x; background-position: le=
+ft top; }
+
+#homeTabs ul li { line-height: 14px; margin: 0px; }
+
+#homeTabs ul li span { width: 115px; display: block; line-height: 25px; tex=
+t-indent: 22px; background: url("img/common/bg-ulSquare.gif") 11px center n=
+o-repeat; }
+
+#homeTabs ul li span:hover, #homeTabs ul li span.hover { text-decoration: u=
+nderline; cursor: pointer; }
+
+#homeTabs ul li.selected { background-repeat: no-repeat; }
+
+#homeTabs ul li.selected span { font-weight: bold; color: rgb(0, 0, 0); bac=
+kground: url("img/common/bg-li_hero2Selected.gif") 11px center no-repeat; }
+
+#homeTabs ul li ul { display: none; position: absolute; left: 115px; top: 0=
+px; padding: 10px 0px 0px 18px; width: 317px; height: 100%; zoom: 1; backgr=
+ound-repeat: repeat-x; background-position: left top; }
+
+#homeTabs ul li ul li { font-size: 110%; line-height: 150%; background: non=
+e; }
+
+#homeTabs ul li.selected ul { display: block; }
+
+#homeTabs .more { position: absolute; bottom: 15px; right: 15px; font-size:=
+ 100%; }
+
+#mainContentWrap { float: left; width: 960px; position: relative; clear: bo=
+th; padding-bottom: 55px; min-height: 100px; }
+
+.bgThreeColumn { background: url("img/common/bg-3Col.gif") center center re=
+peat-y; position: relative; }
+
+.bgTwoColumn { background: url("img/common/bg-2Col.gif") 243px 0px repeat-y=
+; position: relative; margin-top: 10px; }
+
+#headerWrap .toolbar { width: 875px; height: 26px; top: 0px; left: 0px; tex=
+t-align: right; font-size: 11px; line-height: 25px; background: rgb(7, 56, =
+115); position: absolute; color: rgb(255, 255, 255); }
+
+#mainContentWrap h3.externalLink { margin: 0px 0px 12px; padding: 0px 20px =
+12px 0px; display: block; border-bottom: 1px solid rgb(204, 204, 204); back=
+ground: url("img/common/icon-externalLinks.gif") right center no-repeat; }
+
+#mainContentWrap ol { margin: 0px 0px 12px; }
+
+#mainContentWrap form { margin: 0px 0px 12px; }
+
+#mainContentWrap .txtsmall { margin: 0px; padding: 0px; font-size: 9px; lin=
+e-height: 14px; }
+
+#mainContentWrap .contentColumn { float: left; width: 212px; padding: 0px 1=
+5px; }
+
+#mainContentWrap .contentCenter { float: left; width: 455px; padding: 0px; =
+}
+
+#mainContentWrap .contentCenterWrap { float: left; width: 698px; padding: 0=
+px 0px 0px 20px; }
+
+#mainContentWrap .contentCenterWide { float: left; width: 680px; }
+
+.contentCenterWide .subContent { float: left; width: 660px; margin: 0px 0px=
+ 0px 15px; }
+
+#mainContentWrap .tabWrap { float: left; width: 676px; margin: 10px 0px 0px=
+; padding: 20px 0px 12px; background: rgb(242, 242, 242); }
+
+.contentColumn select { margin-bottom: 8px; border-bottom: 1px solid rgb(19=
+5, 195, 195); width: 212px; color: rgb(85, 85, 85); font-size: 12px; backgr=
+ound: url("img/common/bg-select.gif") left top no-repeat; }
+
+.contentCenter select { margin-bottom: 8px; border-bottom: 1px solid rgb(19=
+5, 195, 195); width: 300px; color: rgb(85, 85, 85); font-size: 12px; backgr=
+ound: url("img/common/bg-select.gif") left top no-repeat; }
+
+.hero { float: left; width: 680px; background: url("img/common/bg-cleanerbo=
+ld.gif") left bottom no-repeat; margin: 8px 0px 4px; padding: 0px 0px 10px;=
+ min-height: 60px; }
+
+.hero h1 { font-size: 20px; color: rgb(0, 0, 0); line-height: 20px; text-tr=
+ansform: uppercase; margin: 0px 0px 4px; }
+
+.hero h1 + p { margin-top: 8px; }
+
+.hero a { text-decoration: underline; }
+
+.hero a:hover { text-decoration: none; color: rgb(93, 129, 172); }
+
+.hero p, .hero h5 { font-size: 14px; }
+
+.hero h4 a { text-decoration: none; }
+
+.hero h4 a:hover { text-decoration: underline; }
+
+.hero .banner { float: left; width: 679px; height: 127px; margin: 0px; padd=
+ing: 4px 0px 0px; position: relative; background-repeat: no-repeat; }
+
+.banner img { padding: 2px; margin-top: -4px; }
+
+.bgDivision { background-position: left top; background-repeat: no-repeat; =
+}
+
+.bgOnline { background-position: left top; background-repeat: no-repeat; }
+
+.bgJury { background-position: left top; background-repeat: no-repeat; }
+
+.hero .banner2 { float: left; width: 679px; height: 220px; margin: 12px 0px=
+ 0px; position: relative; }
+
+.banner2 img { padding: 2px; }
+
+.banner2 .wrap1 { float: left; width: 390px; position: absolute; top: 140px=
+; left: 20px; font-family: "Times New Roman", Times, serif; font-size: 16px=
+; color: rgb(255, 255, 255); }
+
+.banner2 .wrap2 { float: left; width: 215px; height: 175px; position: absol=
+ute; top: 0px; right: 15px; font-size: 14px; color: rgb(102, 102, 102); pad=
+ding-bottom: 30px; }
+
+.separator { border-bottom: 1px solid rgb(204, 204, 204); padding-bottom: 1=
+5px; }
+
+.banner2 .iconHero { width: 70px; font-size: 12px; line-height: 12px; backg=
+round: url("img/common/icon-pdf3.gif") left top no-repeat; padding-left: 30=
+px; position: absolute; top: 165px; left: 0px; }
+
+.banner2 .iconHero2 { width: 70px; font-size: 12px; line-height: 12px; back=
+ground: url("img/common/icon-maps.gif") left top no-repeat; padding-left: 3=
+0px; position: absolute; top: 165px; left: 120px; }
+
+.banner .wrap { float: left; width: 450px; position: absolute; top: 20px; r=
+ight: 30px; font-family: "Times New Roman", Times, serif; }
+
+.banner .wrap h2 { font-size: 21px; line-height: 21px; margin: 0px; padding=
+: 0px; font-weight: normal; }
+
+.banner .wrap p { font-size: 16px; line-height: 20px; color: rgb(229, 229, =
+229); margin: 0px; }
+
+.special { float: left; width: 919px; padding: 2px; border: 1px solid rgb(1=
+53, 153, 153); background: rgb(255, 255, 255); margin: 12px 0px 0px 15px; p=
+osition: relative; }
+
+.special .title { position: absolute; top: 10px; left: 15px; font-family: "=
+Times New Roman", Times, serif; font-size: 14px; font-weight: bold; color: =
+rgb(0, 0, 0); text-transform: uppercase; }
+
+.special .date { position: absolute; top: 33px; left: 15px; font-size: 9px;=
+ font-weight: bold; color: rgb(255, 255, 255); text-transform: uppercase; }
+
+.specialInner { background: rgb(153, 153, 153); }
+
+.specialInner p { font-size: 14px; color: rgb(255, 255, 255); padding: 7px =
+25px 7px 250px; }
+
+.hero2 { float: left; width: 438px; padding: 0px 0px 23px; margin: 0px 20px=
+ 0px 0px; }
+
+.hero2 .divline { clear: both; height: 8px; background: url("img/common/bg-=
+cleanerbold.gif") left center no-repeat; padding: 15px 0px; }
+
+.hero2 .title { font-size: 20px; font-family: "Times New Roman", Times, ser=
+if; color: rgb(0, 0, 0); line-height: 20px; text-transform: uppercase; padd=
+ing: 0px; margin-bottom: 10px; }
+
+.hero2 .descTxt { font-size: 14px; }
+
+.descTxt a { text-decoration: underline; }
+
+.descTxt a:hover { color: rgb(93, 129, 172); text-decoration: none; }
+
+.hero2 select { margin-bottom: 8px; border-bottom: 1px solid rgb(195, 195, =
+195); width: 300px; color: rgb(85, 85, 85); font-size: 12px; background: ur=
+l("img/common/bg-select.gif") left top no-repeat; }
+
+.function { float: left; width: 680px; padding: 4px 0px; margin: 0px; text-=
+align: right; }
+
+.function a.print { background: url("img/common/icon-print.gif") left cente=
+r no-repeat; padding-left: 20px; margin: 0px 7px 0px 0px; }
+
+.function a.email { background: url("img/common/icon-email.gif") left cente=
+r no-repeat; padding-left: 20px; margin: 0px 0px 0px 7px; }
+
+.faq { clear: both; padding-top: 5px; }
+
+.faq dt { line-height: 20px; margin-bottom: -1px; padding: 5px 0px; border-=
+top: 1px solid rgb(234, 234, 234); border-bottom: 1px solid rgb(234, 234, 2=
+34); background: url("img/common/icon-plus2.gif") right 12px no-repeat; tex=
+t-transform: uppercase; font-weight: bold; font-family: "Times New Roman", =
+Times, serif; }
+
+.faq dt:hover, .faq dt.hover { cursor: pointer; color: rgb(7, 56, 115); }
+
+.faq dt.open { background-image: url("img/common/icon-minus2.gif"); }
+
+.faq dd { display: none; padding: 5px 0px; }
+
+.faqcontrols { float: right; }
+
+.faqcontrols a { font-weight: bold; }
+
+.faqcontrols span { font-size: 125%; vertical-align: bottom; }
+
+.innerContentLeft, .innerContentRight, .innerContent2Left, .innerConetent2R=
+ight { float: left; }
+
+.innerContentLeft { width: 205px; padding: 0px 20px 0px 0px; }
+
+.innerContentRight { width: 200px; }
+
+.innerContent2Left { width: 189px; margin: 5px 20px 0px 16px; }
+
+.innerContent2Right { width: 200px; margin: 5px 0px 0px; }
+
+.simpleModule2 { padding-bottom: 10px; background: url("img/common/bg-clean=
+erbold.gif") left bottom repeat-x; }
+
+.simpleModuleBlue { width: 182px; background: url("img/common/bg-simpleModu=
+leBlue.gif") left top no-repeat; margin-bottom: 4px; text-align: center; pa=
+dding: 5px 15px; }
+
+.simpleModuleBlue .title, .simpleModuleBlue h4 { text-align: center; font-s=
+ize: 12px; line-height: 12px; font-weight: bold; font-family: "Times New Ro=
+man", Times, serif; text-transform: uppercase; padding: 20px 14px 7px; colo=
+r: rgb(68, 68, 68); }
+
+.simpleModuleBlue .desc { font-size: 12px; padding: 0px 14px 7px 10px; colo=
+r: rgb(85, 85, 85); }
+
+.desc a, .desc a:visited { text-decoration: underline; }
+
+.simpleModuleBlue .bottom { clear: both; height: 8px; background: url("img/=
+common/bg-simpleModuleBlueBottom.gif") left top no-repeat; }
+
+.simpleModuleBlue .searchWrap { width: 180px; margin: 0px 0px 15px 13px; ba=
+ckground: url("img/common/bg-form.gif") no-repeat; height: 21px; border: 1p=
+x solid rgb(255, 255, 255); }
+
+.simpleModuleBlue .searchWrap input.search { border: 0px; width: 105px; pad=
+ding: 5px 5px 0px; font-size: 11px; color: rgb(153, 153, 153); background: =
+none; float: left; }
+
+.simpleModuleBlue .searchWrap input.btn { width: 64px; height: 21px; float:=
+ right; margin-top: 1px; }
+
+.simpleModule2 + h3, .simpleModuleBlue + h3, .hero + h3, function + h3 { bo=
+rder-top-width: medium; border-top-style: none; border-top-color: currentco=
+lor; padding-top: 4px; }
+
+.simpleModuleBlue2 { width: 212px; margin-top: 20px; background: rgb(237, 2=
+39, 241); float: left; }
+
+.simpleModuleBlue2 .title { font-size: 12px; line-height: 12px; font-weight=
+: bold; font-family: "Times New Roman", Times, serif; text-transform: upper=
+case; padding: 20px 14px 7px; color: rgb(68, 68, 68); }
+
+.simpleModuleBlue2 .desc2 { padding: 0px 14px 0px 10px; color: rgb(85, 85, =
+85); }
+
+.desc2 p.pdf { font-size: 12px; line-height: 28px; }
+
+.simpleModuleBlue2 a, .simpleModuleBlue2 a:visited { text-decoration: none;=
+ }
+
+.simpleModuleBlue2 a:hover { text-decoration: underline; }
+
+.simpleModuleBlue2 p { margin: 0px 14px 12px; font-size: 11px; color: rgb(1=
+19, 119, 119); }
+
+.contentCenter .simpleModuleBlue3 { padding: 10px; margin: 0px 0px 20px; ba=
+ckground: rgb(237, 239, 241); }
+
+.simpleModuleBlue3 .innerContentLeft { width: 180px; margin-left: 15px; }
+
+.simpleModuleBlue3 .innerContentRight { width: 180px; padding-left: 20px; }
+
+.verticalTab { float: left; width: 435px; padding: 0px; margin: 0px; border=
+-bottom: 1px solid rgb(204, 204, 204); clear: both; }
+
+.verticalTab .title { margin: 0px; padding: 8px 0px; color: rgb(68, 68, 68)=
+; font-size: 14px; font-family: "Times New Roman", Times, serif; font-weigh=
+t: bold; text-transform: uppercase; border-bottom: 1px solid rgb(204, 204, =
+204); background: rgb(255, 255, 255); }
+
+.verticalTabWrap { float: left; width: 435px; background: rgb(234, 234, 234=
+); margin: 2px 0px; clear: both; }
+
+.verticalTab .vtableft { float: left; width: 132px; margin: 0px; padding: 0=
+px; background: rgb(255, 255, 255); }
+
+.verticalTab .vtabright { float: left; width: 285px; margin: 6px 0px 0px 12=
+px; }
+
+.contentCenterWide .threeColumns { float: left; width: 215px; margin: 0px 1=
+6px 0px 0px; padding: 0px; min-height: 50px; }
+
+.contentCenterWide .threeColumnslast { float: left; width: 216px; margin: 0=
+px; padding: 0px; min-height: 50px; }
+
+.contentCenterWide .threeColumnsDouble { float: left; width: 430px; margin:=
+ 0px 16px 0px 0px; padding: 0px; min-height: 50px; }
+
+.hero .threeColumns { float: left; margin: 0px 16px 0px 0px; width: 210px; =
+}
+
+.hero .threeColumnslast { float: right; }
+
+.hero .twoColumns { float: left; width: 275px; margin-right: 20px; }
+
+.formTable { width: 680px; background: rgb(251, 252, 253); }
+
+.formTable caption { margin: 0px 0px 1px; padding: 8px 0px; border-top: 1px=
+ solid rgb(204, 204, 204); border-bottom: 1px solid rgb(204, 204, 204); tex=
+t-align: left; color: rgb(68, 68, 68); font-size: 14px; font-family: "Times=
+ New Roman", Times, serif; font-weight: bold; text-transform: uppercase; }
+
+.formTable table { background: rgb(251, 252, 253); }
+
+.formTable td, .formTable th { padding: 10px; vertical-align: top; border-r=
+ight: 2px solid rgb(255, 255, 255); border-bottom: 2px solid rgb(255, 255, =
+255); }
+
+.formTable th:hover { cursor: pointer; }
+
+.formTable tr.odd { background: rgb(245, 246, 248); }
+
+tr.standout { font-size: 1.2em; background-color: rgb(245, 246, 248); borde=
+r: 2px solid rgb(207, 215, 225); }
+
+tr.standout td { border-width: medium; border-style: none; border-color: cu=
+rrentcolor; border-image: initial; background-color: rgb(218, 228, 241); }
+
+tr.standout td.button-container { background-color: rgb(255, 255, 255); }
+
+.formTable tr.head { background: rgb(207, 215, 225); font-size: 13px; font-=
+weight: bold; }
+
+.formTable .one { width: 160px; }
+
+.formTable .two { width: 280px; }
+
+.formTable .three { width: 70px; }
+
+.formTable .odd2, .formTable .odd .sortCol { background: rgb(238, 240, 242)=
+; }
+
+.formTable .headerSortUp, .formTable .headerSortDown { color: rgb(255, 255,=
+ 255); }
+
+.formTable + h4 { margin-top: 2px; border-top: 1px solid rgb(204, 204, 204)=
+; }
+
+.formTable th::after { content: url("img/common/bg.gif"); }
+
+.formTable thead th.headerSortUp::after { content: url("img/common/asc.gif"=
+); }
+
+.formTable thead th.headerSortDown::after { content: url("img/common/desc.g=
+if"); }
+
+.contentCenterWide .twoColumns { float: left; width: 330px; margin: 8px 20p=
+x 0px 0px; padding: 0px; border-top: 1px solid rgb(204, 204, 204); }
+
+.contentCenterWide .twoColumns2 { float: left; width: 335px; margin: 8px 0p=
+x 0px; padding: 0px; border-top: 1px solid rgb(204, 204, 204); }
+
+.contentCenterWide .twoColumnslast { float: left; width: 335px; margin: 8px=
+ 0px 0px; background: rgb(248, 249, 251); border-top: 1px solid rgb(238, 24=
+0, 242); border-bottom: 1px solid rgb(238, 240, 242); }
+
+.twoColumnslast table { width: 315px; margin: 20px 0px; }
+
+.twoColumnslast tr td { vertical-align: top; }
+
+.twoColumnslast a, .twoColumnslast a:visited { text-decoration: underline; =
+}
+
+.contentCenterWide .twoColumnsB { float: left; width: 330px; margin: 0px 16=
+px 0px 0px; padding: 0px; }
+
+.contentCenterWide .twoColumnsBlast { float: left; width: 330px; margin: 0p=
+x; padding: 0px; }
+
+.onlineTable { padding-bottom: 13px; margin-top: 8px; margin-bottom: 1px; b=
+order-bottom: 1px solid rgb(204, 204, 204); clear: both; }
+
+.onlineTable table { background: rgb(247, 249, 252); }
+
+.onlineTable caption { margin: 0px; padding: 8px 0px; border-top: 1px solid=
+ rgb(204, 204, 204); border-bottom: 1px solid rgb(204, 204, 204); text-alig=
+n: left; color: rgb(68, 68, 68); font-size: 14px; font-family: "Times New R=
+oman", Times, serif; font-weight: bold; text-transform: uppercase; }
+
+.onlineTable tr td { padding: 10px; vertical-align: middle; }
+
+.onlineTable tr.odd { background: rgb(232, 238, 246); }
+
+.onlineTable td { border-bottom: 2px solid rgb(255, 255, 255); }
+
+.onlineTable td.one { width: 500px; }
+
+.onlineTable td.color1 { background: rgb(232, 238, 246); }
+
+.onlineTable td.color2 { background: rgb(218, 228, 241); }
+
+.onlineTable2 { padding: 13px 0px 30px; margin-bottom: 8px; border-top: 1px=
+ solid rgb(204, 204, 204); }
+
+.onlineTable2 table { background: rgb(247, 249, 252); }
+
+.onlineTable2 tr td { padding: 10px; vertical-align: middle; }
+
+.onlineTable2 tr.odd { background: rgb(232, 238, 246); }
+
+.onlineTable2 td { border-bottom: 2px solid rgb(255, 255, 255); }
+
+.onlineTable2 td.one { width: 490px; }
+
+.onlineTable2 td.color1 { background: rgb(232, 238, 246); }
+
+.onlineTable2 td.color2 { background: rgb(218, 228, 241); }
+
+.onlineTable.narrow td.one { width: 300px; }
+
+.wrapThreeColumns { float: left; width: 690px; background: url("img/common/=
+bg-contentCenter3Wide.gif") left center repeat-y; clear: both; }
+
+.rBorder { border-right: 1px solid rgb(229, 229, 229); }
+
+#footerWrap { width: 959px; height: 25px; background: rgb(7, 56, 115); line=
+-height: 24px; clear: both; font-size: 9px; margin-top: 10px; }
+
+#footerWrap a { color: rgb(238, 238, 238); text-decoration: none; margin-le=
+ft: 11px; margin-right: 11px; }
+
+#footerWrap a:hover { text-decoration: underline; }
+
+#footerWrap .footerLeft { float: left; color: rgb(157, 157, 157); }
+
+#footerWrap .footerRight { float: right; color: rgb(238, 238, 238); padding=
+-right: 17px; }
+
+.tabWrap h6 { margin: 0px 30px 5px; }
+
+.tabWrap p { margin: 0px 30px 8px; }
+
+.tabWrapper { margin-top: 12px; clear: both; padding-top: 10px; border-top:=
+ 1px solid rgb(204, 204, 204); width: 676px; float: left; }
+
+h2.tab { font-size: 100%; margin-bottom: 0px; padding: 2px 0px 0px; font-we=
+ight: bold; font-family: "Times New Roman", Times, serif; text-transform: u=
+ppercase; }
+
+h2.tab span { margin-left: 9px; margin-right: 0px; padding: 10px 10px 10px =
+0px; cursor: pointer; }
+
+h2.tab span.not-selected { background-repeat: no-repeat; background-positio=
+n: left center; padding-right: 0px; padding-left: 0px; margin-left: 0px; co=
+lor: rgb(68, 68, 68); }
+
+h2.tab span.not-selected .inner { background-repeat: no-repeat; background-=
+position: right center; }
+
+h2.tab span.selected { background-repeat: no-repeat; background-position: l=
+eft center; padding-right: 0px; padding-left: 0px; margin-left: 0px; color:=
+ rgb(68, 68, 68); }
+
+h2.tab span.selected .inner { background-repeat: no-repeat; background-posi=
+tion: right center; }
+
+#mainMenu { width: 960px; margin: 0px; padding: 0px; list-style: none; clea=
+r: both; }
+
+#mainMenu > li { float: left; margin: 0px; padding: 0px; list-style: none; =
+position: relative; z-index: 99; height: 42px; border-style: solid; border-=
+width: 3px 3px 0px; border-top-left-radius: 3px; border-top-right-radius: 3=
+px; }
+
+#mainMenu li + li { margin-left: 1px; }
+
+#mainMenu a { width: 157px; height: 38px; display: inline-block; margin: 0p=
+x; padding: 4px 0px 0px 6px; font-family: "Times New Roman", times, serif; =
+font-size: 16px; font-weight: bold; line-height: 16.5px; }
+
+#mainMenu span { color: rgb(85, 85, 85); font-family: Arial, Helvetica, san=
+s-serif; font-size: 11px; font-weight: normal; display: block; margin-left:=
+ 2px; }
+
+#mainMenu #home { width: 97px; }
+
+#mainMenu li.selected { }
+
+#mainMenu li.selected a { color: rgb(255, 255, 255); }
+
+#mainMenu li.selected span { color: rgb(255, 255, 255); }
+
+#mainMenu li:hover, #mainMenu li.hover { }
+
+#mainMenu li:hover a, #mainMenu li:hover span, #mainMenu a:hover, #mainMenu=
+ li.hover a, #mainMenu li.hover span { color: rgb(255, 255, 255); text-deco=
+ration: none; }
+
+#mainMenu li:hover span, #mainMenu li.hover span { }
+
+#mainMenu li:hover ul, #mainMenu li.hover ul { display: block; }
+
+#mainMenu li ul { display: none; position: absolute; top: 42px; left: -3px;=
+ width: 169px; margin-left: 0px; }
+
+#mainMenu li ul li { display: block; margin: 0px; }
+
+#mainMenu li ul li + li { background-image: url("img/blue/menu_sep.gif"); b=
+ackground-repeat: no-repeat; background-position: left top; padding-top: 1p=
+x; }
+
+#mainMenu li ul li a { display: block; padding: 9px 0px 0px 11px; height: 2=
+0px; width: 158px; border: 0px; border-radius: 0px; color: rgb(255, 255, 25=
+5); font-family: Arial, Helvetica, sans-serif; font-weight: bold; font-size=
+: 11px; line-height: 11px; }
+
+#mainMenu li ul li a:hover { }
+
+#mainMenu li ul li:last-child a { padding-bottom: 4px; }
+
+.alignModule { clear: both; }
+
+* + html .alignModule { clear: both; padding-bottom: 8px; }
+
+.imgtxtWrap { float: left; clear: both; margin: 0px 5px 0px 0px; }
+
+.imgtxtRight { float: right; clear: both; margin: 0px 0px 10px 15px; }
+
+.imgborder { padding: 1px; border: 1px solid rgb(216, 216, 216); margin-bot=
+tom: 5px; }
+
+.image { margin-bottom: 10px; }
+
+.image img { padding: 1px; border: 1px solid rgb(216, 216, 216); }
+
+.image .imgcaption { width: 205px; font-size: 11px; margin-top: 7px; color:=
+ rgb(136, 136, 136); }
+
+.iconLeft { margin: 0px 5px 0px 0px; }
+
+.iconRight { margin: 0px 0px 0px 5px; }
+
+ul.square { margin: 0px 0px 12px 5px; list-style-type: none; }
+
+ul.square li { background: url("img/common/bg-ulSquare.gif") left 6px no-re=
+peat; padding: 0px 0px 0px 11px; }
+
+ul.square li::before { content: none; }
+
+ul.chevron li { padding: 0px 0px 0px 11px; text-indent: -11px; }
+
+ul.chevron li::before { content: "=C2=BB=C2=A0"; }
+
+.iconArrowRight::after { content: "=C2=A0=C2=A0" url("img/common/icon-exter=
+nalLinks.gif"); }
+
+.iconArrow2Right::after { content: "=C2=A0=C2=A0" url("img/common/icon-exte=
+rnallinks2.gif"); }
+
+.iconPDFLeft::before { content: url("img/common/icon-pdf.gif") "=C2=A0=C2=
+=A0"; }
+
+* + html .iconPDFLeft::before { content: url("img/common/icon-pdf.gif") "=
+=C2=A0=C2=A0"; }
+
+.iconPDFRight::after { content: "=C2=A0=C2=A0" url("img/common/icon-pdf.gif=
+"); }
+
+.iconPDF3Left::before { content: url("img/common/icon-pdf3.gif") "=C2=A0=C2=
+=A0"; }
+
+.iconPDF3Right::after { content: "=C2=A0=C2=A0" url("img/common/icon-pdf3.g=
+if"); }
+
+.iconArrowDownRight { background: url("img/common/icon-arrowDown1.gif") rig=
+ht center no-repeat; padding-right: 13px; }
+
+.iconArrowDown2Right { background: url("img/common/icon-arrowDown2.gif") ri=
+ght center no-repeat; padding-right: 13px; }
+
+.iconPhoneLeft { background: url("img/common/icon-phone.gif") left center n=
+o-repeat; padding-left: 23px; }
+
+.iconPhoneRight { background: url("img/common/icon-phone.gif") right center=
+ no-repeat; padding-right: 23px; }
+
+.iconADALeft { background: url("img/common/icon-ada.gif") left center no-re=
+peat; padding-left: 18px; }
+
+.iconADARight { background: url("img/common/icon-ada.gif") right center no-=
+repeat; padding-right: 18px; }
+
+.bgBlue { background: rgb(234, 234, 234); }
+
+.bgWhite { background: rgb(255, 255, 255); }
+
+.top10 { margin-top: 10px; }
+
+.bottom7 { margin-bottom: 7px; }
+
+.txtNormal { text-transform: none; font-weight: normal; }
+
+.button { margin-top: 5px; }
+
+.buttonCenter { margin: 5px auto; }
+
+.button a, .buttonCenter a { display: block; height: 23px; background: url(=
+"img/common/btn.gif") center top no-repeat; text-align: center; padding-top=
+: 2px; color: rgb(229, 229, 229); font-size: 12px; font-weight: bold; text-=
+decoration: none; line-height: 20px; }
+
+.buttonCenter-l a { display: block; height: 23px; background: url("img/comm=
+on/btn-l.png") center top no-repeat; text-align: center; padding-top: 2px; =
+color: rgb(229, 229, 229); font-size: 12px; font-weight: bold; text-decorat=
+ion: none; line-height: 20px; }
+
+.button a:hover, .buttonCenter a:hover { background: url("img/common/btn_ov=
+er.gif") center top no-repeat; text-decoration: none; line-height: 20px; }
+
+.buttonCenter-l a:hover { background: url("img/common/btn-l_over.png") cent=
+er top no-repeat; text-decoration: none; line-height: 20px; }
+
+.btnHomeColor, .btnHomeGrey { margin-bottom: 6px; }
+
+.btnHomeColor a, .btnHomeGrey a { display: block; width: 202px; height: 33p=
+x; text-align: left; padding: 12px 0px 0px 10px; font-size: 18px; text-deco=
+ration: none; line-height: 18px; color: rgb(229, 229, 229); }
+
+.btnHomeColor a:hover, .btnHomeGrey a:hover { text-decoration: none; line-h=
+eight: 18px; }
+
+.btnHomeColor a { background: url("img/common/btn-HomeColor.gif") left top =
+no-repeat; }
+
+.btnHomeColor a:hover { background: url("img/common/btn-HomeColorOver.png")=
+ left top no-repeat; }
+
+.btnHomeGrey a { background: url("img/common/btn-HomeGrey.gif") left top no=
+-repeat; }
+
+.btnHomeGrey a:hover { background: url("img/common/btn-HomeGreyOver.png") l=
+eft top no-repeat; }
+
+.marginbt6 { margin-bottom: 6px; }
+
+.hide { color: rgb(255, 255, 255); }
+
+.preloads { display: none; }
+
+#newslist a span { color: rgb(0, 89, 154); font-weight: bold; }
+
+.diff, #diff-node-revisions, #user-profile-form, #block-admin-display-form,=
+ #node-delete-confirm, #node-revision-revert-confirm, .confirmation, .profi=
+le { background-color: rgb(255, 255, 255); border: 5px solid rgb(204, 204, =
+204); padding: 10px; margin-top: -8px; }
+
+ul.menu { height: 35px; list-style-type: none; }
+
+ul.menu li { padding: 0px; margin: 0px; }
+
+ul.menu a { padding: 10px 20px 10px 10px; display: block; background-color:=
+ rgb(255, 255, 255); border: 1px solid rgb(204, 204, 204); }
+
+ul.menu > li { float: left; position: relative; margin: 0px; }
+
+ul.menu > li > a { }
+
+ul.menu > li > a:hover { text-decoration: none; background-color: rgb(204, =
+204, 204); }
+
+ul.menu > li > ul { display: none; position: absolute; top: 40px; left: -1p=
+x; width: 200px; margin-left: 0px; }
+
+ul.menu > li:hover > ul { display: block; }
+
+ul.menu > li > ul > li { display: block; float: none; }
+
+ul.menu > li > ul > li > ul { display: none; position: absolute; top: -1px;=
+ left: 200px; margin-left: 0px; }
+
+ul.menu > li > ul > li:hover > ul { display: block; }
+
+li.leaf { list-style-image: none; list-style-type: none; }
+
+.item-list { border-top: 1px solid rgb(204, 204, 204); height: 30px; border=
+-bottom: 1px solid rgb(204, 204, 204); }
+
+.pager { float: right; list-style-type: none; }
+
+.pager li { float: left; margin-right: 10px; }
+
+.pager-current { font-weight: bold; }
+
+ul.secondary { padding-bottom: 0px; }
+
+ul.secondary li { border-right-width: medium; border-right-style: none; bor=
+der-right-color: currentcolor; }
+
+.pager-first, .pager-previous, .pager-next, .pager-last, .pager-current { f=
+ont-weight: bold; }
+
+.search-results dd { margin-bottom: 0px; }
+
+.search-results dd p { margin-bottom: 8px; }
+
+.pager .pager-item, .pager .pager-next, .pager .pager-last, .pager .pager-f=
+irst, .pager .pager-previous, .pager .pager-current { margin-left: 0px; }
+
+#blocks td { padding-right: 10px; }
+
+#search-form { position: absolute; top: 30px; left: 260px; }
+
+.search-advanced { display: none; }
+
+.textlist thead, .textlist tbody { border-top-width: medium; border-top-sty=
+le: none; border-top-color: currentcolor; }
+
+th.textSmall { color: rgb(255, 255, 255); font-weight: bold; padding: 5px; =
+font-size: 90%; }
+
+td.textSmall { padding: 5px; vertical-align: top; }
+
+.odd td { }
+
+.even td { color: rgb(0, 0, 0); }
+
+.textHeadlines { font-weight: bold; font-size: 125%; }
+
+.textSmall td { border-width: 1px; border-style: solid; }
+
+th.text { color: rgb(255, 255, 255); text-align: center; border-width: 2px;=
+ border-style: solid; }
+
+td.tableText { padding: 0px 5px 8px 8px; vertical-align: top; border-width:=
+ 2px; border-style: solid; }
+
+td.tableText strong { margin-top: 8px; display: inline-block; }
+
+#civilcaltable td { padding: 2px; }
+
+tbody { border-top-width: medium; border-top-style: none; border-top-color:=
+ currentcolor; }
+
+.calendar_hang { padding-left: 37px; text-indent: -37px; }
+
+#sitemap ul { margin-left: 25px; }
+
+#sitemap > li a { font-weight: bold; font-size: 20px; }
+
+#sitemap ul li a { font-weight: bold; font-size: 17px; line-height: 25px; }
+
+#sitemap ul ul li a { font-weight: bold; font-size: 14px; line-height: 20px=
+; }
+
+#sitemap ul ul ul li a { font-weight: normal; font-size: 12px; line-height:=
+ 14px; }
+
+.contentColumn.node-215 { display: none; }
+
+.float_left h2 { text-transform: uppercase; font-family: sans-serif; font-s=
+ize: 16px; color: rgb(102, 102, 102); font-weight: 500; border-bottom: 1px =
+solid rgb(204, 204, 204); padding-bottom: 0.5em; margin-bottom: 1em; }
+
+.float_left h2 em { font-weight: bold; }
+
+.float_left { float: left; width: 45%; padding-top: 2em; }
+
+.c1 { padding-right: 1em; }
+
+.c2 { padding-left: 1em; }
+
+.c-div { border-top: 1px solid rgb(204, 204, 204); padding-top: 0.5em; marg=
+in-top: 1em; }
+
+.btn { display: inline-block; padding: 0.375rem 1rem; font-size: 1rem; font=
+-weight: 400; line-height: 1.5; text-align: center; white-space: nowrap; ve=
+rtical-align: middle; cursor: pointer; user-select: none; border: 1px solid=
+ transparent; border-radius: 0.25rem; }
+
+.btn-sm { padding: 0.25rem 0.75rem; font-size: 0.875rem; line-height: 1.5; =
+border-radius: 0.2rem; }
+
+.btn-primary { color: rgb(255, 255, 255); background-color: rgb(2, 117, 216=
+); border-color: rgb(2, 117, 216); }
+------MultipartBoundary--h0ek0A3zIDCGtt1ZYc6nnXoPLcyjKuJxpqD7MTsMGd----
+Content-Type: text/css
+Content-Transfer-Encoding: quoted-printable
+Content-Location: https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css
+
+@charset "utf-8";
+
+.ui-helper-hidden { display: none; }
+
+.ui-helper-hidden-accessible { border: 0px; clip: rect(0px, 0px, 0px, 0px);=
+ height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absol=
+ute; width: 1px; }
+
+.ui-helper-reset { margin: 0px; padding: 0px; border: 0px; outline: 0px; li=
+ne-height: 1.3; text-decoration: none; font-size: 100%; list-style: none; }
+
+.ui-helper-clearfix::before, .ui-helper-clearfix::after { content: ""; disp=
+lay: table; border-collapse: collapse; }
+
+.ui-helper-clearfix::after { clear: both; }
+
+.ui-helper-zfix { width: 100%; height: 100%; top: 0px; left: 0px; position:=
+ absolute; opacity: 0; }
+
+.ui-front { z-index: 100; }
+
+.ui-state-disabled { cursor: default !important; pointer-events: none; }
+
+.ui-icon { display: inline-block; vertical-align: middle; margin-top: -0.25=
+em; position: relative; text-indent: -99999px; overflow: hidden; background=
+-repeat: no-repeat; }
+
+.ui-widget-icon-block { left: 50%; margin-left: -8px; display: block; }
+
+.ui-widget-overlay { position: fixed; top: 0px; left: 0px; width: 100%; hei=
+ght: 100%; }
+
+.ui-accordion .ui-accordion-header { display: block; cursor: pointer; posit=
+ion: relative; margin: 2px 0px 0px; padding: 0.5em 0.5em 0.5em 0.7em; font-=
+size: 100%; }
+
+.ui-accordion .ui-accordion-content { padding: 1em 2.2em; border-top: 0px; =
+overflow: auto; }
+
+.ui-autocomplete { position: absolute; top: 0px; left: 0px; cursor: default=
+; }
+
+.ui-menu { list-style: none; padding: 0px; margin: 0px; display: block; out=
+line: 0px; }
+
+.ui-menu .ui-menu { position: absolute; }
+
+.ui-menu .ui-menu-item { margin: 0px; cursor: pointer; list-style-image: ur=
+l("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAA=
+IBRAA7"); }
+
+.ui-menu .ui-menu-item-wrapper { position: relative; padding: 3px 1em 3px 0=
+.4em; }
+
+.ui-menu .ui-menu-divider { margin: 5px 0px; height: 0px; font-size: 0px; l=
+ine-height: 0; border-width: 1px 0px 0px; }
+
+.ui-menu .ui-state-focus, .ui-menu .ui-state-active { margin: -1px; }
+
+.ui-menu-icons { position: relative; }
+
+.ui-menu-icons .ui-menu-item-wrapper { padding-left: 2em; }
+
+.ui-menu .ui-icon { position: absolute; top: 0px; bottom: 0px; left: 0.2em;=
+ margin: auto 0px; }
+
+.ui-menu .ui-menu-icon { left: auto; right: 0px; }
+
+.ui-button { padding: 0.4em 1em; display: inline-block; position: relative;=
+ line-height: normal; margin-right: 0.1em; cursor: pointer; vertical-align:=
+ middle; text-align: center; user-select: none; overflow: visible; }
+
+.ui-button, .ui-button:link, .ui-button:visited, .ui-button:hover, .ui-butt=
+on:active { text-decoration: none; }
+
+.ui-button-icon-only { width: 2em; box-sizing: border-box; text-indent: -99=
+99px; white-space: nowrap; }
+
+input.ui-button.ui-button-icon-only { text-indent: 0px; }
+
+.ui-button-icon-only .ui-icon { position: absolute; top: 50%; left: 50%; ma=
+rgin-top: -8px; margin-left: -8px; }
+
+.ui-button.ui-icon-notext .ui-icon { padding: 0px; width: 2.1em; height: 2.=
+1em; text-indent: -9999px; white-space: nowrap; }
+
+input.ui-button.ui-icon-notext .ui-icon { width: auto; height: auto; text-i=
+ndent: 0px; white-space: normal; padding: 0.4em 1em; }
+
+.ui-controlgroup { vertical-align: middle; display: inline-block; }
+
+.ui-controlgroup > .ui-controlgroup-item { float: left; margin-left: 0px; m=
+argin-right: 0px; }
+
+.ui-controlgroup > .ui-controlgroup-item:focus, .ui-controlgroup > .ui-cont=
+rolgroup-item.ui-visual-focus { z-index: 9999; }
+
+.ui-controlgroup-vertical > .ui-controlgroup-item { display: block; float: =
+none; width: 100%; margin-top: 0px; margin-bottom: 0px; text-align: left; }
+
+.ui-controlgroup-vertical .ui-controlgroup-item { box-sizing: border-box; }
+
+.ui-controlgroup .ui-controlgroup-label { padding: 0.4em 1em; }
+
+.ui-controlgroup .ui-controlgroup-label span { font-size: 80%; }
+
+.ui-controlgroup-horizontal .ui-controlgroup-label + .ui-controlgroup-item =
+{ border-left-width: medium; border-left-style: none; border-left-color: cu=
+rrentcolor; }
+
+.ui-controlgroup-vertical .ui-controlgroup-label + .ui-controlgroup-item { =
+border-top-width: medium; border-top-style: none; border-top-color: current=
+color; }
+
+.ui-controlgroup-horizontal .ui-controlgroup-label.ui-widget-content { bord=
+er-right-width: medium; border-right-style: none; border-right-color: curre=
+ntcolor; }
+
+.ui-controlgroup-vertical .ui-controlgroup-label.ui-widget-content { border=
+-bottom-width: medium; border-bottom-style: none; border-bottom-color: curr=
+entcolor; }
+
+.ui-controlgroup-vertical .ui-spinner-input { width: calc(100% - 2.4em); }
+
+.ui-controlgroup-vertical .ui-spinner .ui-spinner-up { border-top-style: so=
+lid; }
+
+.ui-checkboxradio-label .ui-icon-background { box-shadow: rgb(204, 204, 204=
+) 1px 1px 1px inset; border-radius: 0.12em; border-width: medium; border-st=
+yle: none; border-color: currentcolor; border-image: initial; }
+
+.ui-checkboxradio-radio-label .ui-icon-background { width: 16px; height: 16=
+px; border-radius: 1em; overflow: visible; border-width: medium; border-sty=
+le: none; border-color: currentcolor; border-image: initial; }
+
+.ui-checkboxradio-radio-label.ui-checkboxradio-checked .ui-icon, .ui-checkb=
+oxradio-radio-label.ui-checkboxradio-checked:hover .ui-icon { background-im=
+age: none; width: 8px; height: 8px; border-width: 4px; border-style: solid;=
+ }
+
+.ui-checkboxradio-disabled { pointer-events: none; }
+
+.ui-datepicker { width: 17em; padding: 0.2em 0.2em 0px; display: none; }
+
+.ui-datepicker .ui-datepicker-header { position: relative; padding: 0.2em 0=
+px; }
+
+.ui-datepicker .ui-datepicker-prev, .ui-datepicker .ui-datepicker-next { po=
+sition: absolute; top: 2px; width: 1.8em; height: 1.8em; }
+
+.ui-datepicker .ui-datepicker-prev-hover, .ui-datepicker .ui-datepicker-nex=
+t-hover { top: 1px; }
+
+.ui-datepicker .ui-datepicker-prev { left: 2px; }
+
+.ui-datepicker .ui-datepicker-next { right: 2px; }
+
+.ui-datepicker .ui-datepicker-prev-hover { left: 1px; }
+
+.ui-datepicker .ui-datepicker-next-hover { right: 1px; }
+
+.ui-datepicker .ui-datepicker-prev span, .ui-datepicker .ui-datepicker-next=
+ span { display: block; position: absolute; left: 50%; margin-left: -8px; t=
+op: 50%; margin-top: -8px; }
+
+.ui-datepicker .ui-datepicker-title { margin: 0px 2.3em; line-height: 1.8em=
+; text-align: center; }
+
+.ui-datepicker .ui-datepicker-title select { font-size: 1em; margin: 1px 0p=
+x; }
+
+.ui-datepicker select.ui-datepicker-month, .ui-datepicker select.ui-datepic=
+ker-year { width: 45%; }
+
+.ui-datepicker table { width: 100%; font-size: 0.9em; border-collapse: coll=
+apse; margin: 0px 0px 0.4em; }
+
+.ui-datepicker th { padding: 0.7em 0.3em; text-align: center; font-weight: =
+bold; border: 0px; }
+
+.ui-datepicker td { border: 0px; padding: 1px; }
+
+.ui-datepicker td span, .ui-datepicker td a { display: block; padding: 0.2e=
+m; text-align: right; text-decoration: none; }
+
+.ui-datepicker .ui-datepicker-buttonpane { background-image: none; margin: =
+0.7em 0px 0px; padding: 0px 0.2em; border-left: 0px; border-right: 0px; bor=
+der-bottom: 0px; }
+
+.ui-datepicker .ui-datepicker-buttonpane button { float: right; margin: 0.5=
+em 0.2em 0.4em; cursor: pointer; padding: 0.2em 0.6em 0.3em; width: auto; o=
+verflow: visible; }
+
+.ui-datepicker .ui-datepicker-buttonpane button.ui-datepicker-current { flo=
+at: left; }
+
+.ui-datepicker.ui-datepicker-multi { width: auto; }
+
+.ui-datepicker-multi .ui-datepicker-group { float: left; }
+
+.ui-datepicker-multi .ui-datepicker-group table { width: 95%; margin: 0px a=
+uto 0.4em; }
+
+.ui-datepicker-multi-2 .ui-datepicker-group { width: 50%; }
+
+.ui-datepicker-multi-3 .ui-datepicker-group { width: 33.3%; }
+
+.ui-datepicker-multi-4 .ui-datepicker-group { width: 25%; }
+
+.ui-datepicker-multi .ui-datepicker-group-last .ui-datepicker-header, .ui-d=
+atepicker-multi .ui-datepicker-group-middle .ui-datepicker-header { border-=
+left-width: 0px; }
+
+.ui-datepicker-multi .ui-datepicker-buttonpane { clear: left; }
+
+.ui-datepicker-row-break { clear: both; width: 100%; font-size: 0px; }
+
+.ui-datepicker-rtl { direction: rtl; }
+
+.ui-datepicker-rtl .ui-datepicker-prev { right: 2px; left: auto; }
+
+.ui-datepicker-rtl .ui-datepicker-next { left: 2px; right: auto; }
+
+.ui-datepicker-rtl .ui-datepicker-prev:hover { right: 1px; left: auto; }
+
+.ui-datepicker-rtl .ui-datepicker-next:hover { left: 1px; right: auto; }
+
+.ui-datepicker-rtl .ui-datepicker-buttonpane { clear: right; }
+
+.ui-datepicker-rtl .ui-datepicker-buttonpane button { float: left; }
+
+.ui-datepicker-rtl .ui-datepicker-buttonpane button.ui-datepicker-current, =
+.ui-datepicker-rtl .ui-datepicker-group { float: right; }
+
+.ui-datepicker-rtl .ui-datepicker-group-last .ui-datepicker-header, .ui-dat=
+epicker-rtl .ui-datepicker-group-middle .ui-datepicker-header { border-righ=
+t-width: 0px; border-left-width: 1px; }
+
+.ui-datepicker .ui-icon { display: block; text-indent: -99999px; overflow: =
+hidden; background-repeat: no-repeat; left: 0.5em; top: 0.3em; }
+
+.ui-dialog { position: absolute; top: 0px; left: 0px; padding: 0.2em; outli=
+ne: 0px; }
+
+.ui-dialog .ui-dialog-titlebar { padding: 0.4em 1em; position: relative; }
+
+.ui-dialog .ui-dialog-title { float: left; margin: 0.1em 0px; white-space: =
+nowrap; width: 90%; overflow: hidden; text-overflow: ellipsis; }
+
+.ui-dialog .ui-dialog-titlebar-close { position: absolute; right: 0.3em; to=
+p: 50%; width: 20px; margin: -10px 0px 0px; padding: 1px; height: 20px; }
+
+.ui-dialog .ui-dialog-content { position: relative; border: 0px; padding: 0=
+.5em 1em; background: none; overflow: auto; }
+
+.ui-dialog .ui-dialog-buttonpane { text-align: left; border-width: 1px 0px =
+0px; background-image: none; margin-top: 0.5em; padding: 0.3em 1em 0.5em 0.=
+4em; }
+
+.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { float: right; }
+
+.ui-dialog .ui-dialog-buttonpane button { margin: 0.5em 0.4em 0.5em 0px; cu=
+rsor: pointer; }
+
+.ui-dialog .ui-resizable-n { height: 2px; top: 0px; }
+
+.ui-dialog .ui-resizable-e { width: 2px; right: 0px; }
+
+.ui-dialog .ui-resizable-s { height: 2px; bottom: 0px; }
+
+.ui-dialog .ui-resizable-w { width: 2px; left: 0px; }
+
+.ui-dialog .ui-resizable-se, .ui-dialog .ui-resizable-sw, .ui-dialog .ui-re=
+sizable-ne, .ui-dialog .ui-resizable-nw { width: 7px; height: 7px; }
+
+.ui-dialog .ui-resizable-se { right: 0px; bottom: 0px; }
+
+.ui-dialog .ui-resizable-sw { left: 0px; bottom: 0px; }
+
+.ui-dialog .ui-resizable-ne { right: 0px; top: 0px; }
+
+.ui-dialog .ui-resizable-nw { left: 0px; top: 0px; }
+
+.ui-draggable .ui-dialog-titlebar { cursor: move; }
+
+.ui-draggable-handle { touch-action: none; }
+
+.ui-resizable { position: relative; }
+
+.ui-resizable-handle { position: absolute; font-size: 0.1px; display: block=
+; touch-action: none; }
+
+.ui-resizable-disabled .ui-resizable-handle, .ui-resizable-autohide .ui-res=
+izable-handle { display: none; }
+
+.ui-resizable-n { cursor: n-resize; height: 7px; width: 100%; top: -5px; le=
+ft: 0px; }
+
+.ui-resizable-s { cursor: s-resize; height: 7px; width: 100%; bottom: -5px;=
+ left: 0px; }
+
+.ui-resizable-e { cursor: e-resize; width: 7px; right: -5px; top: 0px; heig=
+ht: 100%; }
+
+.ui-resizable-w { cursor: w-resize; width: 7px; left: -5px; top: 0px; heigh=
+t: 100%; }
+
+.ui-resizable-se { cursor: se-resize; width: 12px; height: 12px; right: 1px=
+; bottom: 1px; }
+
+.ui-resizable-sw { cursor: sw-resize; width: 9px; height: 9px; left: -5px; =
+bottom: -5px; }
+
+.ui-resizable-nw { cursor: nw-resize; width: 9px; height: 9px; left: -5px; =
+top: -5px; }
+
+.ui-resizable-ne { cursor: ne-resize; width: 9px; height: 9px; right: -5px;=
+ top: -5px; }
+
+.ui-progressbar { height: 2em; text-align: left; overflow: hidden; }
+
+.ui-progressbar .ui-progressbar-value { margin: -1px; height: 100%; }
+
+.ui-progressbar .ui-progressbar-overlay { background: url("data:image/gif;b=
+ase64,R0lGODlhKAAoAIABAAAAAP///yH/C05FVFNDQVBFMi4wAwEAAAAh+QQJAQABACwAAAAAK=
+AAoAAACkYwNqXrdC52DS06a7MFZI+4FHBCKoDeWKXqymPqGqxvJrXZbMx7Ttc+w9XgU2FB3lOyQ=
+RWET2IFGiU9m1frDVpxZZc6bfHwv4c1YXP6k1Vdy292Fb6UkuvFtXpvWSzA+HycXJHUXiGYIiMg=
+2R6W459gnWGfHNdjIqDWVqemH2ekpObkpOlppWUqZiqr6edqqWQAAIfkECQEAAQAsAAAAACgAKA=
+AAApSMgZnGfaqcg1E2uuzDmmHUBR8Qil95hiPKqWn3aqtLsS18y7G1SzNeowWBENtQd+T1JktP0=
+5nzPTdJZlR6vUxNWWjV+vUWhWNkWFwxl9VpZRedYcflIOLafaa28XdsH/ynlcc1uPVDZxQIR0K2=
+5+cICCmoqCe5mGhZOfeYSUh5yJcJyrkZWWpaR8doJ2o4NYq62lAAACH5BAkBAAEALAAAAAAoACg=
+AAAKVDI4Yy22ZnINRNqosw0Bv7i1gyHUkFj7oSaWlu3ovC8GxNso5fluz3qLVhBVeT/Lz7ZTHyx=
+L5dDalQWPVOsQWtRnuwXaFTj9jVVh8pma9JjZ4zYSj5ZOyma7uuolffh+IR5aW97cHuBUXKGKXl=
+Kjn+DiHWMcYJah4N0lYCMlJOXipGRr5qdgoSTrqWSq6WFl2ypoaUAAAIfkECQEAAQAsAAAAACgA=
+KAAAApaEb6HLgd/iO7FNWtcFWe+ufODGjRfoiJ2akShbueb0wtI50zm02pbvwfWEMWBQ1zKGlLI=
+hskiEPm9R6vRXxV4ZzWT2yHOGpWMyorblKlNp8HmHEb/lCXjcW7bmtXP8Xt229OVWR1fod2eWqN=
+fHuMjXCPkIGNileOiImVmCOEmoSfn3yXlJWmoHGhqp6ilYuWYpmTqKUgAAIfkECQEAAQAsAAAAA=
+CgAKAAAApiEH6kb58biQ3FNWtMFWW3eNVcojuFGfqnZqSebuS06w5V80/X02pKe8zFwP6EFWOT1=
+lDFk8rGERh1TTNOocQ61Hm4Xm2VexUHpzjymViHrFbiELsefVrn6XKfnt2Q9G/+Xdie499XHd2g=
+4h7ioOGhXGJboGAnXSBnoBwKYyfioubZJ2Hn0RuRZaflZOil56Zp6iioKSXpUAAAh+QQJAQABAC=
+wAAAAAKAAoAAACkoQRqRvnxuI7kU1a1UU5bd5tnSeOZXhmn5lWK3qNTWvRdQxP8qvaC+/yaYQzX=
+O7BMvaUEmJRd3TsiMAgswmNYrSgZdYrTX6tSHGZO73ezuAw2uxuQ+BbeZfMxsexY35+/Qe4J1in=
+V0g4x3WHuMhIl2jXOKT2Q+VU5fgoSUI52VfZyfkJGkha6jmY+aaYdirq+lQAACH5BAkBAAEALAA=
+AAAAoACgAAAKWBIKpYe0L3YNKToqswUlvznigd4wiR4KhZrKt9Upqip61i9E3vMvxRdHlbEFiEX=
+fk9YARYxOZZD6VQ2pUunBmtRXo1Lf8hMVVcNl8JafV38aM2/Fu5V16Bn63r6xt97j09+MXSFi4B=
+niGFae3hzbH9+hYBzkpuUh5aZmHuanZOZgIuvbGiNeomCnaxxap2upaCZsq+1kAACH5BAkBAAEA=
+LAAAAAAoACgAAAKXjI8By5zf4kOxTVrXNVlv1X0d8IGZGKLnNpYtm8Lr9cqVeuOSvfOW79D9aDH=
+izNhDJidFZhNydEahOaDH6nomtJjp1tutKoNWkvA6JqfRVLHU/QUfau9l2x7G54d1fl995xcIGA=
+dXqMfBNadoYrhH+Mg2KBlpVpbluCiXmMnZ2Sh4GBqJ+ckIOqqJ6LmKSllZmsoq6wpQAAAh+QQJA=
+QABACwAAAAAKAAoAAAClYx/oLvoxuJDkU1a1YUZbJ59nSd2ZXhWqbRa2/gF8Gu2DY3iqs7yrq+x=
+BYEkYvFSM8aSSObE+ZgRl1BHFZNr7pRCavZ5BW2142hY3AN/zWtsmf12p9XxxFl2lpLn1rseztf=
+XZjdIWIf2s5dItwjYKBgo9yg5pHgzJXTEeGlZuenpyPmpGQoKOWkYmSpaSnqKileI2FAAACH5BA=
+kBAAEALAAAAAAoACgAAAKVjB+gu+jG4kORTVrVhRlsnn2dJ3ZleFaptFrb+CXmO9OozeL5VfP99=
+HvAWhpiUdcwkpBH3825AwYdU8xTqlLGhtCosArKMpvfa1mMRae9VvWZfeB2XfPkeLmm18lUcBj+=
+p5dnN8jXZ3YIGEhYuOUn45aoCDkp16hl5IjYJvjWKcnoGQpqyPlpOhr3aElaqrq56Bq7VAAAOw=
+=3D=3D"); height: 100%; opacity: 0.25; }
+
+.ui-progressbar-indeterminate .ui-progressbar-value { background-image: non=
+e; }
+
+.ui-selectable { touch-action: none; }
+
+.ui-selectable-helper { position: absolute; z-index: 100; border: 1px dotte=
+d black; }
+
+.ui-selectmenu-menu { padding: 0px; margin: 0px; position: absolute; top: 0=
+px; left: 0px; display: none; }
+
+.ui-selectmenu-menu .ui-menu { overflow: hidden auto; padding-bottom: 1px; =
+}
+
+.ui-selectmenu-menu .ui-menu .ui-selectmenu-optgroup { font-size: 1em; font=
+-weight: bold; line-height: 1.5; padding: 2px 0.4em; margin: 0.5em 0px 0px;=
+ height: auto; border: 0px; }
+
+.ui-selectmenu-open { display: block; }
+
+.ui-selectmenu-text { display: block; margin-right: 20px; overflow: hidden;=
+ text-overflow: ellipsis; }
+
+.ui-selectmenu-button.ui-button { text-align: left; white-space: nowrap; wi=
+dth: 14em; }
+
+.ui-selectmenu-icon.ui-icon { float: right; margin-top: 0px; }
+
+.ui-slider { position: relative; text-align: left; }
+
+.ui-slider .ui-slider-handle { position: absolute; z-index: 2; width: 1.2em=
+; height: 1.2em; cursor: default; touch-action: none; }
+
+.ui-slider .ui-slider-range { position: absolute; z-index: 1; font-size: 0.=
+7em; display: block; border: 0px; background-position: 0px 0px; }
+
+.ui-slider.ui-state-disabled .ui-slider-handle, .ui-slider.ui-state-disable=
+d .ui-slider-range { filter: inherit; }
+
+.ui-slider-horizontal { height: 0.8em; }
+
+.ui-slider-horizontal .ui-slider-handle { top: -0.3em; margin-left: -0.6em;=
+ }
+
+.ui-slider-horizontal .ui-slider-range { top: 0px; height: 100%; }
+
+.ui-slider-horizontal .ui-slider-range-min { left: 0px; }
+
+.ui-slider-horizontal .ui-slider-range-max { right: 0px; }
+
+.ui-slider-vertical { width: 0.8em; height: 100px; }
+
+.ui-slider-vertical .ui-slider-handle { left: -0.3em; margin-left: 0px; mar=
+gin-bottom: -0.6em; }
+
+.ui-slider-vertical .ui-slider-range { left: 0px; width: 100%; }
+
+.ui-slider-vertical .ui-slider-range-min { bottom: 0px; }
+
+.ui-slider-vertical .ui-slider-range-max { top: 0px; }
+
+.ui-sortable-handle { touch-action: none; }
+
+.ui-spinner { position: relative; display: inline-block; overflow: hidden; =
+padding: 0px; vertical-align: middle; }
+
+.ui-spinner-input { border-width: medium; border-style: none; border-color:=
+ currentcolor; border-image: initial; background: none; color: inherit; pad=
+ding: 0.222em 0px; margin: 0.2em 2em 0.2em 0.4em; vertical-align: middle; }
+
+.ui-spinner-button { width: 1.6em; height: 50%; font-size: 0.5em; padding: =
+0px; margin: 0px; text-align: center; position: absolute; cursor: default; =
+display: block; overflow: hidden; right: 0px; }
+
+.ui-spinner a.ui-spinner-button { border-top-style: none; border-bottom-sty=
+le: none; border-right-style: none; }
+
+.ui-spinner-up { top: 0px; }
+
+.ui-spinner-down { bottom: 0px; }
+
+.ui-tabs { position: relative; padding: 0.2em; }
+
+.ui-tabs .ui-tabs-nav { margin: 0px; padding: 0.2em 0.2em 0px; }
+
+.ui-tabs .ui-tabs-nav li { list-style: none; float: left; position: relativ=
+e; top: 0px; margin: 1px 0.2em 0px 0px; border-bottom-width: 0px; padding: =
+0px; white-space: nowrap; }
+
+.ui-tabs .ui-tabs-nav .ui-tabs-anchor { float: left; padding: 0.5em 1em; te=
+xt-decoration: none; }
+
+.ui-tabs .ui-tabs-nav li.ui-tabs-active { margin-bottom: -1px; padding-bott=
+om: 1px; }
+
+.ui-tabs .ui-tabs-nav li.ui-tabs-active .ui-tabs-anchor, .ui-tabs .ui-tabs-=
+nav li.ui-state-disabled .ui-tabs-anchor, .ui-tabs .ui-tabs-nav li.ui-tabs-=
+loading .ui-tabs-anchor { cursor: text; }
+
+.ui-tabs-collapsible .ui-tabs-nav li.ui-tabs-active .ui-tabs-anchor { curso=
+r: pointer; }
+
+.ui-tabs .ui-tabs-panel { display: block; border-width: 0px; padding: 1em 1=
+.4em; background: none; }
+
+.ui-tooltip { padding: 8px; position: absolute; z-index: 9999; max-width: 3=
+00px; }
+
+body .ui-tooltip { border-width: 2px; }
+
+.ui-widget { font-family: Arial, Helvetica, sans-serif; font-size: 1em; }
+
+.ui-widget .ui-widget { font-size: 1em; }
+
+.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button=
+ { font-family: Arial, Helvetica, sans-serif; font-size: 1em; }
+
+.ui-widget.ui-widget-content { border: 1px solid rgb(197, 197, 197); }
+
+.ui-widget-content { border: 1px solid rgb(221, 221, 221); background: rgb(=
+255, 255, 255); color: rgb(51, 51, 51); }
+
+.ui-widget-content a { color: rgb(51, 51, 51); }
+
+.ui-widget-header { border: 1px solid rgb(221, 221, 221); background: rgb(2=
+33, 233, 233); color: rgb(51, 51, 51); font-weight: bold; }
+
+.ui-widget-header a { color: rgb(51, 51, 51); }
+
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header =
+.ui-state-default, .ui-button, html .ui-button.ui-state-disabled:hover, htm=
+l .ui-button.ui-state-disabled:active { border: 1px solid rgb(197, 197, 197=
+); background: rgb(246, 246, 246); font-weight: normal; color: rgb(69, 69, =
+69); }
+
+.ui-state-default a, .ui-state-default a:link, .ui-state-default a:visited,=
+ a.ui-button, a:link.ui-button, a:visited.ui-button, .ui-button { color: rg=
+b(69, 69, 69); text-decoration: none; }
+
+.ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-=
+state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widge=
+t-header .ui-state-focus, .ui-button:hover, .ui-button:focus { border: 1px =
+solid rgb(204, 204, 204); background: rgb(237, 237, 237); font-weight: norm=
+al; color: rgb(43, 43, 43); }
+
+.ui-state-hover a, .ui-state-hover a:hover, .ui-state-hover a:link, .ui-sta=
+te-hover a:visited, .ui-state-focus a, .ui-state-focus a:hover, .ui-state-f=
+ocus a:link, .ui-state-focus a:visited, a.ui-button:hover, a.ui-button:focu=
+s { color: rgb(43, 43, 43); text-decoration: none; }
+
+.ui-visual-focus { box-shadow: rgb(94, 158, 214) 0px 0px 3px 1px; }
+
+.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .u=
+i-state-active, a.ui-button:active, .ui-button:active, .ui-button.ui-state-=
+active:hover { border: 1px solid rgb(0, 62, 255); background: rgb(0, 127, 2=
+55); font-weight: normal; color: rgb(255, 255, 255); }
+
+.ui-icon-background, .ui-state-active .ui-icon-background { border: rgb(0, =
+62, 255); background-color: rgb(255, 255, 255); }
+
+.ui-state-active a, .ui-state-active a:link, .ui-state-active a:visited { c=
+olor: rgb(255, 255, 255); text-decoration: none; }
+
+.ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-hea=
+der .ui-state-highlight { border: 1px solid rgb(218, 213, 94); background: =
+rgb(255, 250, 144); color: rgb(119, 118, 32); }
+
+.ui-state-checked { border: 1px solid rgb(218, 213, 94); background: rgb(25=
+5, 250, 144); }
+
+.ui-state-highlight a, .ui-widget-content .ui-state-highlight a, .ui-widget=
+-header .ui-state-highlight a { color: rgb(119, 118, 32); }
+
+.ui-state-error, .ui-widget-content .ui-state-error, .ui-widget-header .ui-=
+state-error { border: 1px solid rgb(241, 168, 153); background: rgb(253, 22=
+3, 223); color: rgb(95, 63, 63); }
+
+.ui-state-error a, .ui-widget-content .ui-state-error a, .ui-widget-header =
+.ui-state-error a { color: rgb(95, 63, 63); }
+
+.ui-state-error-text, .ui-widget-content .ui-state-error-text, .ui-widget-h=
+eader .ui-state-error-text { color: rgb(95, 63, 63); }
+
+.ui-priority-primary, .ui-widget-content .ui-priority-primary, .ui-widget-h=
+eader .ui-priority-primary { font-weight: bold; }
+
+.ui-priority-secondary, .ui-widget-content .ui-priority-secondary, .ui-widg=
+et-header .ui-priority-secondary { opacity: 0.7; font-weight: normal; }
+
+.ui-state-disabled, .ui-widget-content .ui-state-disabled, .ui-widget-heade=
+r .ui-state-disabled { opacity: 0.35; background-image: none; }
+
+.ui-state-disabled .ui-icon { }
+
+.ui-icon { width: 16px; height: 16px; }
+
+.ui-icon, .ui-widget-content .ui-icon { background-image: url("images/ui-ic=
+ons_444444_256x240.png"); }
+
+.ui-widget-header .ui-icon { background-image: url("images/ui-icons_444444_=
+256x240.png"); }
+
+.ui-state-hover .ui-icon, .ui-state-focus .ui-icon, .ui-button:hover .ui-ic=
+on, .ui-button:focus .ui-icon { background-image: url("images/ui-icons_5555=
+55_256x240.png"); }
+
+.ui-state-active .ui-icon, .ui-button:active .ui-icon { background-image: u=
+rl("images/ui-icons_ffffff_256x240.png"); }
+
+.ui-state-highlight .ui-icon, .ui-button .ui-state-highlight.ui-icon { back=
+ground-image: url("images/ui-icons_777620_256x240.png"); }
+
+.ui-state-error .ui-icon, .ui-state-error-text .ui-icon { background-image:=
+ url("images/ui-icons_cc0000_256x240.png"); }
+
+.ui-button .ui-icon { background-image: url("images/ui-icons_777777_256x240=
+.png"); }
+
+.ui-icon-blank { background-position: 16px 16px; }
+
+.ui-icon-caret-1-n { background-position: 0px 0px; }
+
+.ui-icon-caret-1-ne { background-position: -16px 0px; }
+
+.ui-icon-caret-1-e { background-position: -32px 0px; }
+
+.ui-icon-caret-1-se { background-position: -48px 0px; }
+
+.ui-icon-caret-1-s { background-position: -65px 0px; }
+
+.ui-icon-caret-1-sw { background-position: -80px 0px; }
+
+.ui-icon-caret-1-w { background-position: -96px 0px; }
+
+.ui-icon-caret-1-nw { background-position: -112px 0px; }
+
+.ui-icon-caret-2-n-s { background-position: -128px 0px; }
+
+.ui-icon-caret-2-e-w { background-position: -144px 0px; }
+
+.ui-icon-triangle-1-n { background-position: 0px -16px; }
+
+.ui-icon-triangle-1-ne { background-position: -16px -16px; }
+
+.ui-icon-triangle-1-e { background-position: -32px -16px; }
+
+.ui-icon-triangle-1-se { background-position: -48px -16px; }
+
+.ui-icon-triangle-1-s { background-position: -65px -16px; }
+
+.ui-icon-triangle-1-sw { background-position: -80px -16px; }
+
+.ui-icon-triangle-1-w { background-position: -96px -16px; }
+
+.ui-icon-triangle-1-nw { background-position: -112px -16px; }
+
+.ui-icon-triangle-2-n-s { background-position: -128px -16px; }
+
+.ui-icon-triangle-2-e-w { background-position: -144px -16px; }
+
+.ui-icon-arrow-1-n { background-position: 0px -32px; }
+
+.ui-icon-arrow-1-ne { background-position: -16px -32px; }
+
+.ui-icon-arrow-1-e { background-position: -32px -32px; }
+
+.ui-icon-arrow-1-se { background-position: -48px -32px; }
+
+.ui-icon-arrow-1-s { background-position: -65px -32px; }
+
+.ui-icon-arrow-1-sw { background-position: -80px -32px; }
+
+.ui-icon-arrow-1-w { background-position: -96px -32px; }
+
+.ui-icon-arrow-1-nw { background-position: -112px -32px; }
+
+.ui-icon-arrow-2-n-s { background-position: -128px -32px; }
+
+.ui-icon-arrow-2-ne-sw { background-position: -144px -32px; }
+
+.ui-icon-arrow-2-e-w { background-position: -160px -32px; }
+
+.ui-icon-arrow-2-se-nw { background-position: -176px -32px; }
+
+.ui-icon-arrowstop-1-n { background-position: -192px -32px; }
+
+.ui-icon-arrowstop-1-e { background-position: -208px -32px; }
+
+.ui-icon-arrowstop-1-s { background-position: -224px -32px; }
+
+.ui-icon-arrowstop-1-w { background-position: -240px -32px; }
+
+.ui-icon-arrowthick-1-n { background-position: 1px -48px; }
+
+.ui-icon-arrowthick-1-ne { background-position: -16px -48px; }
+
+.ui-icon-arrowthick-1-e { background-position: -32px -48px; }
+
+.ui-icon-arrowthick-1-se { background-position: -48px -48px; }
+
+.ui-icon-arrowthick-1-s { background-position: -64px -48px; }
+
+.ui-icon-arrowthick-1-sw { background-position: -80px -48px; }
+
+.ui-icon-arrowthick-1-w { background-position: -96px -48px; }
+
+.ui-icon-arrowthick-1-nw { background-position: -112px -48px; }
+
+.ui-icon-arrowthick-2-n-s { background-position: -128px -48px; }
+
+.ui-icon-arrowthick-2-ne-sw { background-position: -144px -48px; }
+
+.ui-icon-arrowthick-2-e-w { background-position: -160px -48px; }
+
+.ui-icon-arrowthick-2-se-nw { background-position: -176px -48px; }
+
+.ui-icon-arrowthickstop-1-n { background-position: -192px -48px; }
+
+.ui-icon-arrowthickstop-1-e { background-position: -208px -48px; }
+
+.ui-icon-arrowthickstop-1-s { background-position: -224px -48px; }
+
+.ui-icon-arrowthickstop-1-w { background-position: -240px -48px; }
+
+.ui-icon-arrowreturnthick-1-w { background-position: 0px -64px; }
+
+.ui-icon-arrowreturnthick-1-n { background-position: -16px -64px; }
+
+.ui-icon-arrowreturnthick-1-e { background-position: -32px -64px; }
+
+.ui-icon-arrowreturnthick-1-s { background-position: -48px -64px; }
+
+.ui-icon-arrowreturn-1-w { background-position: -64px -64px; }
+
+.ui-icon-arrowreturn-1-n { background-position: -80px -64px; }
+
+.ui-icon-arrowreturn-1-e { background-position: -96px -64px; }
+
+.ui-icon-arrowreturn-1-s { background-position: -112px -64px; }
+
+.ui-icon-arrowrefresh-1-w { background-position: -128px -64px; }
+
+.ui-icon-arrowrefresh-1-n { background-position: -144px -64px; }
+
+.ui-icon-arrowrefresh-1-e { background-position: -160px -64px; }
+
+.ui-icon-arrowrefresh-1-s { background-position: -176px -64px; }
+
+.ui-icon-arrow-4 { background-position: 0px -80px; }
+
+.ui-icon-arrow-4-diag { background-position: -16px -80px; }
+
+.ui-icon-extlink { background-position: -32px -80px; }
+
+.ui-icon-newwin { background-position: -48px -80px; }
+
+.ui-icon-refresh { background-position: -64px -80px; }
+
+.ui-icon-shuffle { background-position: -80px -80px; }
+
+.ui-icon-transfer-e-w { background-position: -96px -80px; }
+
+.ui-icon-transferthick-e-w { background-position: -112px -80px; }
+
+.ui-icon-folder-collapsed { background-position: 0px -96px; }
+
+.ui-icon-folder-open { background-position: -16px -96px; }
+
+.ui-icon-document { background-position: -32px -96px; }
+
+.ui-icon-document-b { background-position: -48px -96px; }
+
+.ui-icon-note { background-position: -64px -96px; }
+
+.ui-icon-mail-closed { background-position: -80px -96px; }
+
+.ui-icon-mail-open { background-position: -96px -96px; }
+
+.ui-icon-suitcase { background-position: -112px -96px; }
+
+.ui-icon-comment { background-position: -128px -96px; }
+
+.ui-icon-person { background-position: -144px -96px; }
+
+.ui-icon-print { background-position: -160px -96px; }
+
+.ui-icon-trash { background-position: -176px -96px; }
+
+.ui-icon-locked { background-position: -192px -96px; }
+
+.ui-icon-unlocked { background-position: -208px -96px; }
+
+.ui-icon-bookmark { background-position: -224px -96px; }
+
+.ui-icon-tag { background-position: -240px -96px; }
+
+.ui-icon-home { background-position: 0px -112px; }
+
+.ui-icon-flag { background-position: -16px -112px; }
+
+.ui-icon-calendar { background-position: -32px -112px; }
+
+.ui-icon-cart { background-position: -48px -112px; }
+
+.ui-icon-pencil { background-position: -64px -112px; }
+
+.ui-icon-clock { background-position: -80px -112px; }
+
+.ui-icon-disk { background-position: -96px -112px; }
+
+.ui-icon-calculator { background-position: -112px -112px; }
+
+.ui-icon-zoomin { background-position: -128px -112px; }
+
+.ui-icon-zoomout { background-position: -144px -112px; }
+
+.ui-icon-search { background-position: -160px -112px; }
+
+.ui-icon-wrench { background-position: -176px -112px; }
+
+.ui-icon-gear { background-position: -192px -112px; }
+
+.ui-icon-heart { background-position: -208px -112px; }
+
+.ui-icon-star { background-position: -224px -112px; }
+
+.ui-icon-link { background-position: -240px -112px; }
+
+.ui-icon-cancel { background-position: 0px -128px; }
+
+.ui-icon-plus { background-position: -16px -128px; }
+
+.ui-icon-plusthick { background-position: -32px -128px; }
+
+.ui-icon-minus { background-position: -48px -128px; }
+
+.ui-icon-minusthick { background-position: -64px -128px; }
+
+.ui-icon-close { background-position: -80px -128px; }
+
+.ui-icon-closethick { background-position: -96px -128px; }
+
+.ui-icon-key { background-position: -112px -128px; }
+
+.ui-icon-lightbulb { background-position: -128px -128px; }
+
+.ui-icon-scissors { background-position: -144px -128px; }
+
+.ui-icon-clipboard { background-position: -160px -128px; }
+
+.ui-icon-copy { background-position: -176px -128px; }
+
+.ui-icon-contact { background-position: -192px -128px; }
+
+.ui-icon-image { background-position: -208px -128px; }
+
+.ui-icon-video { background-position: -224px -128px; }
+
+.ui-icon-script { background-position: -240px -128px; }
+
+.ui-icon-alert { background-position: 0px -144px; }
+
+.ui-icon-info { background-position: -16px -144px; }
+
+.ui-icon-notice { background-position: -32px -144px; }
+
+.ui-icon-help { background-position: -48px -144px; }
+
+.ui-icon-check { background-position: -64px -144px; }
+
+.ui-icon-bullet { background-position: -80px -144px; }
+
+.ui-icon-radio-on { background-position: -96px -144px; }
+
+.ui-icon-radio-off { background-position: -112px -144px; }
+
+.ui-icon-pin-w { background-position: -128px -144px; }
+
+.ui-icon-pin-s { background-position: -144px -144px; }
+
+.ui-icon-play { background-position: 0px -160px; }
+
+.ui-icon-pause { background-position: -16px -160px; }
+
+.ui-icon-seek-next { background-position: -32px -160px; }
+
+.ui-icon-seek-prev { background-position: -48px -160px; }
+
+.ui-icon-seek-end { background-position: -64px -160px; }
+
+.ui-icon-seek-start { background-position: -80px -160px; }
+
+.ui-icon-seek-first { background-position: -80px -160px; }
+
+.ui-icon-stop { background-position: -96px -160px; }
+
+.ui-icon-eject { background-position: -112px -160px; }
+
+.ui-icon-volume-off { background-position: -128px -160px; }
+
+.ui-icon-volume-on { background-position: -144px -160px; }
+
+.ui-icon-power { background-position: 0px -176px; }
+
+.ui-icon-signal-diag { background-position: -16px -176px; }
+
+.ui-icon-signal { background-position: -32px -176px; }
+
+.ui-icon-battery-0 { background-position: -48px -176px; }
+
+.ui-icon-battery-1 { background-position: -64px -176px; }
+
+.ui-icon-battery-2 { background-position: -80px -176px; }
+
+.ui-icon-battery-3 { background-position: -96px -176px; }
+
+.ui-icon-circle-plus { background-position: 0px -192px; }
+
+.ui-icon-circle-minus { background-position: -16px -192px; }
+
+.ui-icon-circle-close { background-position: -32px -192px; }
+
+.ui-icon-circle-triangle-e { background-position: -48px -192px; }
+
+.ui-icon-circle-triangle-s { background-position: -64px -192px; }
+
+.ui-icon-circle-triangle-w { background-position: -80px -192px; }
+
+.ui-icon-circle-triangle-n { background-position: -96px -192px; }
+
+.ui-icon-circle-arrow-e { background-position: -112px -192px; }
+
+.ui-icon-circle-arrow-s { background-position: -128px -192px; }
+
+.ui-icon-circle-arrow-w { background-position: -144px -192px; }
+
+.ui-icon-circle-arrow-n { background-position: -160px -192px; }
+
+.ui-icon-circle-zoomin { background-position: -176px -192px; }
+
+.ui-icon-circle-zoomout { background-position: -192px -192px; }
+
+.ui-icon-circle-check { background-position: -208px -192px; }
+
+.ui-icon-circlesmall-plus { background-position: 0px -208px; }
+
+.ui-icon-circlesmall-minus { background-position: -16px -208px; }
+
+.ui-icon-circlesmall-close { background-position: -32px -208px; }
+
+.ui-icon-squaresmall-plus { background-position: -48px -208px; }
+
+.ui-icon-squaresmall-minus { background-position: -64px -208px; }
+
+.ui-icon-squaresmall-close { background-position: -80px -208px; }
+
+.ui-icon-grip-dotted-vertical { background-position: 0px -224px; }
+
+.ui-icon-grip-dotted-horizontal { background-position: -16px -224px; }
+
+.ui-icon-grip-solid-vertical { background-position: -32px -224px; }
+
+.ui-icon-grip-solid-horizontal { background-position: -48px -224px; }
+
+.ui-icon-gripsmall-diagonal-se { background-position: -64px -224px; }
+
+.ui-icon-grip-diagonal-se { background-position: -80px -224px; }
+
+.ui-corner-all, .ui-corner-top, .ui-corner-left, .ui-corner-tl { border-top=
+-left-radius: 3px; }
+
+.ui-corner-all, .ui-corner-top, .ui-corner-right, .ui-corner-tr { border-to=
+p-right-radius: 3px; }
+
+.ui-corner-all, .ui-corner-bottom, .ui-corner-left, .ui-corner-bl { border-=
+bottom-left-radius: 3px; }
+
+.ui-corner-all, .ui-corner-bottom, .ui-corner-right, .ui-corner-br { border=
+-bottom-right-radius: 3px; }
+
+.ui-widget-overlay { background: rgb(170, 170, 170); opacity: 0.003; }
+
+.ui-widget-shadow { box-shadow: rgb(102, 102, 102) 0px 0px 5px; }
+------MultipartBoundary--h0ek0A3zIDCGtt1ZYc6nnXoPLcyjKuJxpqD7MTsMGd----
+Content-Type: text/css
+Content-Transfer-Encoding: quoted-printable
+Content-Location: cid:css-0f3ea42c-9114-4699-afdf-a5b9e2baccc1@mhtml.blink
+
+@charset "utf-8";
+=0A
+------MultipartBoundary--h0ek0A3zIDCGtt1ZYc6nnXoPLcyjKuJxpqD7MTsMGd----
+Content-Type: text/css
+Content-Transfer-Encoding: quoted-printable
+Content-Location: cid:css-9458e0e0-da11-4967-a32b-7000e5d73907@mhtml.blink
+
+@charset "utf-8";
+=0A
+------MultipartBoundary--h0ek0A3zIDCGtt1ZYc6nnXoPLcyjKuJxpqD7MTsMGd----
+Content-Type: text/css
+Content-Transfer-Encoding: quoted-printable
+Content-Location: cid:css-1f1c444b-450b-4c7b-b5a1-e8348069ae7a@mhtml.blink
+
+@charset "utf-8";
+=0A
+------MultipartBoundary--h0ek0A3zIDCGtt1ZYc6nnXoPLcyjKuJxpqD7MTsMGd----
+Content-Type: text/css
+Content-Transfer-Encoding: quoted-printable
+Content-Location: cid:css-23f026e6-8e4c-4756-8ea8-eb73e39f0294@mhtml.blink
+
+@charset "utf-8";
+
+#formWindow { left: 15px; width: 700px; }
+
+.formCol1 { width: 42%; }
+
+input { width: 200px; }
+
+.colInput { float: right; }
+
+.dataHeader { vertical-align: top; }
+------MultipartBoundary--h0ek0A3zIDCGtt1ZYc6nnXoPLcyjKuJxpqD7MTsMGd------
