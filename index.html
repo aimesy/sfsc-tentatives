@@ -18,27 +18,54 @@
       overflow: hidden;
     }
 
+    /* ── Header ── */
     header {
       background: #1a3a5c;
       color: white;
-      padding: 0.6rem 1.25rem;
+      padding: 0 1.25rem;
       flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
+      height: 44px;
     }
-    header h1 { font-size: 1rem; font-weight: 600; white-space: nowrap; }
-    #stats { font-size: 0.75rem; opacity: 0.7; white-space: nowrap; }
+    .header-left { display: flex; align-items: center; gap: 1rem; }
+    header h1 { font-size: 0.95rem; font-weight: 600; white-space: nowrap; }
+    #stats { font-size: 0.73rem; opacity: 0.65; white-space: nowrap; }
+    .header-right { display: flex; align-items: center; gap: 0.5rem; }
 
+    .hbtn {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .hbtn-ghost {
+      background: rgba(255,255,255,0.12);
+      color: white;
+    }
+    .hbtn-ghost:hover { background: rgba(255,255,255,0.22); }
+    .hbtn-accent {
+      background: #f0a500;
+      color: #1a2a00;
+    }
+    .hbtn-accent:hover { background: #f8b820; }
+
+    /* ── Toolbar ── */
     .toolbar {
       background: white;
       border-bottom: 1px solid #d0d7de;
-      padding: 0.45rem 1.25rem;
+      padding: 0.4rem 1.25rem;
       flex-shrink: 0;
       display: flex;
       flex-wrap: wrap;
-      gap: 0.45rem;
+      gap: 0.4rem;
       align-items: center;
     }
     .toolbar input, .toolbar select {
@@ -50,130 +77,120 @@
       height: 26px;
     }
     #search { width: 220px; }
-    .sep { width: 1px; height: 18px; background: #ddd; margin: 0 0.1rem; }
+    .sep { width: 1px; height: 18px; background: #ddd; margin: 0 0.1rem; flex-shrink: 0; }
     .toolbar label { font-size: 0.75rem; color: #666; display: flex; align-items: center; gap: 0.3rem; }
 
     .btn {
       padding: 0.28rem 0.7rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      background: white;
-      font-size: 0.78rem;
-      cursor: pointer;
-      height: 26px;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      white-space: nowrap;
-      color: #333;
+      border: 1px solid #ccc; border-radius: 4px;
+      background: white; font-size: 0.78rem;
+      cursor: pointer; height: 26px;
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      white-space: nowrap; color: #333;
     }
     .btn:hover { background: #f0f5ff; border-color: #a0b4cc; }
     .btn:disabled { opacity: 0.4; cursor: default; }
     .btn-primary { background: #1a3a5c; color: white; border-color: #1a3a5c; }
     .btn-primary:hover { background: #214d78; }
 
+    /* ── Result bar ── */
     .result-bar {
-      padding: 0.25rem 1.25rem;
+      padding: 0.22rem 1.25rem;
       background: #f8f9fa;
       border-bottom: 1px solid #e8eaed;
-      font-size: 0.73rem;
-      color: #666;
+      font-size: 0.72rem; color: #666;
       flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
       min-height: 22px;
     }
 
-    .table-wrap {
-      flex: 1;
-      overflow: auto;
-      position: relative;
-    }
+    /* ── Table ── */
+    .table-wrap { flex: 1; overflow: auto; position: relative; }
 
     table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.8rem;
-      table-layout: fixed;
+      width: 100%; border-collapse: collapse;
+      font-size: 0.8rem; table-layout: fixed;
     }
-
     thead { position: sticky; top: 0; z-index: 10; }
     th {
-      background: #1a3a5c;
-      color: white;
-      padding: 0.35rem 0.6rem;
-      text-align: left;
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      user-select: none;
-      border-right: 1px solid #214d78;
+      background: #1a3a5c; color: white;
+      padding: 0.32rem 0.6rem;
+      text-align: left; font-size: 0.7rem; font-weight: 600;
+      letter-spacing: 0.03em; text-transform: uppercase;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      user-select: none; border-right: 1px solid #214d78;
     }
     th:last-child { border-right: none; }
     th.sortable { cursor: pointer; }
     th.sortable:hover { background: #214d78; }
-    th.sort-asc::after  { content: ' ▲'; font-size: 0.65rem; }
-    th.sort-desc::after { content: ' ▼'; font-size: 0.65rem; }
+    th.sort-asc::after  { content: ' ▲'; font-size: 0.6rem; }
+    th.sort-desc::after { content: ' ▼'; font-size: 0.6rem; }
 
-    /* Column widths */
-    .col-dept   { width: 60px; }
-    .col-date   { width: 88px; }
-    .col-time   { width: 50px; }
-    .col-case   { width: 110px; }
-    .col-title  { width: 22%; }
-    .col-motion { width: 30%; }
-    .col-judge  { width: 140px; }
-    .col-ruling { width: auto; min-width: 120px; }
+    .col-dept   { width: 52px; }
+    .col-date   { width: 86px; }
+    .col-time   { width: 48px; }
+    .col-case   { width: 108px; }
+    .col-title  { width: 20%; }
+    .col-motion { width: 28%; }
+    .col-judge  { width: 135px; }
+    .col-ruling { width: auto; min-width: 100px; }
 
     td {
-      padding: 0.28rem 0.6rem;
-      border-bottom: 1px solid #eaecef;
-      border-right: 1px solid #f0f2f4;
-      vertical-align: top;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 0; /* forces overflow:hidden with table-layout:fixed */
+      padding: 0.26rem 0.6rem;
+      border-bottom: 1px solid #eaecef; border-right: 1px solid #f0f2f4;
+      vertical-align: top; overflow: hidden; text-overflow: ellipsis;
+      white-space: nowrap; max-width: 0;
     }
     td:last-child { border-right: none; }
-    td.wrap { white-space: normal; }
     tbody tr { cursor: pointer; }
     tbody tr:hover td { background: #eef3fb; }
     tbody tr:nth-child(even) td { background: #fafbfc; }
     tbody tr:nth-child(even):hover td { background: #eef3fb; }
-
     .no-data { text-align: center; padding: 2rem; color: #999; }
 
+    /* ── Pager ── */
     .pager {
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.25rem;
-      padding: 0.4rem;
-      border-top: 1px solid #d0d7de;
-      background: white;
+      flex-shrink: 0; display: flex; align-items: center;
+      justify-content: center; gap: 0.25rem;
+      padding: 0.35rem; border-top: 1px solid #d0d7de; background: white;
     }
     .pager button {
-      padding: 0.2rem 0.5rem;
-      border: 1px solid #ccc;
-      background: white;
-      border-radius: 3px;
-      cursor: pointer;
-      font-size: 0.75rem;
-      min-width: 28px;
+      padding: 0.2rem 0.5rem; border: 1px solid #ccc;
+      background: white; border-radius: 3px; cursor: pointer;
+      font-size: 0.75rem; min-width: 28px;
     }
     .pager button.active { background: #1a3a5c; color: white; border-color: #1a3a5c; }
     .pager button:hover:not(.active):not(:disabled) { background: #f0f5ff; }
     .pager button:disabled { opacity: 0.35; cursor: default; }
-    #page-info { font-size: 0.73rem; color: #666; padding: 0 0.4rem; white-space: nowrap; }
+    #page-info { font-size: 0.72rem; color: #666; padding: 0 0.4rem; white-space: nowrap; }
 
-    /* Modal */
+    /* ── Loading / Error ── */
+    #loading {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: #f4f6f9; gap: 0.65rem; color: #555;
+    }
+    .spinner {
+      width: 2rem; height: 2rem;
+      border: 3px solid #ddd; border-top-color: #1a3a5c;
+      border-radius: 50%; animation: spin 0.65s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #load-detail { font-size: 0.75rem; color: #aaa; }
+    #error-bar {
+      display: none; padding: 0.55rem 1.25rem;
+      background: #fff0f0; border-bottom: 1px solid #f5c6c6;
+      color: #7a2020; font-size: 0.8rem;
+    }
+    #qspinner {
+      width: 12px; height: 12px;
+      border: 2px solid #ddd; border-top-color: #1a3a5c;
+      border-radius: 50%; animation: spin 0.6s linear infinite; display: none;
+    }
+    #qspinner.on { display: inline-block; }
+
+    /* ── Detail modal ── */
     .overlay {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,0.45); z-index: 200;
@@ -184,14 +201,13 @@
       background: white; border-radius: 6px;
       max-width: 860px; width: 100%;
       padding: 1.25rem 1.5rem; position: relative; margin: auto;
-      font-size: 0.875rem;
     }
     .modal h2 { font-size: 0.95rem; margin-bottom: 0.2rem; padding-right: 2rem; }
-    .modal .meta { font-size: 0.75rem; color: #888; margin-bottom: 0.75rem; }
+    .modal .meta { font-size: 0.74rem; color: #888; margin-bottom: 0.7rem; }
     .modal .motion {
       font-size: 0.8rem; color: #444; font-style: italic;
       background: #f7f8fa; border-left: 3px solid #1a3a5c;
-      padding: 0.4rem 0.7rem; margin-bottom: 0.75rem; border-radius: 0 4px 4px 0;
+      padding: 0.4rem 0.7rem; margin-bottom: 0.7rem; border-radius: 0 4px 4px 0;
     }
     .modal .ruling { font-size: 0.85rem; line-height: 1.8; white-space: pre-wrap; }
     .modal-close {
@@ -201,47 +217,72 @@
     }
     .modal-close:hover { color: #333; }
 
-    /* Loading */
-    #loading {
-      position: absolute; inset: 0;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      background: #f4f6f9; gap: 0.75rem; color: #555;
+    /* ── Install modal ── */
+    #install-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5); z-index: 300;
+      padding: 2rem 1rem; overflow-y: auto;
     }
-    .spinner {
-      width: 2rem; height: 2rem;
-      border: 3px solid #ddd; border-top-color: #1a3a5c;
-      border-radius: 50%; animation: spin 0.65s linear infinite;
+    #install-overlay.open { display: flex; align-items: center; justify-content: center; }
+    .install-modal {
+      background: white; border-radius: 8px;
+      max-width: 520px; width: 100%;
+      padding: 1.5rem; position: relative; margin: auto;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    #load-detail { font-size: 0.78rem; color: #aaa; }
+    .install-modal h2 { font-size: 1rem; margin-bottom: 0.25rem; }
+    .install-modal .sub { font-size: 0.8rem; color: #666; margin-bottom: 1.25rem; }
+    .install-modal .step {
+      display: flex; gap: 0.75rem; align-items: flex-start;
+      margin-bottom: 0.85rem;
+    }
+    .step-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #1a3a5c; color: white;
+      font-size: 0.72rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .step-body { font-size: 0.82rem; line-height: 1.5; }
+    .step-body b { display: block; margin-bottom: 0.15rem; }
+    .step-body code {
+      background: #f0f2f5; padding: 0.1rem 0.35rem;
+      border-radius: 3px; font-size: 0.78rem; font-family: monospace;
+    }
+    .dl-btn {
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      width: 100%; padding: 0.6rem;
+      background: #1a3a5c; color: white;
+      border: none; border-radius: 5px;
+      font-size: 0.875rem; font-weight: 600; cursor: pointer;
+      text-decoration: none; margin-bottom: 1.25rem;
+    }
+    .dl-btn:hover { background: #214d78; }
+    .divider { border: none; border-top: 1px solid #eee; margin: 1rem 0; }
+    .pat-note {
+      background: #fffbea; border: 1px solid #f0d060;
+      border-radius: 5px; padding: 0.6rem 0.75rem;
+      font-size: 0.78rem; color: #5a4a00; margin-top: 0.5rem;
+    }
+    .pat-note a { color: #1a3a5c; }
 
-    #error-bar {
-      display: none; padding: 0.6rem 1.25rem;
-      background: #fff0f0; border-bottom: 1px solid #f5c6c6;
-      color: #7a2020; font-size: 0.8rem;
-    }
-
-    /* Query spinner */
-    #qspinner {
-      width: 12px; height: 12px;
-      border: 2px solid #ddd; border-top-color: #1a3a5c;
-      border-radius: 50%; animation: spin 0.6s linear infinite;
-      display: none;
-    }
-    #qspinner.on { display: inline-block; }
-
-    @media (max-width: 700px) {
+    @media (max-width: 680px) {
       .col-time, .col-dept { display: none; }
       #search { width: 140px; }
+      #stats { display: none; }
     }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>SF Superior Court — Tentative Rulings</h1>
-  <span id="stats">Loading…</span>
+  <div class="header-left">
+    <h1>SF Superior Court — Tentative Rulings</h1>
+    <span id="stats">Loading…</span>
+  </div>
+  <div class="header-right">
+    <button class="hbtn hbtn-ghost" id="ext-btn">⬇ Install Extension</button>
+    <button class="hbtn hbtn-ghost" id="export-btn">⬇ CSV</button>
+  </div>
 </header>
 
 <div class="toolbar" id="toolbar" style="display:none">
@@ -250,12 +291,20 @@
   <label>From <input type="date" id="date-from" style="width:120px"></label>
   <label>To <input type="date" id="date-to" style="width:120px"></label>
   <div class="sep"></div>
-  <select id="dept" style="width:100px"><option value="">All depts</option></select>
-  <select id="judge" style="width:150px"><option value="">All judges</option></select>
+  <select id="dept" style="width:95px"><option value="">All depts</option></select>
+  <select id="judge" style="width:145px"><option value="">All judges</option></select>
   <div class="sep"></div>
   <button class="btn" id="clear-btn">✕ Clear</button>
-  <div class="sep"></div>
-  <button class="btn btn-primary" id="export-btn">⬇ CSV</button>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:0.4rem">
+    <label style="font-size:0.73rem;color:#666">Rows
+      <select id="page-size" style="padding:0.15rem;font-size:0.73rem;border:1px solid #ccc;border-radius:3px;height:auto">
+        <option value="50">50</option>
+        <option value="100">100</option>
+        <option value="250">250</option>
+        <option value="500">500</option>
+      </select>
+    </label>
+  </div>
 </div>
 
 <div id="error-bar"></div>
@@ -289,23 +338,14 @@
 </div>
 
 <div class="pager" id="pager" style="display:none">
-  <button id="pg-first" data-p="0">«</button>
+  <button id="pg-first">«</button>
   <button id="pg-prev">‹</button>
   <span id="page-info"></span>
   <button id="pg-next">›</button>
   <button id="pg-last">»</button>
-  <div class="sep"></div>
-  <label style="font-size:0.73rem;color:#666">
-    Rows
-    <select id="page-size" style="padding:0.15rem;font-size:0.73rem;border:1px solid #ccc;border-radius:3px">
-      <option value="50">50</option>
-      <option value="100">100</option>
-      <option value="250">250</option>
-      <option value="500">500</option>
-    </select>
-  </label>
 </div>
 
+<!-- Row detail modal -->
 <div class="overlay" id="overlay">
   <div class="modal">
     <button class="modal-close" id="modal-close">×</button>
@@ -316,41 +356,88 @@
   </div>
 </div>
 
+<!-- Extension install modal -->
+<div id="install-overlay">
+  <div class="install-modal">
+    <button class="modal-close" id="install-close">×</button>
+    <h2>Install the Browser Extension</h2>
+    <p class="sub">Click once on any SFSC tentative rulings page to send the day's rulings straight to this database.</p>
+
+    <a class="dl-btn" href="sfsc-extension.zip" download>
+      ⬇ Download sfsc-extension.zip
+    </a>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <b>Unzip the downloaded file</b>
+        Extract <code>sfsc-extension.zip</code> to a permanent folder on your computer.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <b>Open Chrome extensions</b>
+        Go to <code>chrome://extensions</code> and enable <b>Developer mode</b> (top-right toggle).
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <b>Load the extension</b>
+        Click <b>Load unpacked</b> and select the unzipped folder.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <b>Configure settings</b>
+        Click the extension icon → ⚙ Settings. Enter your GitHub token and confirm the repo is set to <code>amitabho/sfsc-tentatives</code>.
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="pat-note">
+      <b>GitHub token required.</b> Create one at
+      <a href="https://github.com/settings/personal-access-tokens/new" target="_blank">
+        github.com → Settings → Developer settings → Fine-grained tokens
+      </a>.
+      Grant it <b>Contents: Read and Write</b> on this repository.
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm/+esm';
 
 // ── State ─────────────────────────────────────────────────────────────────────
-let conn, totalRows = 0, currentPage = 0, lastCount = 0;
-let PAGE_SIZE = 50, sortCol = 'court_date', sortDir = 'DESC';
-let rows = [];
-
+let conn, totalRows = 0, currentPage = 0, lastCount = 0, PAGE_SIZE = 50;
+let sortCol = 'court_date', sortDir = 'DESC', rows = [];
 const $ = id => document.getElementById(id);
 const searchEl = $('search'), dateFrom = $('date-from'), dateTo = $('date-to');
 const deptEl = $('dept'), judgeEl = $('judge');
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 try {
-  // Download parquet with progress
   $('load-msg').textContent = 'Downloading data…';
   const res = await fetch('./tentatives.parquet');
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status} fetching tentatives.parquet`);
 
+  // Streamed download with progress
   let buf;
   if (res.body) {
     const total = +res.headers.get('Content-Length') || 0;
     const reader = res.body.getReader();
-    const chunks = [];
-    let received = 0;
-    while (true) {
+    const chunks = []; let received = 0;
+    for (;;) {
       const { done, value } = await reader.read();
       if (done) break;
-      chunks.push(value);
-      received += value.length;
+      chunks.push(value); received += value.length;
       if (total) $('load-detail').textContent =
         `${(received/1e6).toFixed(1)} / ${(total/1e6).toFixed(1)} MB`;
     }
-    buf = new Uint8Array(chunks.reduce((a, c) => a + c.length, 0));
-    let off = 0;
+    buf = new Uint8Array(received); let off = 0;
     for (const c of chunks) { buf.set(c, off); off += c.length; }
   } else {
     buf = new Uint8Array(await res.arrayBuffer());
@@ -366,7 +453,6 @@ try {
   const db = new duckdb.AsyncDuckDB(new duckdb.VoidLogger(), new Worker(wUrl));
   await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
   URL.revokeObjectURL(wUrl);
-
   await db.registerFileBuffer('data.parquet', buf);
   conn = await db.connect();
 
@@ -377,21 +463,15 @@ try {
   totalRows = Number(s.n);
   $('stats').textContent = `${totalRows.toLocaleString()} rulings · ${s.lo} → ${s.hi}`;
 
-  // Populate dropdowns
-  const depts = (await conn.query(
+  // Dropdowns
+  for (const r of (await conn.query(
     `SELECT DISTINCT department FROM 'data.parquet' WHERE department IS NOT NULL ORDER BY department`
-  )).toArray();
-  for (const r of depts) {
-    const o = new Option(`Dept ${r.department}`, r.department);
-    deptEl.appendChild(o);
-  }
+  )).toArray()) deptEl.appendChild(new Option(`Dept ${r.department}`, r.department));
 
-  const judges = (await conn.query(
+  for (const r of (await conn.query(
     `SELECT DISTINCT judge FROM 'data.parquet' WHERE judge IS NOT NULL AND judge!='' ORDER BY judge`
-  )).toArray();
-  for (const r of judges) judgeEl.appendChild(new Option(r.judge, r.judge));
+  )).toArray()) judgeEl.appendChild(new Option(r.judge, r.judge));
 
-  // Default dates
   dateFrom.value = s.lo; dateTo.value = s.hi;
 
   // Show UI
@@ -401,22 +481,20 @@ try {
   $('result-bar').style.display = '';
   $('pager').style.display = '';
 
-  // Restore state from URL hash
   restoreState();
 
   // Sort headers
-  document.querySelectorAll('th.sortable').forEach(th => {
+  document.querySelectorAll('th.sortable').forEach(th =>
     th.addEventListener('click', () => {
       const col = th.dataset.col;
-      sortDir = (sortCol === col && sortDir === 'DESC') ? 'ASC' : 'DESC';
+      sortDir = sortCol === col && sortDir === 'DESC' ? 'ASC' : 'DESC';
       sortCol = col;
       document.querySelectorAll('th.sortable').forEach(h =>
-        h.classList.remove('sort-asc', 'sort-desc')
-      );
+        h.classList.remove('sort-asc', 'sort-desc'));
       th.classList.add(sortDir === 'ASC' ? 'sort-asc' : 'sort-desc');
       runQuery(0);
-    });
-  });
+    })
+  );
 
   await runQuery(0);
 
@@ -424,7 +502,7 @@ try {
   $('loading').style.display = 'none';
   const bar = $('error-bar');
   bar.style.display = 'block';
-  bar.textContent = 'Failed to load: ' + err.message;
+  bar.textContent = 'Failed to load data: ' + err.message;
   console.error(err);
 }
 
@@ -444,11 +522,9 @@ function buildWhere() {
 
 async function runQuery(page = 0) {
   currentPage = page;
-  const where = buildWhere();
-  const offset = page * PAGE_SIZE;
+  const where = buildWhere(), offset = page * PAGE_SIZE;
   $('qspinner').classList.add('on');
   saveState();
-
   try {
     const [cntR, rowsR] = await Promise.all([
       conn.query(`SELECT COUNT(*) n FROM 'data.parquet' WHERE ${where}`),
@@ -466,10 +542,8 @@ async function runQuery(page = 0) {
     renderPager(lastCount, page);
     $('result-info').textContent =
       `${lastCount.toLocaleString()} row${lastCount !== 1 ? 's' : ''}` +
-      (lastCount !== totalRows ? ` of ${totalRows.toLocaleString()}` : '');
-  } finally {
-    $('qspinner').classList.remove('on');
-  }
+      (lastCount !== totalRows ? ` of ${totalRows.toLocaleString()} total` : '');
+  } finally { $('qspinner').classList.remove('on'); }
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
@@ -497,7 +571,7 @@ function renderTable(data) {
 
 function renderPager(total, page) {
   const pages = Math.ceil(total / PAGE_SIZE) || 1;
-  $('page-info').textContent = `Page ${page + 1} of ${pages}`;
+  $('page-info').textContent = `Page ${page + 1} of ${pages.toLocaleString()}`;
   $('pg-first').disabled = page === 0;
   $('pg-prev').disabled  = page === 0;
   $('pg-next').disabled  = page >= pages - 1;
@@ -505,61 +579,55 @@ function renderPager(total, page) {
   $('pg-last').dataset.p = pages - 1;
 }
 
-// ── Pager events ──────────────────────────────────────────────────────────────
-['pg-first','pg-prev','pg-next','pg-last'].forEach(id => {
+['pg-first','pg-prev','pg-next','pg-last'].forEach(id =>
   $(id).addEventListener('click', () => {
-    const el = $(id);
-    if (el.disabled) return;
+    if ($(id).disabled) return;
     const pages = Math.ceil(lastCount / PAGE_SIZE) || 1;
-    const p = id === 'pg-first' ? 0
-            : id === 'pg-prev'  ? currentPage - 1
-            : id === 'pg-next'  ? currentPage + 1
-            : pages - 1;
+    const p = id === 'pg-first' ? 0 : id === 'pg-prev' ? currentPage - 1
+            : id === 'pg-next'  ? currentPage + 1 : pages - 1;
     runQuery(Math.max(0, Math.min(p, pages - 1)));
-  });
-});
+  })
+);
 
 $('page-size').addEventListener('change', () => {
-  PAGE_SIZE = +$('page-size').value;
-  runQuery(0);
+  PAGE_SIZE = +$('page-size').value; runQuery(0);
 });
 
-// ── Export CSV ────────────────────────────────────────────────────────────────
+// ── CSV export ────────────────────────────────────────────────────────────────
 $('export-btn').addEventListener('click', async () => {
-  $('export-btn').disabled = true;
-  $('export-btn').textContent = '…';
-  const where = buildWhere();
-  const result = await conn.query(`
+  if (!conn) return;
+  const orig = $('export-btn').textContent;
+  $('export-btn').disabled = true; $('export-btn').textContent = '…';
+  const all = (await conn.query(`
     SELECT department, case_number, case_title, court_date, hearing_time,
            calendar_matter, judge, ruling
-    FROM 'data.parquet' WHERE ${where}
+    FROM 'data.parquet' WHERE ${buildWhere()}
     ORDER BY ${sortCol} ${sortDir}, case_number
-  `);
-  const all = result.toArray();
+  `)).toArray();
   const cols = ['department','case_number','case_title','court_date','hearing_time',
                 'calendar_matter','judge','ruling'];
-  const csv  = [cols.join(','),
-    ...all.map(r => cols.map(c => csvCell(r[c])).join(','))
-  ].join('\n');
+  const csv = [cols.join(','), ...all.map(r =>
+    cols.map(c => csvCell(r[c])).join(','))].join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-  a.download = `sfsc-tentatives-${new Date().toISOString().slice(0,10)}.csv`;
+  a.download = `sfsc-rulings-${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
-  $('export-btn').disabled = false;
-  $('export-btn').textContent = '⬇ CSV';
+  $('export-btn').disabled = false; $('export-btn').textContent = orig;
 });
 
 // ── Clear ─────────────────────────────────────────────────────────────────────
 $('clear-btn').addEventListener('click', async () => {
   searchEl.value = ''; deptEl.value = ''; judgeEl.value = '';
-  const s = (await conn.query(
-    `SELECT MIN(court_date) lo, MAX(court_date) hi FROM 'data.parquet'`
-  )).toArray()[0];
-  dateFrom.value = s.lo; dateTo.value = s.hi;
+  if (conn) {
+    const s = (await conn.query(
+      `SELECT MIN(court_date) lo, MAX(court_date) hi FROM 'data.parquet'`
+    )).toArray()[0];
+    dateFrom.value = s.lo; dateTo.value = s.hi;
+  }
   runQuery(0);
 });
 
-// ── Modal ─────────────────────────────────────────────────────────────────────
+// ── Row detail modal ──────────────────────────────────────────────────────────
 function openModal(r) {
   $('modal-title').textContent  = r.case_title ?? '';
   $('modal-meta').textContent   = [r.department ? `Dept ${r.department}` : null,
@@ -571,7 +639,23 @@ function openModal(r) {
 function closeModal() { $('overlay').classList.remove('open'); }
 $('modal-close').addEventListener('click', closeModal);
 $('overlay').addEventListener('click', e => { if (e.target.id === 'overlay') closeModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ── Install modal ─────────────────────────────────────────────────────────────
+$('ext-btn').addEventListener('click', () =>
+  $('install-overlay').classList.add('open'));
+$('install-close').addEventListener('click', () =>
+  $('install-overlay').classList.remove('open'));
+$('install-overlay').addEventListener('click', e => {
+  if (e.target.id === 'install-overlay') $('install-overlay').classList.remove('open');
+});
+
+// ── Keyboard ──────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeModal();
+    $('install-overlay').classList.remove('open');
+  }
+});
 
 // ── URL state ─────────────────────────────────────────────────────────────────
 function saveState() {
@@ -584,7 +668,6 @@ function saveState() {
   if (currentPage)    p.set('page', currentPage);
   history.replaceState(null, '', '#' + p.toString());
 }
-
 function restoreState() {
   if (!location.hash) return;
   const p = new URLSearchParams(location.hash.slice(1));
@@ -596,15 +679,6 @@ function restoreState() {
   if (p.get('page'))  currentPage    = +p.get('page');
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function esc(s) {
-  return (s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-function csvCell(v) {
-  const s = (v ?? '').toString().replace(/"/g, '""');
-  return /[",\n]/.test(s) ? `"${s}"` : s;
-}
-
 // ── Events ────────────────────────────────────────────────────────────────────
 let timer;
 const debounce = fn => { clearTimeout(timer); timer = setTimeout(fn, 350); };
@@ -613,6 +687,14 @@ dateFrom.addEventListener('change', () => runQuery(0));
 dateTo.addEventListener('change',   () => runQuery(0));
 deptEl.addEventListener('change',   () => runQuery(0));
 judgeEl.addEventListener('change',  () => runQuery(0));
+
+function esc(s) {
+  return (s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function csvCell(v) {
+  const s = (v ?? '').toString().replace(/"/g, '""');
+  return /[",\n]/.test(s) ? `"${s}"` : s;
+}
 </script>
 </body>
 </html>
