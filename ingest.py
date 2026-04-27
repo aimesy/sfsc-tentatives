@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-Ingest tentative rulings into tentatives.db.
+Ingest tentative rulings and maintain tentatives.parquet + tentatives.db.
 
 Usage:
-    python ingest.py                         # ingest both source files (initial setup)
-    python ingest.py path/to/new.xlsx        # append new xlsx export
-    python ingest.py path/to/new.json        # append new json export
+    python ingest.py                         # rebuild from all source files
+    python ingest.py path/to/new.xlsx        # append a new export
+    python ingest.py path/to/new.json        # append a new json export
 
-Schema normalizes both historical (2014-2018) and current (2020+) formats.
-Duplicate detection is based on (case_number, court_date, ruling) hash.
+tentatives.parquet  — canonical dataset, committed to git (~10 MB)
+tentatives.db       — local SQLite for querying, gitignored (~100 MB)
 """
 
 import sys
@@ -19,29 +19,21 @@ from pathlib import Path
 from datetime import datetime, date, time
 
 try:
+    import pandas as pd
+except ImportError:
+    sys.exit("Missing dependency: pip install pandas pyarrow openpyxl")
+
+try:
     import openpyxl
 except ImportError:
     sys.exit("Missing dependency: pip install openpyxl")
 
-DB_PATH = Path(__file__).parent / "tentatives.db"
+HERE = Path(__file__).parent
+PARQUET = HERE / "tentatives.parquet"
+DB_PATH = HERE / "tentatives.db"
 
-SCHEMA = """
-CREATE TABLE IF NOT EXISTS tentatives (
-    id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    case_number     TEXT,
-    case_title      TEXT,
-    court_date      DATE,
-    hearing_time    TEXT,
-    calendar_matter TEXT,
-    judge           TEXT,
-    ruling          TEXT,
-    row_hash        TEXT UNIQUE,
-    inserted_at     TEXT DEFAULT (datetime('now'))
-);
-CREATE INDEX IF NOT EXISTS idx_case_number ON tentatives(case_number);
-CREATE INDEX IF NOT EXISTS idx_court_date  ON tentatives(court_date);
-CREATE INDEX IF NOT EXISTS idx_judge       ON tentatives(judge);
-"""
+COLUMNS = ["case_number", "case_title", "court_date", "hearing_time",
+           "calendar_matter", "judge", "ruling", "row_hash"]
 
 def make_hash(case_number, court_date, ruling):
     key = f"{case_number}|{court_date}|{ruling}"
@@ -74,26 +66,6 @@ def normalize_time(val):
     if isinstance(val, datetime):
         return val.strftime("%H:%M")
     return str(val)
-
-def ingest_rows(conn, rows, source_label):
-    cur = conn.cursor()
-    inserted = skipped = 0
-    for row in rows:
-        h = make_hash(row["case_number"] or "", row["court_date"] or "", row["ruling"] or "")
-        try:
-            cur.execute(
-                """INSERT INTO tentatives
-                   (case_number, case_title, court_date, hearing_time, calendar_matter, judge, ruling, row_hash)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-                (row["case_number"], row["case_title"], row["court_date"],
-                 row["hearing_time"], row["calendar_matter"], row["judge"],
-                 row["ruling"], h),
-            )
-            inserted += 1
-        except sqlite3.IntegrityError:
-            skipped += 1
-    conn.commit()
-    print(f"  {source_label}: {inserted} inserted, {skipped} skipped (duplicates)")
 
 def load_xlsm_2014_2018(path):
     wb = openpyxl.load_workbook(path, read_only=True, keep_vba=True)
@@ -161,61 +133,99 @@ def load_json(path):
         })
     return rows
 
-def setup_db(conn):
-    conn.executescript(SCHEMA)
-    conn.commit()
+def detect_and_load(path):
+    path = Path(path)
+    suffix = path.suffix.lower()
+    if suffix == ".json":
+        return load_json(path)
+    if suffix in (".xlsx", ".xlsm"):
+        wb = openpyxl.load_workbook(path, read_only=True, keep_vba=(suffix == ".xlsm"))
+        ws = wb.active
+        headers = [c.value for c in next(ws.iter_rows(min_row=1, max_row=1))]
+        wb.close()
+        if "Judge" in headers or "Hearing Time" in headers:
+            return load_xlsx_2020_plus(path)
+        return load_xlsm_2014_2018(path)
+    raise ValueError(f"Unsupported file type: {path}")
+
+def to_df(rows):
+    df = pd.DataFrame(rows, columns=COLUMNS)
+    df["row_hash"] = df.apply(
+        lambda r: make_hash(r["case_number"] or "", r["court_date"] or "", r["ruling"] or ""), axis=1
+    )
+    return df
+
+def merge(existing: pd.DataFrame, new: pd.DataFrame) -> tuple[pd.DataFrame, int, int]:
+    combined = pd.concat([existing, new], ignore_index=True)
+    before = len(combined)
+    combined = combined.drop_duplicates(subset="row_hash", keep="first")
+    after = len(combined)
+    inserted = after - len(existing)
+    skipped = before - after - max(0, len(new) - (before - len(existing)))
+    return combined.sort_values("court_date").reset_index(drop=True), inserted, len(new) - inserted
+
+def save_parquet(df: pd.DataFrame):
+    df.to_parquet(PARQUET, index=False, compression="zstd")
+
+def save_sqlite(df: pd.DataFrame):
+    conn = sqlite3.connect(DB_PATH)
+    conn.executescript("""
+        DROP TABLE IF EXISTS tentatives;
+        CREATE TABLE tentatives (
+            id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            case_number     TEXT,
+            case_title      TEXT,
+            court_date      DATE,
+            hearing_time    TEXT,
+            calendar_matter TEXT,
+            judge           TEXT,
+            ruling          TEXT,
+            row_hash        TEXT UNIQUE
+        );
+        CREATE INDEX IF NOT EXISTS idx_case_number ON tentatives(case_number);
+        CREATE INDEX IF NOT EXISTS idx_court_date  ON tentatives(court_date);
+        CREATE INDEX IF NOT EXISTS idx_judge       ON tentatives(judge);
+    """)
+    df.to_sql("tentatives", conn, if_exists="append", index=False,
+              method="multi", chunksize=500)
+    conn.close()
+
+def summary(df: pd.DataFrame):
+    print(f"\nDataset: {len(df):,} rows  |  {df['court_date'].min()} → {df['court_date'].max()}")
+    print(f"Parquet: {PARQUET.stat().st_size / 1e6:.1f} MB   DB: {DB_PATH.stat().st_size / 1e6:.1f} MB")
 
 def main():
-    conn = sqlite3.connect(DB_PATH)
-    setup_db(conn)
-
-    here = Path(__file__).parent
+    existing = pd.read_parquet(PARQUET) if PARQUET.exists() else pd.DataFrame(columns=COLUMNS)
 
     if len(sys.argv) > 1:
         for arg in sys.argv[1:]:
             p = Path(arg)
             if not p.exists():
-                print(f"File not found: {p}")
+                print(f"Not found: {p}")
                 continue
-            suffix = p.suffix.lower()
-            if suffix == ".json":
-                rows = load_json(p)
-                ingest_rows(conn, rows, p.name)
-            elif suffix in (".xlsx", ".xlsm"):
-                wb = openpyxl.load_workbook(p, read_only=True, keep_vba=(suffix == ".xlsm"))
-                ws = wb.active
-                headers = [c.value for c in next(ws.iter_rows(min_row=1, max_row=1))]
-                wb.close()
-                if "Judge" in headers or "Hearing Time" in headers:
-                    rows = load_xlsx_2020_plus(p)
-                else:
-                    rows = load_xlsm_2014_2018(p)
-                ingest_rows(conn, rows, p.name)
-            else:
-                print(f"Unsupported file type: {p}")
+            print(f"Loading {p.name}...")
+            new_df = to_df(detect_and_load(p))
+            existing, inserted, skipped = merge(existing, new_df)
+            print(f"  {inserted} inserted, {skipped} skipped (duplicates)")
     else:
-        xlsm = here / "tentatives.xlsm"
-        xlsx = here / "sfsc tentatives 01-2020 to 07-2025.xlsx"
+        sources = [
+            HERE / "tentatives.xlsm",
+            HERE / "sfsc tentatives 01-2020 to 07-2025.xlsx",
+        ]
+        for src in sources:
+            if not src.exists():
+                print(f"Not found: {src.name}")
+                continue
+            print(f"Loading {src.name}...")
+            new_df = to_df(detect_and_load(src))
+            existing, inserted, skipped = merge(existing, new_df)
+            print(f"  {inserted} inserted, {skipped} skipped (duplicates)")
 
-        if xlsm.exists():
-            print("Loading 2014-2018 (xlsm)...")
-            rows = load_xlsm_2014_2018(xlsm)
-            ingest_rows(conn, rows, "tentatives.xlsm")
-        else:
-            print(f"Not found: {xlsm}")
-
-        if xlsx.exists():
-            print("Loading 2020-2024 (xlsx)...")
-            rows = load_xlsx_2020_plus(xlsx)
-            ingest_rows(conn, rows, xlsx.name)
-        else:
-            print(f"Not found: {xlsx}")
-
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*), MIN(court_date), MAX(court_date) FROM tentatives")
-    total, lo, hi = cur.fetchone()
-    print(f"\nDatabase: {total} total rows, {lo} → {hi}")
-    conn.close()
+    print("Saving parquet...")
+    save_parquet(existing)
+    print("Saving SQLite...")
+    save_sqlite(existing)
+    summary(existing)
 
 if __name__ == "__main__":
     main()
