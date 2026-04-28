@@ -168,7 +168,7 @@ $('bulk-btn').addEventListener('click', async () => {
   const err = validateSettings(s);
   if (err) { setStatus(err, 'error'); return; }
 
-  const waitMs = parseInt($('bulk-wait').value) || 2_000;
+  const waitMs = parseInt($('bulk-wait').value) || 1_000;
   const dates = weekdaysBetween(from, to);
   if (!dates.length) { setStatus('No weekdays in that range.', 'warn'); return; }
 
