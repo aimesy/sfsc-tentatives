@@ -55,34 +55,39 @@ function scrape() {
 // ── Auto-navigation helpers ───────────────────────────────────────────────────
 
 function findDateInput() {
-  // 1. Find by visible label text "Court Date" — handles table-layout CGI forms
-  for (const el of document.querySelectorAll('label, td, th')) {
-    if (!/court\s*date/i.test(el.textContent)) continue;
+  // 1. Find by visible label text "Court Date" — handles label, td, th, p, span, div
+  for (const el of document.querySelectorAll('label, td, th, p, span, div')) {
+    const txt = el.textContent;
+    // Skip very large containers (whole page sections)
+    if (txt.length > 300) continue;
+    if (!/court\s*date/i.test(txt)) continue;
 
     // <label for="...">
     if (el.tagName === 'LABEL' && el.htmlFor) {
       const inp = document.getElementById(el.htmlFor);
-      if (inp) return inp;
+      if (inp && inp.tagName === 'INPUT') return inp;
     }
-    // Input nested inside the same cell / label
-    const nested = el.querySelector('input');
+    // Input nested inside the same element
+    const nested = el.querySelector('input[type="text"]');
     if (nested) return nested;
     // Input in the immediately following sibling element
     const sibling = el.nextElementSibling;
+    if (sibling && sibling.tagName === 'INPUT') return sibling;
     if (sibling) {
-      const inp = sibling.tagName === 'INPUT' ? sibling : sibling.querySelector('input');
+      const inp = sibling.querySelector('input[type="text"]');
       if (inp) return inp;
     }
   }
 
   // 2. Try common name/id patterns
   for (const sel of [
-    'input[name="HearingDt"]', 'input[name="hearingDt"]',
-    'input[name*="Date" i]',   'input[id*="date" i]',
+    'input[name="DatePick"]',   'input[id="DatePick"]',
+    'input[name="HearingDt"]',  'input[name="hearingDt"]',
+    'input[name*="Date" i]',    'input[id*="date" i]',
     'input[type="date"]',
   ]) {
     const el = document.querySelector(sel);
-    if (el) return el;
+    if (el && el.tagName === 'INPUT') return el;
   }
 
   // 3. Last resort: first text input in a form that has a submit button
@@ -99,17 +104,16 @@ async function fillAndScrape(dateStr, waitMs = 2000) {
   const input = findDateInput();
   if (!input) return { error: 'No date input found on this page.' };
 
-  const [y, m, d] = dateStr.split('-');
-  const formatted = `${m}/${d}/${y}`;
   const jq = window.jQuery || window.$;
   const prevHTML = document.getElementById('resultsRulings')?.innerHTML ?? null;
 
   if (jq && jq(input).data('datepicker')) {
-    // jQuery UI datepicker: set the date via the API so internal state + onSelect fire
-    jq(input).datepicker('setDate', new Date(parseInt(y), parseInt(m) - 1, parseInt(d)));
+    // jQuery UI datepicker: set directly via the value and trigger change
+    jq(input).val(dateStr);
     jq(input).trigger('change');
   } else {
-    input.value = formatted;
+    // Fallback: set ISO string directly (matches the expected yy-mm-dd format)
+    input.value = dateStr;
     input.dispatchEvent(new Event('input',  { bubbles: true }));
     input.dispatchEvent(new Event('change', { bubbles: true }));
     if (jq) jq(input).trigger('change');

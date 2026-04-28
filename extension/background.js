@@ -5,6 +5,14 @@ chrome.runtime.onMessage.addListener((msg, _sender, respond) => {
     commitToGitHub(msg.payload).then(respond).catch(err => respond({ error: err.message }));
     return true;
   }
+  if (msg.action === 'check-updates') {
+    checkForUpdates().then(respond).catch(err => respond({ error: err.message }));
+    return true;
+  }
+  if (msg.action === 'download-update') {
+    downloadUpdate().then(respond).catch(err => respond({ error: err.message }));
+    return true;
+  }
 });
 
 // ── Duplicate detection ───────────────────────────────────────────────────────
