@@ -55,16 +55,37 @@ function scrape() {
 // ── Auto-navigation helpers ───────────────────────────────────────────────────
 
 function findDateInput() {
-  // Try specific names/IDs common in court CGI apps
+  // 1. Find by visible label text "Court Date" — handles table-layout CGI forms
+  for (const el of document.querySelectorAll('label, td, th')) {
+    if (!/court\s*date/i.test(el.textContent)) continue;
+
+    // <label for="...">
+    if (el.tagName === 'LABEL' && el.htmlFor) {
+      const inp = document.getElementById(el.htmlFor);
+      if (inp) return inp;
+    }
+    // Input nested inside the same cell / label
+    const nested = el.querySelector('input');
+    if (nested) return nested;
+    // Input in the immediately following sibling element
+    const sibling = el.nextElementSibling;
+    if (sibling) {
+      const inp = sibling.tagName === 'INPUT' ? sibling : sibling.querySelector('input');
+      if (inp) return inp;
+    }
+  }
+
+  // 2. Try common name/id patterns
   for (const sel of [
     'input[name="HearingDt"]', 'input[name="hearingDt"]',
-    'input[name*="Date" i]',  'input[id*="date" i]',
+    'input[name*="Date" i]',   'input[id*="date" i]',
     'input[type="date"]',
   ]) {
     const el = document.querySelector(sel);
     if (el) return el;
   }
-  // Fallback: first text input inside a form that also has a submit button
+
+  // 3. Last resort: first text input in a form that has a submit button
   for (const form of document.querySelectorAll('form')) {
     if (form.querySelector('input[type="submit"], button[type="submit"]')) {
       const t = form.querySelector('input[type="text"]');
@@ -74,7 +95,7 @@ function findDateInput() {
   return null;
 }
 
-async function fillAndScrape(dateStr) {
+async function fillAndScrape(dateStr, waitMs = 7000) {
   const input = findDateInput();
   if (!input) return { error: 'No date input found on this page.' };
 
@@ -86,21 +107,23 @@ async function fillAndScrape(dateStr) {
   // Snapshot current results so we can detect a change
   const prevHTML = document.getElementById('resultsRulings')?.innerHTML ?? null;
 
-  const btn = input.form?.querySelector('input[type="submit"], button[type="submit"]')
-           ?? document.querySelector('input[type="submit"], button[type="submit"]');
-  if (btn)             btn.click();
-  else if (input.form) input.form.submit();
-  else                 return { error: 'No submit button found.' };
+  // Click the submit button that belongs to this input's form specifically
+  const form = input.closest('form');
+  const btn  = form?.querySelector('input[type="submit"], button[type="submit"]')
+            ?? document.querySelector('input[type="submit"], button[type="submit"]');
+  if (btn)   btn.click();
+  else if (form) form.submit();
+  else       return { error: 'No submit button found.' };
 
-  // Poll up to 7s for the results container to change (AJAX) or appear
-  const deadline = Date.now() + 7000;
+  // Poll for the results container to change (AJAX case)
+  const deadline = Date.now() + waitMs;
   while (Date.now() < deadline) {
-    await new Promise(r => setTimeout(r, 400));
+    await new Promise(r => setTimeout(r, 500));
     const container = document.getElementById('resultsRulings');
     if (container && container.innerHTML !== prevHTML) return scrape();
   }
 
-  // No DOM change observed — page probably did a full reload; signal the popup
+  // No DOM change — page probably did a full reload; signal the popup
   return { pending: true };
 }
 
@@ -112,7 +135,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, respond) => {
     return true;
   }
   if (msg.action === 'fill-and-scrape') {
-    fillAndScrape(msg.date).then(respond);
+    fillAndScrape(msg.date, msg.waitMs).then(respond);
     return true;
   }
 });

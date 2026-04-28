@@ -156,6 +156,7 @@ $('bulk-btn').addEventListener('click', async () => {
   const err = validateSettings(s);
   if (err) { setStatus(err, 'error'); return; }
 
+  const waitMs = parseInt($('bulk-wait').value) || 10_000;
   const dates = weekdaysBetween(from, to);
   if (!dates.length) { setStatus('No weekdays in that range.', 'warn'); return; }
 
@@ -189,7 +190,7 @@ $('bulk-btn').addEventListener('click', async () => {
     await sleep(300);
 
     let data = await new Promise(resolve => {
-      chrome.tabs.sendMessage(tab.id, { action: 'fill-and-scrape', date }, r =>
+      chrome.tabs.sendMessage(tab.id, { action: 'fill-and-scrape', date, waitMs }, r =>
         // lastError means the page reloaded mid-flight — treat same as pending
         resolve(chrome.runtime.lastError ? { pending: true } : r)
       );

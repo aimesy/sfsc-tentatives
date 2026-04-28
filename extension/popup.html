@@ -161,6 +161,18 @@
           <input type="date" id="bulk-to">
         </div>
       </div>
+      <div class="bulk-row" style="margin-bottom:0.4rem">
+        <div style="flex:1">
+          <label>Wait after search</label>
+          <select id="bulk-wait" style="width:100%;padding:0.3rem 0.4rem;border:1px solid #ccc;border-radius:4px;font-size:0.78rem;box-sizing:border-box">
+            <option value="5000">5 s</option>
+            <option value="10000" selected>10 s</option>
+            <option value="15000">15 s</option>
+            <option value="30000">30 s</option>
+            <option value="60000">60 s</option>
+          </select>
+        </div>
+      </div>
       <button id="bulk-btn" disabled>Bulk Scrape Range</button>
       <button id="bulk-stop">Stop</button>
     </div>
