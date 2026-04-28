@@ -53,50 +53,6 @@ function weekdaysBetween(from, to) {
   return dates;
 }
 
-async function injectAndScrape(tabId) {
-  await chrome.scripting.executeScript({ target: { tabId }, files: ['content.js'] });
-  // Brief pause for the content script to initialise, then scrape with one retry
-  await sleep(200);
-  const first = await new Promise(resolve =>
-    chrome.tabs.sendMessage(tabId, { action: 'scrape' }, r =>
-      resolve(chrome.runtime.lastError ? null : r)
-    )
-  );
-  if (first && !first.error) return first;
-  await sleep(400);
-  return new Promise(resolve =>
-    chrome.tabs.sendMessage(tabId, { action: 'scrape' }, r =>
-      resolve(chrome.runtime.lastError ? null : r)
-    )
-  );
-}
-
-// Starts listening for tab completion BEFORE the caller triggers navigation,
-// so we never miss the 'complete' event due to a race condition.
-function makeTabLoadPromise(tabId, timeout = 12_000) {
-  let done = false;
-  let resolveLoad;
-  const promise = new Promise(resolve => { resolveLoad = resolve; });
-  const timer = setTimeout(() => { done = true; resolveLoad(); }, timeout);
-  function listener(id, info) {
-    if (done || id !== tabId) return;
-    if (info.status === 'complete') {
-      done = true;
-      clearTimeout(timer);
-      chrome.tabs.onUpdated.removeListener(listener);
-      resolveLoad();
-    }
-  }
-  chrome.tabs.onUpdated.addListener(listener);
-  function cancel() {
-    if (done) return;
-    done = true;
-    clearTimeout(timer);
-    chrome.tabs.onUpdated.removeListener(listener);
-    resolveLoad();
-  }
-  return { promise, cancel };
-}
 
 // ── GitHub date helpers ───────────────────────────────────────────────────────
 
@@ -356,6 +312,45 @@ $('send-btn').addEventListener('click', async () => {
   );
 });
 
+// ── Bulk status display ───────────────────────────────────────────────────────
+
+function updateBulkStatus(job) {
+  if (!job) return;
+  if (job.fatalError) {
+    setStatus(job.fatalError, 'error');
+    $('bulk-btn').disabled = false;
+    $('bulk-stop').style.display = 'none';
+    return;
+  }
+  if (job.done) {
+    setStatus(
+      `Done: ${job.committed} committed, ${job.skipped} skipped, ${job.errors} errors`,
+      job.errors > 0 ? 'warn' : 'success'
+    );
+    $('bulk-btn').disabled = false;
+    $('bulk-stop').style.display = 'none';
+    return;
+  }
+  if (job.running) {
+    const pct = job.dates?.length ? Math.round(job.index / job.dates.length * 100) : 0;
+    setStatus(
+      `[${job.index}/${job.dates?.length}] ${job.currentDate || '…'} — ` +
+      `${job.committed} saved, ${job.skipped} skipped, ${job.errors} err — ${pct}% ` +
+      `(close popup freely)`,
+      'loading'
+    );
+    $('bulk-btn').disabled = true;
+    $('bulk-stop').style.display = 'block';
+  }
+}
+
+// Keep popup in sync with background job even while open
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && changes._bulkJob) {
+    updateBulkStatus(changes._bulkJob.newValue);
+  }
+});
+
 // ── Bulk Scrape ───────────────────────────────────────────────────────────────
 
 $('bulk-btn').addEventListener('click', async () => {
@@ -375,85 +370,34 @@ $('bulk-btn').addEventListener('click', async () => {
   if (!dates.length) { setStatus('No weekdays in that range.', 'warn'); return; }
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab.url?.includes('webapps.sftc.org/tr/')) {
+  if (!tab?.url?.includes('webapps.sftc.org/tr/')) {
     setStatus('Navigate to the SFSC page first.', 'warn');
     return;
   }
 
-  const [owner, repo] = s.repo.split('/');
-  const settings = { token: s.token, owner, repo, branch: s.branch || 'master' };
+  const settings = { token: s.token, repo: s.repo, branch: s.branch || 'master' };
 
-  bulkRunning = true;
   $('bulk-btn').disabled = true;
   $('bulk-stop').style.display = 'block';
   $('send-btn').disabled = true;
+  setStatus(`Starting background scrape of ${dates.length} dates…`, 'loading');
 
-  let committed = 0, skipped = 0, errors = 0;
-
-  for (let i = 0; i < dates.length; i++) {
-    if (!bulkRunning) break;
-
-    const date = dates[i];
-    setStatus(`[${i + 1}/${dates.length}] ${date}…`, 'loading');
-
-    try {
-      await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
-    } catch (_) {}
-
-    // Set up tab-load listener BEFORE triggering navigation to avoid race condition
-    const { promise: loadPromise, cancel: cancelLoad } = makeTabLoadPromise(tab.id);
-
-    let data = await new Promise(resolve => {
-      chrome.tabs.sendMessage(tab.id, { action: 'fill-and-scrape', date, waitMs }, r =>
-        resolve(chrome.runtime.lastError ? { navigated: true } : r)
-      );
-    });
-
-    if (data?.navigated || data?.pending) {
-      await loadPromise;
-      data = await injectAndScrape(tab.id);
-    } else {
-      cancelLoad();
+  chrome.runtime.sendMessage(
+    { action: 'start-bulk', payload: { dates, tabId: tab.id, settings, waitMs } },
+    res => {
+      if (res?.error) {
+        setStatus('Error starting bulk: ' + res.error, 'error');
+        $('bulk-btn').disabled = false;
+        $('bulk-stop').style.display = 'none';
+      }
+      // Otherwise, storage changes will drive the status display
     }
-
-    if (!data || data.error) {
-      errors++;
-      setStatus(`[${i + 1}/${dates.length}] ${date} — error: ${data?.error ?? 'no response'}`, 'error');
-      await sleep(1500);
-      continue;
-    }
-
-    if (!data.rulings?.length) {
-      skipped++;
-      await sleep(200);
-      continue;
-    }
-
-    const res = await new Promise(resolve =>
-      chrome.runtime.sendMessage({ action: 'commit', payload: { ...settings, data } }, resolve)
-    );
-
-    if (res?.error)          errors++;
-    else if (res?.duplicate) skipped++;
-    else                     committed++;
-
-    await sleep(300);
-  }
-
-  bulkRunning = false;
-  $('bulk-stop').style.display = 'none';
-  $('bulk-btn').disabled = false;
-  $('send-btn').disabled = false;
-
-  const stopped = committed + skipped + errors < dates.length;
-  setStatus(
-    `Done: ${committed} committed, ${skipped} skipped, ${errors} errors` +
-    (stopped ? ' (stopped early)' : ''),
-    errors > 0 ? 'warn' : 'success'
   );
 });
 
-$('bulk-stop').addEventListener('click', () => { bulkRunning = false; });
+$('bulk-stop').addEventListener('click', () => {
+  chrome.runtime.sendMessage({ action: 'stop-bulk' });
+});
 $('jump-first').addEventListener('click', jumpToFirstGap);
 $('jump-last').addEventListener('click',  jumpToResume);
 
@@ -484,6 +428,11 @@ loadSettings().then(s => {
   $('repo').value   = s.repo   || 'aimesy/sfsc-tentatives';
   $('branch').value = s.branch || 'master';
   if (!s.token) $('settings').style.display = 'block';
+});
+
+// Restore any in-progress background bulk job
+chrome.runtime.sendMessage({ action: 'bulk-status' }, job => {
+  if (job?.running) updateBulkStatus(job);
 });
 
 checkAndDownloadUpdate();

@@ -3,10 +3,11 @@
   "name": "SFSC Tentative Rulings",
   "version": "1.0",
   "description": "Send SFSC tentative rulings to GitHub for ingestion.",
-  "permissions": ["storage", "scripting", "activeTab"],
+  "permissions": ["storage", "scripting", "tabs", "alarms", "downloads"],
   "host_permissions": [
     "https://webapps.sftc.org/*",
-    "https://api.github.com/*"
+    "https://api.github.com/*",
+    "https://raw.githubusercontent.com/*"
   ],
   "action": {
     "default_popup": "popup.html",

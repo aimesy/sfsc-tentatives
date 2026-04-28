@@ -3,7 +3,7 @@ name: Ingest new rulings
 on:
   push:
     paths:
-      - 'raw/**.json'
+      - 'raw/**/*.json'
 
 jobs:
   ingest:
@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2   # need HEAD^ to diff which files changed
+          fetch-depth: 2
 
       - uses: actions/setup-python@v5
         with:
@@ -25,10 +25,9 @@ jobs:
 
       - name: Ingest new JSON files
         run: |
-          # Find JSON files added in the triggering commit
-          NEW_FILES=$(git diff --name-only HEAD^1 HEAD -- 'raw/*.json')
+          NEW_FILES=$(git diff --name-only HEAD^1 HEAD -- 'raw/**/*.json' 'raw/*.json')
           if [ -z "$NEW_FILES" ]; then
-            echo "No new raw/*.json files to ingest."
+            echo "No new raw JSON files to ingest."
             exit 0
           fi
           for f in $NEW_FILES; do
