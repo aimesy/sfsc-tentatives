@@ -122,8 +122,19 @@ async function fillAndScrape(dateStr, waitMs = 2000) {
 
   // Fall back to explicit form submission (full-page-reload sites)
   const form = input.closest('form');
-  const btn = form?.querySelector('input[type="submit"], input[type="image"], button[type="submit"]')
-           ?? document.querySelector('input[type="submit"], input[type="image"], button[type="submit"]');
+
+  function findSearchButton(container) {
+    // Standard submit-type buttons first
+    const std = container?.querySelector('input[type="submit"], input[type="image"], button[type="submit"]');
+    if (std) return std;
+    // Any button/input whose visible text matches "search"
+    for (const el of (container ?? document).querySelectorAll('button, input[type="button"]')) {
+      if (/^\s*search\s*$/i.test(el.value || el.textContent)) return el;
+    }
+    return null;
+  }
+
+  const btn = findSearchButton(form) ?? findSearchButton(document);
   if (btn)       btn.click();
   else if (form) form.submit();
   else           return { error: 'No submit button or auto-search found.' };
