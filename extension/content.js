@@ -42,6 +42,10 @@ const JUDGE_MAP = {
   SM:  'Judge Pro Tem: Steven Murphy',     PJT: 'Judge Pro Tem',
   NJG: 'Judge Pro Tem: Naomi Jane Gray',   DR:  'Judge Pro Tem: Douglas Robbins',
   JF:  'Judge Pro Tem: James Fleming',     GD:  'Gail Dekreon',
+  HK:  'Harold E. Kahn',                   HEK: 'Harold E. Kahn',
+  MJM: 'Marla J. Miller',                  AJR: 'A James Robertson II',
+  PJB: 'Peter J. Busch',                   JKS: 'John K. Stewart',
+  AB:  'Angela Bradstreet',
 };
 
 function extractJudge(rulingText) {

@@ -81,7 +81,14 @@
     "NJG": { "name": "Judge Pro Tem: Naomi Jane Gray",      "dept": "506", "pro_tem": true },
     "DR":  { "name": "Judge Pro Tem: Douglas Robbins",      "dept": "506", "pro_tem": true },
     "JF":  { "name": "Judge Pro Tem: James Fleming",        "dept": "506", "pro_tem": true },
-    "GD":  { "name": "Gail Dekreon",                        "dept": "302", "former": true  }
+    "GD":  { "name": "Gail Dekreon",                        "dept": "302", "former": true  },
+    "HK":  { "name": "Harold E. Kahn",                      "dept": "302", "former": true  },
+    "HEK": { "name": "Harold E. Kahn",                      "dept": "302", "former": true  },
+    "MJM": { "name": "Marla J. Miller",                     "dept": "302", "former": true  },
+    "AJR": { "name": "A James Robertson II",                "dept": "302", "former": true  },
+    "PJB": { "name": "Peter J. Busch",                      "dept": "302", "former": true  },
+    "JKS": { "name": "John K. Stewart",                     "dept": "302", "former": true  },
+    "AB":  { "name": "Angela Bradstreet",                   "dept": "302", "former": true  }
   },
 
   "roster": [
