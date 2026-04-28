@@ -53,28 +53,49 @@ function weekdaysBetween(from, to) {
   return dates;
 }
 
-function waitForTabLoad(tabId, timeout = 14_000) {
-  return new Promise(resolve => {
-    const timer = setTimeout(resolve, timeout);
-    function listener(id, info) {
-      if (id === tabId && info.status === 'complete') {
-        clearTimeout(timer);
-        chrome.tabs.onUpdated.removeListener(listener);
-        resolve();
-      }
-    }
-    chrome.tabs.onUpdated.addListener(listener);
-  });
-}
-
 async function injectAndScrape(tabId) {
   await chrome.scripting.executeScript({ target: { tabId }, files: ['content.js'] });
-  await sleep(600);
-  return new Promise(resolve => {
+  // Brief pause for the content script to initialise, then scrape with one retry
+  await sleep(200);
+  const first = await new Promise(resolve =>
     chrome.tabs.sendMessage(tabId, { action: 'scrape' }, r =>
       resolve(chrome.runtime.lastError ? null : r)
-    );
-  });
+    )
+  );
+  if (first && !first.error) return first;
+  await sleep(400);
+  return new Promise(resolve =>
+    chrome.tabs.sendMessage(tabId, { action: 'scrape' }, r =>
+      resolve(chrome.runtime.lastError ? null : r)
+    )
+  );
+}
+
+// Starts listening for tab completion BEFORE the caller triggers navigation,
+// so we never miss the 'complete' event due to a race condition.
+function makeTabLoadPromise(tabId, timeout = 12_000) {
+  let done = false;
+  let resolveLoad;
+  const promise = new Promise(resolve => { resolveLoad = resolve; });
+  const timer = setTimeout(() => { done = true; resolveLoad(); }, timeout);
+  function listener(id, info) {
+    if (done || id !== tabId) return;
+    if (info.status === 'complete') {
+      done = true;
+      clearTimeout(timer);
+      chrome.tabs.onUpdated.removeListener(listener);
+      resolveLoad();
+    }
+  }
+  chrome.tabs.onUpdated.addListener(listener);
+  function cancel() {
+    if (done) return;
+    done = true;
+    clearTimeout(timer);
+    chrome.tabs.onUpdated.removeListener(listener);
+    resolveLoad();
+  }
+  return { promise, cancel };
 }
 
 // ── Date inputs (text + hidden calendar picker) ───────────────────────────────
@@ -302,17 +323,20 @@ $('bulk-btn').addEventListener('click', async () => {
       await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
     } catch (_) {}
 
-    await sleep(300);
+    // Set up tab-load listener BEFORE triggering navigation to avoid race condition
+    const { promise: loadPromise, cancel: cancelLoad } = makeTabLoadPromise(tab.id);
 
     let data = await new Promise(resolve => {
       chrome.tabs.sendMessage(tab.id, { action: 'fill-and-scrape', date, waitMs }, r =>
-        resolve(chrome.runtime.lastError ? { pending: true } : r)
+        resolve(chrome.runtime.lastError ? { navigated: true } : r)
       );
     });
 
-    if (data?.pending) {
-      await waitForTabLoad(tab.id);
+    if (data?.navigated || data?.pending) {
+      await loadPromise;
       data = await injectAndScrape(tab.id);
+    } else {
+      cancelLoad();
     }
 
     if (!data || data.error) {
