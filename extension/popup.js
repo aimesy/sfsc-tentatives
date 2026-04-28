@@ -131,6 +131,64 @@ async function jumpToResume() {
   setStatus(`Resuming from ${from} (To = today)`, 'success');
 }
 
+// ── Auto-scan: fetch gaps and start bulk immediately ──────────────────────────
+
+async function autoScanUnscanned() {
+  const s = await loadSettings();
+  const err = validateSettings(s);
+  if (err) { setStatus(err, 'error'); return; }
+
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.url?.includes('webapps.sftc.org/tr/')) {
+    setStatus('Navigate to the SFSC page first.', 'warn');
+    return;
+  }
+
+  $('auto-scan-btn').disabled = true;
+  setStatus('Finding unscanned dates…', 'loading');
+
+  const scannedDates = await fetchScannedDates(s);
+  const today = new Date().toISOString().slice(0, 10);
+
+  let allWeekdays;
+  if (scannedDates?.length) {
+    allWeekdays = weekdaysBetween(scannedDates[0], today);
+  } else {
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    allWeekdays = weekdaysBetween(oneYearAgo.toISOString().slice(0, 10), today);
+  }
+
+  const scanned = new Set(scannedDates || []);
+  const unscanned = allWeekdays.filter(d => !scanned.has(d));
+
+  if (!unscanned.length) {
+    setStatus('All dates up to today are already scanned!', 'success');
+    $('auto-scan-btn').disabled = false;
+    return;
+  }
+
+  const waitMs = parseInt($('bulk-wait').value) || 1_000;
+  const settings = { token: s.token, repo: s.repo, branch: s.branch || 'master' };
+
+  $('bulk-btn').disabled = true;
+  $('bulk-stop').style.display = 'block';
+  $('send-btn').disabled = true;
+  setStatus(`Starting scan of ${unscanned.length} unscanned dates…`, 'loading');
+
+  chrome.runtime.sendMessage(
+    { action: 'start-bulk', payload: { dates: unscanned, tabId: tab.id, settings, waitMs } },
+    res => {
+      if (res?.error) {
+        setStatus('Error starting auto-scan: ' + res.error, 'error');
+        $('bulk-btn').disabled = false;
+        $('bulk-stop').style.display = 'none';
+        $('auto-scan-btn').disabled = false;
+      }
+    }
+  );
+}
+
 // ── Date inputs (text + hidden calendar picker) ───────────────────────────────
 
 function wireDateInput(textId, pickerId, calBtnId) {
@@ -241,6 +299,7 @@ async function init() {
   }
 
   $('bulk-btn').disabled = false;
+  $('auto-scan-btn').disabled = false;
 
   try {
     await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
@@ -319,6 +378,7 @@ function updateBulkStatus(job) {
   if (job.fatalError) {
     setStatus(job.fatalError, 'error');
     $('bulk-btn').disabled = false;
+    $('auto-scan-btn').disabled = false;
     $('bulk-stop').style.display = 'none';
     return;
   }
@@ -328,6 +388,7 @@ function updateBulkStatus(job) {
       job.errors > 0 ? 'warn' : 'success'
     );
     $('bulk-btn').disabled = false;
+    $('auto-scan-btn').disabled = false;
     $('bulk-stop').style.display = 'none';
     return;
   }
@@ -398,6 +459,7 @@ $('bulk-btn').addEventListener('click', async () => {
 $('bulk-stop').addEventListener('click', () => {
   chrome.runtime.sendMessage({ action: 'stop-bulk' });
 });
+$('auto-scan-btn').addEventListener('click', autoScanUnscanned);
 $('jump-first').addEventListener('click', jumpToFirstGap);
 $('jump-last').addEventListener('click',  jumpToResume);
 

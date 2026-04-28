@@ -150,6 +150,15 @@
       font-size: 0.78rem;
       box-sizing: border-box;
     }
+    #auto-scan-btn {
+      background: #2a7a4a;
+      color: white;
+      font-size: 0.875rem;
+      margin-bottom: 0.6rem;
+    }
+    #auto-scan-btn:hover:not(:disabled) { background: #338a58; }
+    #auto-scan-btn:disabled { opacity: 0.4; cursor: default; }
+
     #bulk-btn {
       background: #2e6da4;
       color: white;
@@ -227,6 +236,7 @@
     <button id="diag-btn" style="background:#f5f5f5;color:#444;font-size:0.75rem;font-weight:400;padding:0.25rem">Diagnose page</button>
 
     <div id="bulk-section">
+      <button id="auto-scan-btn" disabled>Scan Unscanned Pages</button>
       <div class="bulk-row">
         <div>
           <label>From</label>
