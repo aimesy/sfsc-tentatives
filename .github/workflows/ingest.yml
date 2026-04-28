@@ -27,7 +27,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install pandas pyarrow openpyxl
+        run: pip install pandas pyarrow openpyxl holidays
 
       - name: Ingest and commit updated parquet
         run: |
@@ -50,7 +50,9 @@ jobs:
               python3 ingest.py "$f"
             done
 
-            git add tentatives.parquet
+            python3 update-readme.py
+
+            git add tentatives.parquet README.md
 
             # Move HEAD to FETCH_HEAD so our commit is a clean fast-forward
             git reset --soft FETCH_HEAD
