@@ -43,7 +43,7 @@ async function checkForUpdates() {
   const stored = await new Promise(r => chrome.storage.local.get(['_lastCommitSha'], r));
   const lastSha = stored._lastCommitSha;
   if (latestSha !== lastSha) {
-    chrome.storage.local.set({ _lastCommitSha: latestSha });
+    await new Promise(r => chrome.storage.local.set({ _lastCommitSha: latestSha }, r));
     return { hasUpdate: true, latestSha };
   }
   return { hasUpdate: false };
