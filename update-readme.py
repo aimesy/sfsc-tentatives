@@ -3,6 +3,7 @@
 
 import re
 import pandas as pd
+import holidays as hol
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -66,7 +67,7 @@ python ingest.py raw/dept302/2026-04-28-120000.json
 Run `update-readme.py` to refresh the department sections with current stats:
 
 ```bash
-pip install pandas pyarrow
+pip install pandas pyarrow holidays
 python update-readme.py
 ```
 
@@ -74,18 +75,44 @@ python update-readme.py
 
 """
 
-def find_gap_runs(min_date: str, max_date: str, checked: set) -> list[tuple[str, str]]:
+def ca_court_holidays(min_year: int, max_year: int) -> set[str]:
+    """Return ISO date strings for California court holidays in the given year range.
+
+    Combines CA state public holidays with federal government holidays (to
+    capture Columbus Day), then manually adds Lincoln's Birthday (Feb 12),
+    which is a California legal holiday (Gov. Code § 6700) not included in
+    the holidays library's CA subdivision.
+    """
+    years = range(min_year, max_year + 1)
+    ca_public = hol.country_holidays('US', subdiv='CA', years=years)
+    us_gov    = hol.country_holidays('US', categories=hol.GOVERNMENT, years=years)
+    combined: set[date] = set(ca_public.keys()) | set(us_gov.keys())
+
+    for year in years:
+        lincoln = date(year, 2, 12)
+        if lincoln.weekday() == 5:      # Saturday → observe Friday
+            lincoln = date(year, 2, 11)
+        elif lincoln.weekday() == 6:    # Sunday → observe Monday
+            lincoln = date(year, 2, 13)
+        combined.add(lincoln)
+
+    return {d.isoformat() for d in combined}
+
+
+def find_gap_runs(min_date: str, max_date: str, checked: set,
+                  court_holidays: set | None = None) -> list[tuple[str, str]]:
     """Returns (start, end) tuples for each gap of missing weekdays.
 
-    A gap ends only when a scanned weekday is encountered — weekends do not
-    break a gap, so a multi-week outage appears as a single range.
+    Weekends and court holidays are skipped — they don't open or close a gap.
+    A gap closes only when a weekday with data is encountered.
     """
+    court_holidays = court_holidays or set()
     d   = date.fromisoformat(min_date)
     end = date.fromisoformat(max_date)
     runs = []
     run_start = run_end = None
     while d <= end:
-        if d.weekday() < 5:
+        if d.weekday() < 5 and d.isoformat() not in court_holidays:
             if d.isoformat() not in checked:
                 if run_start is None:
                     run_start = d.isoformat()
@@ -94,7 +121,6 @@ def find_gap_runs(min_date: str, max_date: str, checked: set) -> list[tuple[str,
                 if run_start is not None:
                     runs.append((run_start, run_end))
                     run_start = run_end = None
-        # Weekend days are ignored — they don't start or end a gap
         d += timedelta(days=1)
     if run_start is not None:
         runs.append((run_start, run_end))
@@ -116,8 +142,9 @@ def dept_section(dept: str, df_dept: pd.DataFrame) -> str:
     max_d   = dates[-1]
     checked = set(dates)
 
-    gaps   = find_gap_runs(min_d, max_d, checked)
-    n_gaps = len(gaps)
+    holidays = ca_court_holidays(int(min_d[:4]), int(max_d[:4]))
+    gaps     = find_gap_runs(min_d, max_d, checked, holidays)
+    n_gaps   = len(gaps)
 
     summary = (f'**{name}** &nbsp;·&nbsp; {count:,} rulings'
                f' &nbsp;·&nbsp; Latest: {max_d}'
