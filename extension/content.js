@@ -181,6 +181,18 @@ chrome.runtime.onMessage.addListener((msg, _sender, respond) => {
     fillAndScrape(msg.date, msg.waitMs).then(respond);
     return true;
   }
+  if (msg.action === 'get-date') {
+    const input = findDateInput();
+    if (!input?.value) { respond({}); return true; }
+    const raw = input.value.trim();
+    // Normalise MM/DD/YYYY → YYYY-MM-DD
+    const m = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    const date = m
+      ? `${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`
+      : (/^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : null);
+    respond(date ? { date } : {});
+    return true;
+  }
   if (msg.action === 'diagnose') {
     respond(diagnose());
     return true;

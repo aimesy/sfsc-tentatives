@@ -21,6 +21,33 @@
 
     main { padding: 0.85rem 1rem; }
 
+    #update-banner {
+      display: none;
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      border-radius: 5px;
+      padding: 0.45rem 0.75rem;
+      margin-bottom: 0.6rem;
+      font-size: 0.78rem;
+      color: #5d4200;
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    #update-banner span { flex: 1; }
+    #update-banner button {
+      width: auto;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.72rem;
+      background: #ffa000;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      margin: 0;
+      font-weight: 600;
+    }
+
     .status {
       background: #f0f5ff;
       border: 1px solid #c8d8f0;
@@ -54,10 +81,7 @@
       cursor: pointer;
       margin-bottom: 0.5rem;
     }
-    #send-btn {
-      background: #1a3a5c;
-      color: white;
-    }
+    #send-btn { background: #1a3a5c; color: white; }
     #send-btn:hover:not(:disabled) { background: #214d78; }
     #send-btn:disabled { opacity: 0.4; cursor: default; }
 
@@ -74,7 +98,51 @@
     }
     .bulk-row > div { flex: 1; }
     .bulk-row label { display: block; font-size: 0.72rem; color: #555; margin-bottom: 0.15rem; }
-    .bulk-row input[type="date"] {
+
+    /* Date text + calendar button */
+    .date-wrap {
+      display: flex;
+      position: relative;
+    }
+    .date-wrap input[type="text"] {
+      flex: 1;
+      padding: 0.3rem 0.4rem;
+      border: 1px solid #ccc;
+      border-right: none;
+      border-radius: 4px 0 0 4px;
+      font-size: 0.78rem;
+      font-family: monospace;
+      box-sizing: border-box;
+      width: 100%;
+    }
+    .date-wrap input[type="text"]:focus { outline: none; border-color: #5a8fc8; box-shadow: 0 0 0 1px #5a8fc8; }
+    .date-wrap input[type="text"].invalid { border-color: #e55; }
+    .cal-btn {
+      width: auto;
+      padding: 0 0.45rem;
+      background: #eef3fb;
+      border: 1px solid #ccc;
+      border-radius: 0 4px 4px 0;
+      cursor: pointer;
+      font-size: 0.8rem;
+      margin: 0;
+      color: #1a3a5c;
+      line-height: 1;
+    }
+    .cal-btn:hover { background: #d8e8f8; }
+    /* Hidden native date picker — positioned over calendar button so browser picker appears there */
+    .hidden-picker {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 28px;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      font-size: 1px;
+    }
+
+    .bulk-row input[type="number"] {
       width: 100%;
       padding: 0.3rem 0.4rem;
       border: 1px solid #ccc;
@@ -117,33 +185,40 @@
       margin-top: 0.25rem;
     }
     label { display: block; font-size: 0.78rem; color: #555; margin-bottom: 0.1rem; }
-    input[type=text], input[type=password] {
+    input[type=text].setting-field, input[type=password] {
       width: 100%;
       padding: 0.35rem 0.5rem;
       border: 1px solid #ccc;
       border-radius: 4px;
       font-size: 0.8rem;
-      margin-bottom: 0.6rem;
+      margin-bottom: 0.1rem;
       box-sizing: border-box;
     }
-    #save-btn {
-      background: #eef3fb;
-      color: #1a3a5c;
-      font-size: 0.8rem;
-      font-weight: 600;
-      margin-top: 0.1rem;
+    input[type=text].setting-field:focus, input[type=password]:focus {
+      outline: none; border-color: #5a8fc8;
     }
-    #save-btn:hover { background: #d8e8f8; }
-    .hint { font-size: 0.72rem; color: #aaa; margin-top: -0.4rem; margin-bottom: 0.6rem; }
+    .field-saved {
+      font-size: 0.68rem;
+      color: #2a8a4a;
+      height: 0.9rem;
+      margin-bottom: 0.4rem;
+      transition: opacity 0.3s;
+    }
+    .hint { font-size: 0.72rem; color: #aaa; margin: 0 0 0.5rem; }
   </style>
 </head>
 <body>
   <header>
     <h1>SFSC Tentative Rulings</h1>
-    <p>SF Superior Court — Department 302</p>
+    <p>SF Superior Court scraper</p>
   </header>
 
   <main>
+    <div id="update-banner">
+      <span>Update downloaded — reload extension in chrome://extensions</span>
+      <button id="update-dismiss">✕</button>
+    </div>
+
     <div class="status" id="status">
       <span>Checking page…</span>
     </div>
@@ -155,19 +230,25 @@
       <div class="bulk-row">
         <div>
           <label>From</label>
-          <input type="date" id="bulk-from">
+          <div class="date-wrap">
+            <input type="text" id="bulk-from" placeholder="YYYY-MM-DD" maxlength="10">
+            <button class="cal-btn" id="cal-from" title="Open calendar">📅</button>
+            <input type="date" id="bulk-from-picker" class="hidden-picker" tabindex="-1">
+          </div>
         </div>
         <div>
           <label>To</label>
-          <input type="date" id="bulk-to">
+          <div class="date-wrap">
+            <input type="text" id="bulk-to" placeholder="YYYY-MM-DD" maxlength="10">
+            <button class="cal-btn" id="cal-to" title="Open calendar">📅</button>
+            <input type="date" id="bulk-to-picker" class="hidden-picker" tabindex="-1">
+          </div>
         </div>
       </div>
       <div class="bulk-row" style="margin-bottom:0.4rem">
         <div style="flex:1">
-          <label>Wait after search</label>
-          <input type="number" id="bulk-wait" value="1000" min="100" step="100"
-            style="width:100%;padding:0.3rem 0.4rem;border:1px solid #ccc;border-radius:4px;font-size:0.78rem;box-sizing:border-box"
-            placeholder="ms">
+          <label>Search timeout (ms)</label>
+          <input type="number" id="bulk-wait" value="1000" min="100" step="100" placeholder="ms">
         </div>
       </div>
       <button id="bulk-btn" disabled>Bulk Scrape Range</button>
@@ -179,15 +260,15 @@
     <div id="settings">
       <label>GitHub Token (PAT with Contents: write)</label>
       <input type="password" id="token" placeholder="github_pat_…">
-      <p class="hint">Create at: github.com → Settings → Developer settings → Personal access tokens</p>
+      <p class="hint">github.com → Settings → Developer settings → Personal access tokens</p>
 
       <label>Repository (owner/repo)</label>
-      <input type="text" id="repo" placeholder="aimesy/sfsc-tentatives">
+      <input type="text" class="setting-field" id="repo" placeholder="aimesy/sfsc-tentatives">
+      <div class="field-saved" id="repo-saved"></div>
 
       <label>Branch</label>
-      <input type="text" id="branch" placeholder="master">
-
-      <button id="save-btn">Save settings</button>
+      <input type="text" class="setting-field" id="branch" placeholder="master">
+      <div class="field-saved" id="branch-saved"></div>
     </div>
   </main>
 

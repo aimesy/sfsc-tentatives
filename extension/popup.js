@@ -53,7 +53,6 @@ function weekdaysBetween(from, to) {
   return dates;
 }
 
-// Resolves when the given tab reaches status=complete (or after timeout ms)
 function waitForTabLoad(tabId, timeout = 14_000) {
   return new Promise(resolve => {
     const timer = setTimeout(resolve, timeout);
@@ -78,6 +77,103 @@ async function injectAndScrape(tabId) {
   });
 }
 
+// ── Date inputs (text + hidden calendar picker) ───────────────────────────────
+
+function wireDateInput(textId, pickerId, calBtnId) {
+  const text   = $(textId);
+  const picker = $(pickerId);
+  const calBtn = $(calBtnId);
+
+  function applyIso(iso) {
+    text.value   = iso;
+    picker.value = iso;
+    text.classList.remove('invalid');
+  }
+
+  text.addEventListener('blur', () => {
+    const iso = parseDate(text.value);
+    if (iso)              applyIso(iso);
+    else if (text.value)  text.classList.add('invalid');
+  });
+
+  text.addEventListener('paste', e => {
+    const raw = (e.clipboardData || window.clipboardData).getData('text');
+    const iso = parseDate(raw);
+    if (iso) { e.preventDefault(); applyIso(iso); }
+  });
+
+  // Calendar button opens the native date picker
+  calBtn.addEventListener('click', () => {
+    if (picker.showPicker) picker.showPicker();
+    else picker.click();
+  });
+
+  picker.addEventListener('change', () => {
+    if (picker.value) applyIso(picker.value);
+  });
+}
+
+wireDateInput('bulk-from', 'bulk-from-picker', 'cal-from');
+wireDateInput('bulk-to',   'bulk-to-picker',   'cal-to');
+
+// ── Settings: auto-save on blur ───────────────────────────────────────────────
+
+function flashSaved(labelId) {
+  const el = $(labelId);
+  if (!el) return;
+  el.textContent = '✓ saved';
+  setTimeout(() => { el.textContent = ''; }, 2000);
+}
+
+function saveField(field) {
+  const update = {};
+  update[field] = $(field).value.trim() || (field === 'branch' ? 'master' : '');
+  chrome.storage.local.set(update, () => flashSaved(field + '-saved'));
+  if (field === 'token') {
+    // Token saved — try re-initialising
+    setTimeout(init, 300);
+  }
+}
+
+$('token').addEventListener('blur',  () => saveField('token'));
+$('repo').addEventListener('blur',   () => saveField('repo'));
+$('branch').addEventListener('blur', () => saveField('branch'));
+
+$('settings-btn').addEventListener('click', async () => {
+  const panel = $('settings');
+  const open  = panel.style.display === 'block';
+  panel.style.display = open ? 'none' : 'block';
+  if (!open) {
+    const s = await loadSettings();
+    $('token').value  = s.token  || '';
+    $('repo').value   = s.repo   || 'aimesy/sfsc-tentatives';
+    $('branch').value = s.branch || 'master';
+  }
+});
+
+// ── Auto-update check ─────────────────────────────────────────────────────────
+
+function checkAndDownloadUpdate() {
+  chrome.runtime.sendMessage({ action: 'check-updates' }, result => {
+    if (!result?.hasUpdate) return;
+    chrome.runtime.sendMessage({ action: 'download-update' }, dlResult => {
+      const banner = $('update-banner');
+      if (dlResult?.success) {
+        banner.querySelector('span').textContent =
+          'Update downloaded — unzip sfsc-extension.zip and reload in chrome://extensions';
+      } else {
+        banner.querySelector('span').textContent =
+          'New version available — download sfsc-extension.zip from GitHub';
+      }
+      banner.style.display = 'flex';
+    });
+  });
+}
+
+$('update-dismiss').addEventListener('click', () => {
+  $('update-banner').style.display = 'none';
+});
+
 // ── On open: scrape current tab ───────────────────────────────────────────────
 
 async function init() {
@@ -90,38 +186,46 @@ async function init() {
     return;
   }
 
-  // Enable bulk controls once we know we're on the right page
   $('bulk-btn').disabled = false;
 
   try {
     await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
-  } catch (_) { /* already injected */ }
+  } catch (_) {}
+
+  // Pre-fill date range from current page date input
+  chrome.tabs.sendMessage(tab.id, { action: 'get-date' }, r => {
+    if (!chrome.runtime.lastError && r?.date) {
+      if (!$('bulk-from').value) { $('bulk-from').value = r.date; $('bulk-from-picker').value = r.date; }
+      if (!$('bulk-to').value)   { $('bulk-to').value   = r.date; $('bulk-to-picker').value   = r.date; }
+    }
+  });
 
   chrome.tabs.sendMessage(tab.id, { action: 'scrape' }, result => {
     if (chrome.runtime.lastError || !result) {
       setStatus('Could not read page. Refresh and try again.', 'error');
       return;
     }
-    if (result.error) {
-      setStatus(result.error, 'warn');
-      return;
-    }
+    if (result.error) { setStatus(result.error, 'warn'); return; }
 
     scrapedData = result;
     const n    = result.rulings.length;
     const dept = result.department;
 
-    if (n === 0) {
-      setStatus('No rulings found on this page.', 'warn');
-      return;
+    // Pre-fill date range from scraped ruling court date
+    if (!$('bulk-from').value && result.rulings[0]?.['Court Date']) {
+      const iso = parseDate(result.rulings[0]['Court Date']);
+      if (iso) {
+        if (!$('bulk-from').value) { $('bulk-from').value = iso; $('bulk-from-picker').value = iso; }
+        if (!$('bulk-to').value)   { $('bulk-to').value   = iso; $('bulk-to-picker').value   = iso; }
+      }
     }
+
+    if (n === 0) { setStatus('No rulings found on this page.', 'warn'); return; }
 
     const warn = result.reported_total && result.reported_total !== n
       ? ` (page reports ${result.reported_total} — scroll to load all)`
       : '';
-
-    setStatus(`Found ${n} ruling${n !== 1 ? 's' : ''} — Dept ${dept}.${warn}`,
-              warn ? 'warn' : '');
+    setStatus(`Found ${n} ruling${n !== 1 ? 's' : ''} — Dept ${dept}.${warn}`, warn ? 'warn' : '');
     $('send-btn').disabled = false;
   });
 }
@@ -157,10 +261,10 @@ $('send-btn').addEventListener('click', async () => {
 // ── Bulk Scrape ───────────────────────────────────────────────────────────────
 
 $('bulk-btn').addEventListener('click', async () => {
-  const from = $('bulk-from').value;
-  const to   = $('bulk-to').value;
+  const from = parseDate($('bulk-from').value);
+  const to   = parseDate($('bulk-to').value);
   if (!from || !to || from > to) {
-    setStatus('Enter a valid date range first.', 'warn');
+    setStatus('Enter a valid date range (YYYY-MM-DD or MM/DD/YYYY).', 'warn');
     return;
   }
 
@@ -169,7 +273,7 @@ $('bulk-btn').addEventListener('click', async () => {
   if (err) { setStatus(err, 'error'); return; }
 
   const waitMs = parseInt($('bulk-wait').value) || 1_000;
-  const dates = weekdaysBetween(from, to);
+  const dates  = weekdaysBetween(from, to);
   if (!dates.length) { setStatus('No weekdays in that range.', 'warn'); return; }
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -194,7 +298,6 @@ $('bulk-btn').addEventListener('click', async () => {
     const date = dates[i];
     setStatus(`[${i + 1}/${dates.length}] ${date}…`, 'loading');
 
-    // Inject content script and ask it to navigate to this date
     try {
       await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
     } catch (_) {}
@@ -203,12 +306,10 @@ $('bulk-btn').addEventListener('click', async () => {
 
     let data = await new Promise(resolve => {
       chrome.tabs.sendMessage(tab.id, { action: 'fill-and-scrape', date, waitMs }, r =>
-        // lastError means the page reloaded mid-flight — treat same as pending
         resolve(chrome.runtime.lastError ? { pending: true } : r)
       );
     });
 
-    // Page reloaded — wait for it to finish, then scrape
     if (data?.pending) {
       await waitForTabLoad(tab.id);
       data = await injectAndScrape(tab.id);
@@ -222,7 +323,7 @@ $('bulk-btn').addEventListener('click', async () => {
     }
 
     if (!data.rulings?.length) {
-      skipped++;  // court likely not in session that day
+      skipped++;
       await sleep(200);
       continue;
     }
@@ -231,11 +332,11 @@ $('bulk-btn').addEventListener('click', async () => {
       chrome.runtime.sendMessage({ action: 'commit', payload: { ...settings, data } }, resolve)
     );
 
-    if (res?.error)     { errors++;    }
-    else if (res?.duplicate) { skipped++; }
-    else                { committed++; }
+    if (res?.error)          errors++;
+    else if (res?.duplicate) skipped++;
+    else                     committed++;
 
-    await sleep(300); // minimal server politeness between pages
+    await sleep(300);
   }
 
   bulkRunning = false;
@@ -243,7 +344,7 @@ $('bulk-btn').addEventListener('click', async () => {
   $('bulk-btn').disabled = false;
   $('send-btn').disabled = false;
 
-  const stopped = !bulkRunning && committed + skipped + errors < dates.length;
+  const stopped = committed + skipped + errors < dates.length;
   setStatus(
     `Done: ${committed} committed, ${skipped} skipped, ${errors} errors` +
     (stopped ? ' (stopped early)' : ''),
@@ -266,51 +367,21 @@ $('diag-btn').addEventListener('click', async () => {
       return;
     }
     const msg = result.foundInput
-      ? `Input: name="${result.foundInput.name}" id="${result.foundInput.id}" | Form action: ${result.formAction} | Btn: "${result.btnText}" | Forms on page: ${result.allForms.length}`
-      : `No date input found. Forms on page: ${JSON.stringify(result.allForms)}`;
+      ? `Input: name="${result.foundInput.name}" id="${result.foundInput.id}" | Form action: ${result.formAction} | Btn: "${result.btnText}" | Forms: ${result.allForms.length}`
+      : `No date input found. Forms: ${JSON.stringify(result.allForms)}`;
     setStatus(msg, result.foundInput ? 'warn' : 'error');
     console.log('SFSC diagnose:', JSON.stringify(result, null, 2));
   });
 });
 
-// ── Settings panel ────────────────────────────────────────────────────────────
-
-$('settings-btn').addEventListener('click', async () => {
-  const panel = $('settings');
-  const open  = panel.style.display === 'block';
-  panel.style.display = open ? 'none' : 'block';
-  if (!open) {
-    const s = await loadSettings();
-    $('token').value  = s.token  || '';
-    $('repo').value   = s.repo   || 'aimesy/sfsc-tentatives';
-    $('branch').value = s.branch || 'master';
-  }
-});
-
-$('save-btn').addEventListener('click', () => {
-  chrome.storage.local.set({
-    token:  $('token').value.trim(),
-    repo:   $('repo').value.trim(),
-    branch: $('branch').value.trim() || 'master',
-  }, () => {
-    $('settings').style.display = 'none';
-    setStatus('Settings saved.', 'success');
-    setTimeout(init, 800);
-  });
-});
-
 // ── Boot ──────────────────────────────────────────────────────────────────────
 
-// Paste normalization: accept MM/DD/YYYY (and variants) into date inputs
-['bulk-from', 'bulk-to'].forEach(id => {
-  $( id).addEventListener('paste', e => {
-    const text = (e.clipboardData || window.clipboardData).getData('text');
-    const iso = parseDate(text);
-    if (iso) {
-      e.preventDefault();
-      e.target.value = iso;
-    }
-  });
+loadSettings().then(s => {
+  $('token').value  = s.token  || '';
+  $('repo').value   = s.repo   || 'aimesy/sfsc-tentatives';
+  $('branch').value = s.branch || 'master';
+  if (!s.token) $('settings').style.display = 'block';
 });
 
+checkAndDownloadUpdate();
 init();
