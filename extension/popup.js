@@ -268,19 +268,20 @@ $('settings-btn').addEventListener('click', async () => {
 function checkAndDownloadUpdate() {
   chrome.runtime.sendMessage({ action: 'check-updates' }, result => {
     if (!result?.hasUpdate) return;
-    chrome.runtime.sendMessage({ action: 'download-update' }, dlResult => {
-      const banner = $('update-banner');
-      if (dlResult?.success) {
-        banner.querySelector('span').textContent =
-          'Update downloaded — unzip sfsc-extension.zip and reload in chrome://extensions';
-      } else {
-        banner.querySelector('span').textContent =
-          'New version available — download sfsc-extension.zip from GitHub';
-      }
-      banner.style.display = 'flex';
-    });
+    $('update-banner').style.display = 'flex';
   });
 }
+
+$('update-download').addEventListener('click', () => {
+  $('update-download').disabled = true;
+  $('update-banner').querySelector('span').textContent = 'Downloading…';
+  chrome.runtime.sendMessage({ action: 'download-update' }, dlResult => {
+    $('update-download').style.display = 'none';
+    $('update-banner').querySelector('span').textContent = dlResult?.success
+      ? 'Downloaded — unzip sfsc-extension.zip and reload in chrome://extensions'
+      : 'Download failed — get sfsc-extension.zip from GitHub';
+  });
+});
 
 $('update-dismiss').addEventListener('click', () => {
   $('update-banner').style.display = 'none';
