@@ -1,0 +1,26 @@
+name: Build Extension ZIP
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'extension/**'
+      - '.github/workflows/build-extension.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build ZIP
+        run: |
+          zip -r sfsc-extension.zip extension/manifest.json extension/popup.html extension/popup.js extension/content.js
+
+      - name: Commit and push ZIP
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add sfsc-extension.zip
+          git commit -m "Auto-build extension zip" --allow-empty
+          git push
