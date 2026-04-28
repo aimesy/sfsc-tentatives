@@ -270,7 +270,7 @@ $('settings-btn').addEventListener('click', async () => {
   if (!open) {
     const s = await loadSettings();
     $('token').value  = s.token  || '';
-    $('repo').value   = s.repo   || 'amitabho/sfsc-tentatives';
+    $('repo').value   = s.repo   || 'aimesy/sfsc-tentatives';
     $('branch').value = s.branch || 'master';
   }
 });

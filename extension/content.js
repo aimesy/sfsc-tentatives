@@ -129,28 +129,6 @@ async function fillAndScrape(dateStr, waitMs = 2000) {
   }
   return { pending: true };
 }
-  // Snapshot current results so we can detect a change
-  const prevHTML = document.getElementById('resultsRulings')?.innerHTML ?? null;
-
-  // Click the submit button that belongs to this input's form specifically
-  const form = input.closest('form');
-  const btn  = form?.querySelector('input[type="submit"], button[type="submit"]')
-            ?? document.querySelector('input[type="submit"], button[type="submit"]');
-  if (btn)   btn.click();
-  else if (form) form.submit();
-  else       return { error: 'No submit button found.' };
-
-  // Poll for the results container to change (AJAX case)
-  const deadline = Date.now() + waitMs;
-  while (Date.now() < deadline) {
-    await new Promise(r => setTimeout(r, 500));
-    const container = document.getElementById('resultsRulings');
-    if (container && container.innerHTML !== prevHTML) return scrape();
-  }
-
-  // No DOM change — page probably did a full reload; signal the popup
-  return { pending: true };
-}
 
 // ── Message listener ──────────────────────────────────────────────────────────
 
