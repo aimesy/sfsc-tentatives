@@ -165,14 +165,9 @@
       <div class="bulk-row" style="margin-bottom:0.4rem">
         <div style="flex:1">
           <label>Wait after search</label>
-          <select id="bulk-wait" style="width:100%;padding:0.3rem 0.4rem;border:1px solid #ccc;border-radius:4px;font-size:0.78rem;box-sizing:border-box">
-            <option value="500">500 ms</option>
-            <option value="1000">1000 ms</option>
-            <option value="1500">1500 ms</option>
-            <option value="2000" selected>2000 ms</option>
-            <option value="3000">3000 ms</option>
-            <option value="5000">5000 ms</option>
-          </select>
+          <input type="number" id="bulk-wait" value="2000" min="100" step="100"
+            style="width:100%;padding:0.3rem 0.4rem;border:1px solid #ccc;border-radius:4px;font-size:0.78rem;box-sizing:border-box"
+            placeholder="ms">
         </div>
       </div>
       <button id="bulk-btn" disabled>Bulk Scrape Range</button>
