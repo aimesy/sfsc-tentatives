@@ -5,6 +5,12 @@ on:
     paths:
       - 'raw/**/*.json'
 
+# Serialize runs so concurrent pushes don't race to update the parquet.
+# cancel-in-progress: false means queued runs still execute; nothing is lost.
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
 jobs:
   ingest:
     runs-on: ubuntu-latest
@@ -23,23 +29,43 @@ jobs:
       - name: Install dependencies
         run: pip install pandas pyarrow openpyxl
 
-      - name: Ingest new JSON files
+      - name: Ingest and commit updated parquet
         run: |
           NEW_FILES=$(git diff --name-only HEAD^1 HEAD -- 'raw/**/*.json' 'raw/*.json')
           if [ -z "$NEW_FILES" ]; then
             echo "No new raw JSON files to ingest."
             exit 0
           fi
-          for f in $NEW_FILES; do
-            echo "Ingesting $f …"
-            python3 ingest.py "$f"
-          done
 
-      - name: Commit updated parquet
-        run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add tentatives.parquet
-          git diff --staged --quiet && echo "No parquet changes." || \
+
+          for attempt in 1 2 3 4 5; do
+            # Always build on the freshest remote parquet to avoid conflicts
+            git fetch origin master
+            git checkout FETCH_HEAD -- tentatives.parquet
+
+            for f in $NEW_FILES; do
+              echo "Ingesting $f …"
+              python3 ingest.py "$f"
+            done
+
+            git add tentatives.parquet
+
+            # Move HEAD to FETCH_HEAD so our commit is a clean fast-forward
+            git reset --soft FETCH_HEAD
+
+            if git diff --staged --quiet; then
+              echo "All rows already present – no parquet changes."
+              exit 0
+            fi
+
             git commit -m "Update tentatives.parquet [skip ci]"
-          git push
+            git push && exit 0
+
+            echo "Push rejected (attempt $attempt/5); retrying …"
+            sleep $((attempt * 3))
+          done
+
+          echo "ERROR: failed to push after 5 attempts"
+          exit 1
