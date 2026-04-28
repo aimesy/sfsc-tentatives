@@ -168,7 +168,7 @@ $('bulk-btn').addEventListener('click', async () => {
   const err = validateSettings(s);
   if (err) { setStatus(err, 'error'); return; }
 
-  const waitMs = parseInt($('bulk-wait').value) || 10_000;
+  const waitMs = parseInt($('bulk-wait').value) || 2_000;
   const dates = weekdaysBetween(from, to);
   if (!dates.length) { setStatus('No weekdays in that range.', 'warn'); return; }
 
@@ -223,7 +223,7 @@ $('bulk-btn').addEventListener('click', async () => {
 
     if (!data.rulings?.length) {
       skipped++;  // court likely not in session that day
-      await sleep(800);
+      await sleep(200);
       continue;
     }
 
@@ -235,7 +235,7 @@ $('bulk-btn').addEventListener('click', async () => {
     else if (res?.duplicate) { skipped++; }
     else                { committed++; }
 
-    await sleep(1200); // be polite to the server
+    await sleep(300); // minimal server politeness between pages
   }
 
   bulkRunning = false;
