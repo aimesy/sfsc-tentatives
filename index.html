@@ -210,6 +210,10 @@
       padding: 0.4rem 0.7rem; margin-bottom: 0.7rem; border-radius: 0 4px 4px 0;
     }
     .modal .ruling { font-size: 0.85rem; line-height: 1.8; white-space: pre-wrap; }
+    .modal .admin-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em;
+      color: #888; margin: 1rem 0 0.3rem; }
+    .modal .admin-notes { font-size: 0.78rem; line-height: 1.6; color: #666;
+      white-space: pre-wrap; border-top: 1px dashed #ddd; padding-top: 0.6rem; }
     .modal-close {
       position: absolute; top: 0.8rem; right: 0.8rem;
       background: none; border: none; font-size: 1.4rem;
@@ -353,6 +357,8 @@
     <div class="meta" id="modal-meta"></div>
     <div class="motion" id="modal-motion"></div>
     <div class="ruling" id="modal-ruling"></div>
+    <div class="admin-label" id="modal-admin-label" style="display:none">Administrative notes</div>
+    <div class="admin-notes" id="modal-admin"></div>
   </div>
 </div>
 
@@ -516,7 +522,7 @@ function buildWhere() {
   if (to)    parts.push(`court_date <= '${to}'`);
   if (dept)  parts.push(`department = '${dept.replace(/'/g,"''")}'`);
   if (judge) parts.push(`judge = '${judge.replace(/'/g,"''")}'`);
-  if (q)     parts.push(`(case_number ILIKE '%${q}%' OR case_title ILIKE '%${q}%' OR ruling ILIKE '%${q}%')`);
+  if (q)     parts.push(`(case_number ILIKE '%${q}%' OR case_title ILIKE '%${q}%' OR ruling ILIKE '%${q}%' OR admin_notes ILIKE '%${q}%')`);
   return parts.length ? parts.join(' AND ') : 'TRUE';
 }
 
@@ -530,7 +536,7 @@ async function runQuery(page = 0) {
       conn.query(`SELECT COUNT(*) n FROM 'data.parquet' WHERE ${where}`),
       conn.query(`
         SELECT department, case_number, case_title, court_date, hearing_time,
-               calendar_matter, judge, ruling
+               calendar_matter, judge, ruling, admin_notes
         FROM 'data.parquet' WHERE ${where}
         ORDER BY ${sortCol} ${sortDir}, case_number
         LIMIT ${PAGE_SIZE} OFFSET ${offset}
@@ -600,12 +606,12 @@ $('export-btn').addEventListener('click', async () => {
   $('export-btn').disabled = true; $('export-btn').textContent = '…';
   const all = (await conn.query(`
     SELECT department, case_number, case_title, court_date, hearing_time,
-           calendar_matter, judge, ruling
+           calendar_matter, judge, ruling, admin_notes
     FROM 'data.parquet' WHERE ${buildWhere()}
     ORDER BY ${sortCol} ${sortDir}, case_number
   `)).toArray();
   const cols = ['department','case_number','case_title','court_date','hearing_time',
-                'calendar_matter','judge','ruling'];
+                'calendar_matter','judge','ruling','admin_notes'];
   const csv = [cols.join(','), ...all.map(r =>
     cols.map(c => csvCell(r[c])).join(','))].join('\n');
   const a = document.createElement('a');
@@ -634,6 +640,10 @@ function openModal(r) {
     r.case_number, r.court_date, r.hearing_time, r.judge].filter(Boolean).join(' · ');
   $('modal-motion').textContent = r.calendar_matter ?? '';
   $('modal-ruling').textContent = r.ruling ?? '';
+  const admin = r.admin_notes ?? '';
+  $('modal-admin').textContent  = admin;
+  $('modal-admin-label').style.display = admin ? '' : 'none';
+  $('modal-admin').style.display       = admin ? '' : 'none';
   $('overlay').classList.add('open');
 }
 function closeModal() { $('overlay').classList.remove('open'); }

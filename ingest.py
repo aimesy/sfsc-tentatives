@@ -74,11 +74,38 @@ def extract_judge(ruling_text):
     return JUDGE_CODE_MAP.get(code)
 
 COLUMNS = ["department", "case_number", "case_title", "court_date", "hearing_time",
-           "calendar_matter", "judge", "ruling", "row_hash"]
+           "calendar_matter", "judge", "ruling", "admin_notes", "row_hash"]
+
+# Dept 302's standard contest paragraph is the most reliable boundary between
+# substantive ruling text and administrative boilerplate. Anything from this
+# sentence onward (the contest instructions, court-reporter notes, remote-
+# appearance notes, trailing judge tag) is admin. The match is anchored to
+# the start of the sentence and tolerant of minor casing/whitespace variants.
+_ADMIN_BOUNDARY_RE = re.compile(
+    r'\s*Any\s+part(?:y|ies)\s+who\s+contests?\s+a\s+tentative\s+ruling',
+    re.IGNORECASE,
+)
+
+
+def split_admin_notes(ruling):
+    """Return (substantive_ruling, admin_notes). Both may be None."""
+    if not isinstance(ruling, str) or not ruling:
+        return None, None
+    m = _ADMIN_BOUNDARY_RE.search(ruling)
+    if not m:
+        return ruling, None
+    substantive = ruling[:m.start()].rstrip(' \t\r\n.,;:')
+    admin       = ruling[m.start():].strip()
+    return (substantive or None), (admin or None)
 
 
 def make_hash(case_number, court_date, ruling):
-    key = f"{case_number}|{court_date}|{ruling}"
+    # Hash on the *substantive* ruling so rows that differ only in the
+    # admin boilerplate (e.g. manually-curated rows where the boilerplate
+    # was culled vs. scraped rows where it's still attached) dedupe to the
+    # same record.
+    substantive, _ = split_admin_notes(ruling)
+    key = f"{case_number}|{court_date}|{substantive or ''}"
     return hashlib.sha1(key.encode()).hexdigest()
 
 
@@ -142,6 +169,8 @@ def load_xlsm_2014_2018(path, department="302"):
         hearing_time = None
         if isinstance(court_date, datetime) and (court_date.hour or court_date.minute):
             hearing_time = court_date.strftime("%H:%M")
+        ruling_text = str(ruling).strip() if ruling else None
+        substantive, admin = split_admin_notes(ruling_text)
         rows.append({
             "department":      department,
             "case_number":     str(case_number).strip() if case_number else None,
@@ -150,7 +179,8 @@ def load_xlsm_2014_2018(path, department="302"):
             "hearing_time":    hearing_time,
             "calendar_matter": str(calendar_matter).strip() if calendar_matter else None,
             "judge":           None,
-            "ruling":          str(ruling).strip() if ruling else None,
+            "ruling":          substantive,
+            "admin_notes":     admin,
         })
     return rows
 
@@ -163,6 +193,8 @@ def load_xlsx_2020_plus(path, department="302"):
         case_number, case_title, court_date, hearing_time, calendar_matter, judge, ruling = r[:7]
         if not any([case_number, ruling]):
             continue
+        ruling_text = str(ruling).strip() if ruling else None
+        substantive, admin = split_admin_notes(ruling_text)
         rows.append({
             "department":      department,
             "case_number":     str(case_number).strip() if case_number else None,
@@ -171,7 +203,8 @@ def load_xlsx_2020_plus(path, department="302"):
             "hearing_time":    normalize_time(hearing_time),
             "calendar_matter": str(calendar_matter).strip() if calendar_matter else None,
             "judge":           str(judge).strip() if judge else None,
-            "ruling":          str(ruling).strip() if ruling else None,
+            "ruling":          substantive,
+            "admin_notes":     admin,
         })
     return rows
 
@@ -196,6 +229,7 @@ def load_json(path):
         ruling_text    = rec.get("Rulings", "").strip() or None
         # Use explicit Judge field if present (scraped by extension), else derive from code
         judge = rec.get("Judge") or extract_judge(ruling_text)
+        substantive, admin = split_admin_notes(ruling_text)
         rows.append({
             "department":      department,
             "case_number":     rec.get("Case Number", "").strip() or None,
@@ -204,7 +238,8 @@ def load_json(path):
             "hearing_time":    normalize_time(court_date_raw),
             "calendar_matter": rec.get("Calendar Matter", "").strip() or None,
             "judge":           judge,
-            "ruling":          ruling_text,
+            "ruling":          substantive,
+            "admin_notes":     admin,
         })
     return rows
 
@@ -232,6 +267,35 @@ def to_df(rows):
         axis=1,
     )
     return df
+
+
+def migrate_existing(df: pd.DataFrame) -> pd.DataFrame:
+    """Bring an existing parquet up to the current schema:
+
+      - Adds the `admin_notes` column if missing, splitting any boilerplate
+        out of the existing `ruling` text.
+      - Recomputes `row_hash` from the substantive ruling so old rows
+        dedupe against newly-ingested rows that had the boilerplate split.
+    """
+    if "department" not in df.columns:
+        df.insert(0, "department", "302")
+
+    needs_split = "admin_notes" not in df.columns
+    if needs_split:
+        split = df["ruling"].apply(split_admin_notes)
+        df["ruling"]      = split.apply(lambda t: t[0])
+        df["admin_notes"] = split.apply(lambda t: t[1])
+        df["row_hash"]    = df.apply(
+            lambda r: make_hash(r["case_number"] or "", r["court_date"] or "", r["ruling"] or ""),
+            axis=1,
+        )
+        df = df.drop_duplicates(subset="row_hash", keep="first").reset_index(drop=True)
+
+    # Make sure we have all expected columns in the canonical order.
+    for col in COLUMNS:
+        if col not in df.columns:
+            df[col] = None
+    return df[COLUMNS]
 
 
 def merge(existing: pd.DataFrame, new: pd.DataFrame):
@@ -262,6 +326,7 @@ def save_sqlite(df: pd.DataFrame):
             calendar_matter TEXT,
             judge           TEXT,
             ruling          TEXT,
+            admin_notes     TEXT,
             row_hash        TEXT UNIQUE
         );
         CREATE INDEX IF NOT EXISTS idx_department ON tentatives(department);
@@ -283,10 +348,7 @@ def summary(df: pd.DataFrame):
 
 def main():
     existing = pd.read_parquet(PARQUET) if PARQUET.exists() else pd.DataFrame(columns=COLUMNS)
-
-    # Migrate old parquet missing department column
-    if "department" not in existing.columns:
-        existing.insert(0, "department", "302")
+    existing = migrate_existing(existing)
 
     if len(sys.argv) > 1:
         for arg in sys.argv[1:]:

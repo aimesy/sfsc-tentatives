@@ -132,25 +132,48 @@ def format_gaps(runs: list[tuple[str, str]]) -> str:
         lines.append(f'- {start}' if start == end else f'- {start} → {end}')
     return '\n'.join(lines)
 
+def scraped_dates_for_dept(dept: str) -> set[str]:
+    """Dates we have raw scrape evidence for, derived from filenames in
+    raw/dept<N>/. A date with a raw file is *not* a gap even if no rulings
+    landed in the parquet for it (e.g. the page returned zero tentatives,
+    or returned tentatives whose hearings are on a different date)."""
+    raw_dir = HERE / 'raw' / f'dept{dept}'
+    if not raw_dir.is_dir():
+        return set()
+    out = set()
+    for p in raw_dir.glob('*.json'):
+        # Filenames are <YYYY-MM-DD>-<HHMMSS>.json
+        stem = p.stem
+        if len(stem) >= 10 and stem[4] == '-' and stem[7] == '-':
+            out.add(stem[:10])
+    return out
+
+
 def dept_section(dept: str, df_dept: pd.DataFrame) -> str:
     name    = DEPT_NAMES.get(dept, f'Department {dept}')
     count   = len(df_dept)
-    dates   = sorted(df_dept['court_date'].unique())
-    min_d   = dates[0]
-    max_d   = dates[-1]
-    checked = set(dates)
+    dates   = set(df_dept['court_date'].unique())
+    scraped = scraped_dates_for_dept(dept)
+    checked = dates | scraped
 
-    holidays = ca_court_holidays(int(min_d[:4]), int(max_d[:4]))
-    gaps     = find_gap_runs(min_d, max_d, checked, holidays)
+    if not checked:
+        return ''
+
+    min_d        = min(checked)
+    max_checked  = max(checked)
+    latest_data  = max(dates) if dates else max_checked
+
+    holidays = ca_court_holidays(int(min_d[:4]), int(max_checked[:4]))
+    gaps     = find_gap_runs(min_d, max_checked, checked, holidays)
     n_gaps   = len(gaps)
 
     summary = (f'**{name}** &nbsp;·&nbsp; {count:,} rulings'
-               f' &nbsp;·&nbsp; Latest: {max_d}'
+               f' &nbsp;·&nbsp; Latest: {latest_data}'
                f' &nbsp;·&nbsp; {n_gaps} gap{"s" if n_gaps != 1 else ""}')
 
     body = f"""\
 
-{count:,} tentative rulings. Latest: {max_d}.
+{count:,} tentative rulings. Latest: {latest_data}.
 
 ### Gaps ({n_gaps})
 
