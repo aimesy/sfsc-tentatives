@@ -10,21 +10,28 @@ Daily archive of tentative rulings from the San Francisco Superior Court.
 |------|------|
 | `tentatives.parquet` | Canonical dataset (all rulings, all departments) |
 | `raw/dept<N>/*.json` | Per-day raw scrapes, organised by department |
-| `extension/` | Chrome extension source |
+| `extension/` | Browser extension source (Chrome + Firefox) |
 | `sfsc-extension.zip` | Pre-built, installable extension |
 | `index.html` | Static data browser (served via GitHub Pages) |
 | `ingest.py` | Merges raw JSON into the parquet |
 | `update-readme.py` | Regenerates the department sections below |
 
-## Chrome extension
+## Browser extension
 
-Scrapes the [SFSC tentative rulings page](https://webapps.sftc.org/tr/tr.dll) and commits results directly to this repo.
+Scrapes the [SFSC tentative rulings page](https://webapps.sftc.org/tr/tr.dll) and commits results directly to this repo. Works on Chrome and Firefox.
 
-### Install
+### Install (Chrome)
 
 1. Download and unzip `sfsc-extension.zip`.
 2. `chrome://extensions` → enable **Developer mode** → **Load unpacked** → pick the unzipped folder.
 3. Open the popup → **⚙ Settings** → paste a GitHub PAT (needs `Contents: write`).
+
+### Install (Firefox)
+
+1. Download and unzip `sfsc-extension.zip`.
+2. `about:debugging` → **This Firefox** → **Load Temporary Add-on…** → pick `manifest.json` from the unzipped folder. (Temporary add-ons are removed when Firefox restarts; for a permanent install, use Firefox Developer Edition or build a signed `.xpi`.)
+3. Open the popup → **⚙ Settings** → paste a GitHub PAT (needs `Contents: write`).
+4. To rebind the hotkey: `about:addons` → ⚙ menu → **Manage Extension Shortcuts**.
 
 ### Use
 
