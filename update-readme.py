@@ -2,7 +2,6 @@
 """Regenerate README.md from tentatives.parquet — one collapsible section per department."""
 
 import json
-import re
 import pandas as pd
 import holidays as hol
 from datetime import date, timedelta

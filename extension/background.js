@@ -136,8 +136,14 @@ async function commitToGitHub({ token, owner, repo, branch, data }) {
     throw new Error(body.message || `GitHub API error ${res.status}`);
   }
 
-  // Append to cache so the next duplicate check sees this file without a re-fetch
+  // Update the in-memory caches so the next duplicate check and the next
+  // hotkey advance both see this date as covered without a round-trip.
   files.push({ name: `${date}-${time}.json` });
+  for (const [key, entry] of _covCache) {
+    if (key.startsWith(`${department}|`) && !entry.dates.includes(date)) {
+      entry.dates.push(date);
+    }
+  }
 
   const json = await res.json();
   return { ok: true, path, sha: json.content?.sha, stale: !!staleCount, staleCount };

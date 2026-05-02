@@ -526,6 +526,13 @@ const searchEl  = $('search'),  dateFrom  = $('date-from'), dateTo = $('date-to'
 const deptEl    = $('dept'),    judgeEl   = $('judge');
 const mtypeEl   = $('mtype'),   msubEl    = $('msub'), msubChip = $('msub-chip');
 
+// Categorisation cache (populated once per page load by classifyAll). Declared
+// here — not next to its consumers — because the top-level `try` block below
+// calls classifyAll() before its declaration site would otherwise be reached,
+// and a `let` in TDZ would crash with "Cannot access 'MTYPE_CACHE' before
+// initialization".
+const MTYPE_CACHE = new Map(); // calendar_matter -> {type, subtype}
+
 // Custom filters added via "+ Add filter".
 let customFilters = []; // [{id, col, op, value}]
 let nextFilterId = 1;
@@ -634,39 +641,35 @@ try {
   console.error(err);
 }
 
-// ─── Categorisation cache ────────────────────────────────────────────────────
-// Compute Motion Type for every distinct calendar_matter once; reuse on every
-// query. The dropdown's frequency labels reflect parquet-wide counts; the
-// per-row tagging happens at render time using this cache.
-let MTYPE_CACHE = new Map(); // calendar_matter (lowercased trimmed) -> {type, subtype}
+// ─── Categorisation ──────────────────────────────────────────────────────────
+// Populates MTYPE_CACHE once per page load. The dropdown's frequency labels
+// reflect parquet-wide counts; per-row tagging at render time reads the cache.
 
 async function classifyAll() {
   const all = (await conn.query(
     `SELECT calendar_matter, COUNT(*) n FROM 'data.parquet' GROUP BY calendar_matter`
   )).toArray();
-  const counts = new Map();   // type -> count
-  const subCounts = new Map();// type|subtype -> count (for Q4 fold)
+  const counts = new Map(); // type -> count
   for (const r of all) {
     const cm = r.calendar_matter || '';
     const cls = classifyMotion(cm);
     MTYPE_CACHE.set(cm, cls);
     counts.set(cls.type, (counts.get(cls.type) || 0) + Number(r.n));
-    if (cls.subtype) {
-      const k = `${cls.type}|${cls.subtype}`;
-      subCounts.set(k, (subCounts.get(k) || 0) + Number(r.n));
-    }
   }
   // Q4 (B): any final type below 3 → Miscellaneous.
-  const small = [...counts.entries()].filter(([, n]) => n < 3).map(([t]) => t);
-  if (small.length) {
+  const smallSet = new Set(
+    [...counts.entries()].filter(([, n]) => n < 3).map(([t]) => t)
+  );
+  if (smallSet.size) {
+    let folded = 0;
+    for (const t of smallSet) folded += counts.get(t) || 0;
     for (const [cm, cls] of MTYPE_CACHE) {
-      if (small.includes(cls.type)) {
-        counts.set('Miscellaneous', (counts.get('Miscellaneous') || 0)
-          + (counts.get(cls.type) || 0));
+      if (smallSet.has(cls.type)) {
         MTYPE_CACHE.set(cm, { type: 'Miscellaneous', subtype: null });
       }
     }
-    for (const t of small) counts.delete(t);
+    counts.set('Miscellaneous', (counts.get('Miscellaneous') || 0) + folded);
+    for (const t of smallSet) counts.delete(t);
   }
   return counts;
 }
@@ -853,7 +856,6 @@ function renderPager(total, page) {
   $('pg-prev').disabled  = page === 0;
   $('pg-next').disabled  = page >= pages - 1;
   $('pg-last').disabled  = page >= pages - 1;
-  $('pg-last').dataset.p = pages - 1;
 }
 
 ['pg-first','pg-prev','pg-next','pg-last'].forEach(id =>
@@ -1062,7 +1064,7 @@ $('clear-btn').addEventListener('click', async () => {
 });
 
 // ─── Motion-type → subtype dropdown chaining ─────────────────────────────────
-mtypeEl.addEventListener('change', () => {
+function refreshSubtypeOptions() {
   const t = mtypeEl.value;
   const subs = new Set();
   if (t) {
@@ -1078,8 +1080,8 @@ mtypeEl.addEventListener('change', () => {
     msubChip.style.display = 'none';
     msubEl.value = '';
   }
-  runQuery(0);
-});
+}
+mtypeEl.addEventListener('change', () => { refreshSubtypeOptions(); runQuery(0); });
 msubEl.addEventListener('change', () => runQuery(0));
 
 // ─── "+ Add filter" builder ─────────────────────────────────────────────────
@@ -1185,6 +1187,8 @@ function saveState() {
   if (judgeEl.value)  p.set('judge', judgeEl.value);
   if (mtypeEl.value)  p.set('mtype', mtypeEl.value);
   if (msubEl.value)   p.set('msub', msubEl.value);
+  if (sortCol !== 'court_date') p.set('sort', sortCol);
+  if (sortDir !== 'DESC')       p.set('dir', sortDir);
   if (currentPage)    p.set('page', currentPage);
   if (customFilters.length) {
     p.set('f', JSON.stringify(customFilters.map(f => ({ c: f.col, o: f.op, v: f.value }))));
@@ -1199,12 +1203,12 @@ function restoreState() {
   if (p.get('to'))    dateTo.value   = p.get('to');
   if (p.get('dept'))  deptEl.value   = p.get('dept');
   if (p.get('judge')) judgeEl.value  = p.get('judge');
-  if (p.get('mtype')) mtypeEl.value  = p.get('mtype');
-  if (p.get('msub'))  msubEl.value   = p.get('msub');
+  if (p.get('sort'))  sortCol = p.get('sort');
+  if (p.get('dir'))   sortDir = p.get('dir');
   if (p.get('page'))  currentPage    = +p.get('page');
   if (p.get('f')) {
     try {
-      customFilters = JSON.parse(p.get('f')).map((f, i) => ({
+      customFilters = JSON.parse(p.get('f')).map(f => ({
         id: nextFilterId++, col: f.c, op: f.o, value: f.v,
       }));
       renderFilterRows();
@@ -1212,8 +1216,21 @@ function restoreState() {
       $('advanced-btn').classList.add('active');
     } catch { /* ignore corrupted state */ }
   }
-  // Trigger subtype refresh if mtype is set on restore
-  if (mtypeEl.value) mtypeEl.dispatchEvent(new Event('change'));
+  // Mtype/msub need careful ordering: setting mtypeEl and dispatching change
+  // rebuilds the msub <option>s, which would wipe a value set beforehand. So
+  // refresh the subtype dropdown first, then restore msub.
+  if (p.get('mtype')) {
+    mtypeEl.value = p.get('mtype');
+    refreshSubtypeOptions();
+  }
+  if (p.get('msub')) msubEl.value = p.get('msub');
+  // Sync the sortable header arrow with the restored sortCol/sortDir.
+  document.querySelectorAll('th.sortable').forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (th.dataset.col === sortCol) {
+      th.classList.add(sortDir === 'ASC' ? 'sort-asc' : 'sort-desc');
+    }
+  });
 }
 
 // ─── Events ──────────────────────────────────────────────────────────────────

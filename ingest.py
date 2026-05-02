@@ -373,14 +373,13 @@ def migrate_existing(df: pd.DataFrame) -> pd.DataFrame:
         df["ruling"] = df.apply(rejoin, axis=1)
         df = df.drop(columns=["admin_notes"])
 
+    # consolidate_splits already recomputes the hash and dedupes; we just need
+    # to ensure the canonical column order/presence on its way out.
     df = consolidate_splits(df)
-
     for col in COLUMNS:
         if col not in df.columns:
             df[col] = None
-    df = _add_hash(df)
-    df = df.drop_duplicates(subset="row_hash", keep="first").reset_index(drop=True)
-    return df[COLUMNS]
+    return df[COLUMNS].reset_index(drop=True)
 
 
 def merge(existing: pd.DataFrame, new: pd.DataFrame):
