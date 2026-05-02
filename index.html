@@ -125,12 +125,24 @@
       padding: 0.55rem 0.65rem 0.6rem; min-height: 240px;
       display: flex; flex-direction: column;
       position: relative;
+      transition: opacity 0.12s, border-color 0.12s, box-shadow 0.12s;
     }
     .chart-card.wide { grid-column: span 2; }
+    .chart-card.dragging { opacity: 0.45; }
+    .chart-card.drop-target {
+      border-color: #2e6da4; box-shadow: 0 0 0 2px rgba(46,109,164,0.18);
+    }
     .chart-header {
       display: flex; align-items: center; gap: 0.3rem;
       margin: 0 0 0.4rem;
     }
+    .chart-card .drag-handle {
+      cursor: grab; user-select: none;
+      color: #aaa; font-size: 0.95rem; line-height: 1;
+      padding: 0 0.15rem; letter-spacing: -2px;
+    }
+    .chart-card .drag-handle:hover { color: #1a3a5c; }
+    .chart-card.dragging .drag-handle { cursor: grabbing; }
     .chart-card h3 {
       margin: 0; font-size: 0.78rem;
       font-weight: 600; color: #1a3a5c;
@@ -237,6 +249,7 @@
     .outcome-denied      { background: #fdecea; border-color: #f5c6c6; color: #7a2020; }
     .outcome-continued   { background: #fff8e1; border-color: #ffe082; color: #6b5300; }
     .outcome-off         { background: #f0f0f0; border-color: #d0d0d0; color: #555; }
+    .outcome-hearing     { background: #f0e8fb; border-color: #cbb8e6; color: #553a78; }
     .outcome-other       { background: #eef3fb; border-color: #ccd6e6; color: #1a3a5c; }
     .no-data {
       text-align: center; padding: 2.5rem; color: #888; font-style: italic;
@@ -316,6 +329,27 @@
       cursor: pointer; color: #aaa; line-height: 1;
     }
     .modal-close:hover { color: #333; }
+    .modal-footer {
+      margin-top: 1.1rem; padding-top: 0.7rem;
+      border-top: 1px solid #eef0f4;
+      display: flex; align-items: center; gap: 0.6rem;
+      font-size: 0.74rem; color: #888;
+    }
+    .modal-footer .ruling-id {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.72rem; color: #888;
+      flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .modal-footer .report-btn {
+      display: inline-flex; align-items: center; gap: 0.25rem;
+      background: #fff; border: 1px solid #c2ccd9; color: #1a3a5c;
+      padding: 0.28rem 0.6rem; border-radius: 4px;
+      text-decoration: none; font-size: 0.74rem; font-weight: 500;
+      white-space: nowrap;
+    }
+    .modal-footer .report-btn:hover {
+      background: #fff8e8; border-color: #d8a900; color: #6b5300;
+    }
 
     @media (max-width: 720px) {
       .col-time, .col-dept { display: none; }
@@ -452,6 +486,10 @@
     <div class="admin-notes" id="modal-admin"></div>
     <div class="section-label" id="modal-cc-label" style="display:none">Remote-appearance / CourtCall</div>
     <div class="courtcall" id="modal-cc"></div>
+    <div class="modal-footer">
+      <span class="ruling-id" id="modal-ruling-id" title="Unique ruling ID (SHA-1 of case # + date + ruling text)"></span>
+      <a class="btn report-btn" id="modal-report" target="_blank" rel="noopener">🐞 Report bug</a>
+    </div>
   </div>
 </div>
 
@@ -577,15 +615,113 @@ function classifyMotion(cm, dept) {
 // Sustained / overruled (demurrer-specific dispositions) live under one
 // "Granted / Sustained" umbrella so charts can group them together while still
 // preserving the distinction via subtype — same pattern as motion type/subtype.
+// Off-calendar subtypes — applied only when the umbrella outcome is "Off
+// calendar". Order matters: a ruling can reference both a settlement and a
+// reassignment, but the dominant reason should win. We rank by how specific
+// the phrasing is. Each test runs against the substantive ruling text.
+const OFF_CAL_SUBTYPE_RULES = [
+  // Reassigned to another department / court. Matches phrasings like
+  //   "off calendar in Department 302. This motion will be heard in Department 501"
+  //   "case was transferred to Lake County"
+  //   "filed in the wrong department"
+  //   "Real Property/Housing Court"
+  //   citations to SF Local Rule 8.10 (department assignments).
+  [t =>
+    /\b(?:will\s+be\s+heard|to\s+be\s+heard|reassigned|reassign(?:ment)?|hear\s+this\s+matter)\s+in\s+(?:Department|Dept\.?)\s*\d+/i.test(t)
+    || /\b(?:Department|Dept\.?)\s*\d+\b[^.]{0,80}\b(?:hears?\s+all|hears?\s+this|is\s+the\s+(?:proper|correct))/i.test(t)
+    || /\bReal\s+Property\s*\/\s*Housing\s+Court\b/i.test(t)
+    || /\b(?:San\s+Francisco\s+)?Local\s+Rule\s+8\.10\b/i.test(t)
+    || /\b(?:case|matter|action)\s+(?:was|has\s+been)\s+transferred\s+to\b/i.test(t)
+    || /\bfiled\s+in\s+the\s+wrong\s+(?:department|dept)\b/i.test(t)
+    || /\bwrong\s+department\b/i.test(t),
+   'Reassigned to another department'],
+
+  // Failure to file courtesy copies. SF Local Rule 2.6B is the specific rule
+  // requiring chambers copies; 2.6C and references to the rule by number
+  // imply the same family of issues in practice.
+  [t =>
+    /\bcourtesy\s+cop(?:y|ies)\b/i.test(t)
+    || /\bchambers\s+cop(?:y|ies)\b/i.test(t)
+    || /\bLocal\s+Rule\s+2\.6[A-D]?\b/i.test(t),
+   'Failure to file courtesy copies'],
+
+  // Untimely / improper notice (timing issues). Catches CCP § 1005 service
+  // notice failures, mail-service add-on miscalculations, and the explicit
+  // "off calendar as untimely" phrasing.
+  [t =>
+    /\boff\s+calendar\s+as\s+untimely\b/i.test(t)
+    || /\b(?:motion|matter|filing)\s+is\s+untimely\b/i.test(t)
+    || /\b(?:CCP|Code\s+of\s+Civil\s+Procedure)\s*§?\s*1005\b/i.test(t)
+    || /\bdid\s+not\s+give\s+(?:opposing\s+(?:party|counsel|parties)|adequate|sufficient)\s+(?:\d+\s+)?(?:court\s+)?days?\s+notice\b/i.test(t)
+    || /\bdid\s+not\s+account\s+for\s+(?:additional|five|\d+)\s+(?:calendar\s+)?days\b/i.test(t)
+    || /\binsufficient\s+notice\b/i.test(t)
+    || /\b(?:not\s+timely|untimely\s+(?:filed|served|noticed))\b/i.test(t),
+   'Untimely / improper notice'],
+
+  // Settled / dismissed (the case or claim went away before hearing).
+  [t =>
+    /\bNotice\s+of\s+(?:Conditional\s+)?Settlement\b/i.test(t)
+    || /\b(?:request\s+for\s+)?dismissal(?:,\s+with(?:out)?\s+prejudice)?\s+(?:was\s+)?filed\b/i.test(t)
+    || /\bdismissed\s+(?:with|without)\s+prejudice\b/i.test(t)
+    || /\bcase\s+(?:has\s+been|was)\s+settled\b/i.test(t)
+    || /\bentire\s+(?:case|action)\s+(?:was|has\s+been)\s+settled\b/i.test(t),
+   'Settled or dismissed'],
+
+  // Mooted by an amended pleading filed in the meantime.
+  [t =>
+    /\b(?:first|second|third|fourth|fifth|amended)\s+(?:amended\s+)?(?:complaint|petition|cross-?complaint|answer|pleading)\s+(?:was\s+)?filed\b/i.test(t)
+    || /\bsuperseded\s+by\s+(?:a\s+|the\s+)?(?:first|second|third|fourth|fifth|amended)\s+(?:amended\s+)?(?:complaint|petition|pleading)\b/i.test(t),
+   'Amended pleading filed'],
+
+  // Withdrawn by moving party / stipulation. Note the "Withdrawn" outcome is
+  // a sibling of Off-calendar, but a fair amount of the corpus uses
+  // "off calendar per moving party" instead — those land here as a subtype.
+  [t =>
+    /\boff\s+calendar\s+(?:per|at\s+the\s+request\s+of)\s+(?:the\s+)?(?:moving|movant|parties|requesting|petitioner|plaintiff|defendant)/i.test(t)
+    || /\boff\s+calendar\s+per\s+(?:the\s+)?parties?'?s?\s+(?:stipulation|agreement)\b/i.test(t)
+    || /\bfiled\s+a\s+notice\s+to\s+withdraw\b/i.test(t)
+    || /\bnotice\s+of\s+withdrawal\b/i.test(t),
+   'Withdrawn or stipulated'],
+
+  // Mooted (catch-all moot phrasing — runs after the more specific
+  // amended-pleading and reassignment branches so they win when both apply).
+  [t =>
+    /\boff\s+calendar\s+as\s+moot\b/i.test(t)
+    || /\bmoot(?:ed)?\s+(?:by|in\s+light\s+of|because)\b/i.test(t),
+   'Mooted'],
+
+  // Duplicate filing.
+  [t => /\bduplicate\s+(?:entry|filing|motion|listing)\b/i.test(t),
+   'Duplicate filing'],
+];
+
+function classifyOffCalendarSubtype(text) {
+  if (!text) return null;
+  for (const [test, sub] of OFF_CAL_SUBTYPE_RULES) {
+    if (test(text)) return sub;
+  }
+  return null;
+}
+
 const OUTCOME_RULES = [
   // Procedural / non-merits dispositions first.
-  [t => /\boff\s+calendar\b/i.test(t),                         'Off calendar', null],
+  [t => /\boff\s+calendar\b/i.test(t),                         'Off calendar', classifyOffCalendarSubtype],
   [t => /\bwithdrawn\b|\btaken\s+off\s+calendar\b/i.test(t),   'Withdrawn',    null],
   [t => /\bmoot(?:ed)?\b/i.test(t),                            'Moot',         null],
   [t => /\btransferr?ed\b/i.test(t),                           'Transferred',  null],
   [t => /\bcontinued\b|\bcontinuance\s+granted\b/i.test(t),    'Continued',    null],
   [t => /\bunder\s+submission\b|\bsubmitted\s+for\s+(?:decision|ruling)\b/i.test(t),
     'Under submission', null],
+  // Hearing required — the court didn't decide on the papers and is
+  // requiring live argument. Common phrasings: "Hearing required.",
+  // "HEARING REQUIRED.", "Parties are to appear", "Appearance required".
+  // Sits above the merits-disposition rules so a tentative explanation that
+  // says "the court is inclined to grant" doesn't get miscoded as Granted.
+  [t => /\bhearing\s+required\b/i.test(t)
+        || /\bappearance(?:s)?\s+required\b/i.test(t)
+        || /\bparties\s+are\s+to\s+appear\b/i.test(t)
+        || /\bparties\s+(?:must|shall)\s+appear\b/i.test(t),
+    'Hearing required', null],
   // Granted-family. "Granted in part" wins over plain granted; sustained
   // (with/without leave) lives here too as a subtype.
   [t => /\bgranted\b.{0,40}\bin\s+part\b/i.test(t),
@@ -609,7 +745,14 @@ function classifyOutcome(rulingText) {
   // never matches our terms so this is mostly defensive.
   const text = rulingText;
   for (const [test, outcome, subtype] of OUTCOME_RULES) {
-    if (test(text)) return { outcome, subtype };
+    if (test(text)) {
+      // Subtype can be a string (static) or a function that derives the
+      // subtype from the ruling text. The latter is used for Off-calendar
+      // where we infer "Reassigned to another department", "Failure to file
+      // courtesy copies", "Untimely / improper notice", etc.
+      const sub = typeof subtype === 'function' ? subtype(text) : subtype;
+      return { outcome, subtype: sub };
+    }
   }
   return { outcome: 'Other', subtype: null };
 }
@@ -763,9 +906,17 @@ try {
     `SELECT DISTINCT department FROM 'data.parquet' WHERE department IS NOT NULL ORDER BY department`
   )).toArray()) deptEl.appendChild(new Option(`Dept ${r.department}`, r.department));
 
+  // Judge dropdown — ordered by ruling volume (most prolific first) so the
+  // user lands on a useful default. The count is appended to the label so
+  // they can see at a glance how much data each judge contributes; the
+  // option's value stays the bare name so saved filters keep working.
   for (const r of (await conn.query(
-    `SELECT DISTINCT judge FROM 'data.parquet' WHERE judge IS NOT NULL AND judge!='' ORDER BY judge`
-  )).toArray()) judgeEl.appendChild(new Option(r.judge, r.judge));
+    `SELECT judge, COUNT(*) n FROM 'data.parquet'
+     WHERE judge IS NOT NULL AND judge!=''
+     GROUP BY judge ORDER BY n DESC, judge`
+  )).toArray()) {
+    judgeEl.appendChild(new Option(`${r.judge} (${Number(r.n).toLocaleString()})`, r.judge));
+  }
 
   // Motion-type dropdown — sorted by frequency in current dataset.
   const motionCounts = await classifyAll();
@@ -990,7 +1141,7 @@ async function runQuery(page = 0) {
         conn.query(`SELECT COUNT(*) n FROM 'data.parquet' WHERE ${where}`),
         conn.query(`
           SELECT department, case_number, case_title, court_date, hearing_time,
-                 calendar_matter, judge, ruling
+                 calendar_matter, judge, ruling, row_hash
           FROM 'data.parquet' WHERE ${where}
           ORDER BY ${sortCol} ${sortDir}, case_number
         `),
@@ -1008,7 +1159,7 @@ async function runQuery(page = 0) {
         conn.query(`SELECT COUNT(*) n FROM 'data.parquet' WHERE ${where}`),
         conn.query(`
           SELECT department, case_number, case_title, court_date, hearing_time,
-                 calendar_matter, judge, ruling
+                 calendar_matter, judge, ruling, row_hash
           FROM 'data.parquet' WHERE ${where}
           ORDER BY ${sortCol} ${sortDir}, case_number
           LIMIT ${PAGE_SIZE} OFFSET ${offset}
@@ -1036,6 +1187,7 @@ function outcomeClass(outcome) {
   if (outcome === 'Denied')           return 'outcome-denied';
   if (outcome === 'Continued')        return 'outcome-continued';
   if (outcome === 'Off calendar' || outcome === 'Withdrawn') return 'outcome-off';
+  if (outcome === 'Hearing required') return 'outcome-hearing';
   return 'outcome-other';
 }
 
@@ -1217,9 +1369,12 @@ const PANEL_PRESETS = {
   'top-motion-types': {
     label: 'Top motion types (bar)',
     wide: false,
-    defaults: { topN: 12 },
+    defaults: { topN: 12, exclude: '' },
     title:    (cfg) => `Top ${cfg.topN || 12} motion types`,
-    configFields: [['topN', 'Top N', 'number']],
+    configFields: [
+      ['topN',    'Top N',   'number'],
+      ['exclude', 'Exclude', 'exclude'],
+    ],
     render:   async (panel, where) => {
       const rows = (await conn.query(
         `SELECT department, calendar_matter, COUNT(*) n FROM 'data.parquet'
@@ -1229,7 +1384,9 @@ const PANEL_PRESETS = {
         const t = lookupMotion(r.department, r.calendar_matter).type;
         counts.set(t, (counts.get(t) || 0) + Number(r.n));
       }
-      const top = [...counts.entries()].sort((a, b) => b[1] - a[1])
+      const keep = makeExcludeMatcher(panel.cfg.exclude);
+      const top = [...counts.entries()].filter(([t]) => keep(t))
+        .sort((a, b) => b[1] - a[1])
         .slice(0, panel.cfg.topN || 12);
       makeChart(panel.canvasId, {
         type: 'bar',
@@ -1245,17 +1402,25 @@ const PANEL_PRESETS = {
   'top-judges': {
     label: 'Top judges (bar)',
     wide: false,
-    defaults: { topN: 12 },
+    defaults: { topN: 12, exclude: '' },
     title:    (cfg) => `Top ${cfg.topN || 12} judges`,
-    configFields: [['topN', 'Top N', 'number']],
+    configFields: [
+      ['topN',    'Top N',   'number'],
+      ['exclude', 'Exclude', 'exclude'],
+    ],
     render:   async (panel, where) => {
+      // Pull more than topN so we can drop excluded rows and still fill the
+      // chart to its requested length.
+      const limit = (+panel.cfg.topN || 12) + 50;
       const r = (await conn.query(
         `SELECT COALESCE(judge, '(unspecified)') j, COUNT(*) n FROM 'data.parquet'
-         WHERE ${where} GROUP BY j ORDER BY n DESC LIMIT ${+panel.cfg.topN || 12}`)).toArray();
+         WHERE ${where} GROUP BY j ORDER BY n DESC LIMIT ${limit}`)).toArray();
+      const keep = makeExcludeMatcher(panel.cfg.exclude);
+      const filtered = r.filter(x => keep(x.j)).slice(0, +panel.cfg.topN || 12);
       makeChart(panel.canvasId, {
         type: 'bar',
-        data: { labels: r.map(x => x.j), datasets: [{
-          label: 'Rulings', data: r.map(x => Number(x.n)),
+        data: { labels: filtered.map(x => x.j), datasets: [{
+          label: 'Rulings', data: filtered.map(x => Number(x.n)),
           backgroundColor: '#2a7a4a', borderRadius: 3,
         }] },
         options: chartOpts({ indexAxis: 'y', legend: false, x: { beginAtZero: true } }),
@@ -1266,9 +1431,12 @@ const PANEL_PRESETS = {
   'motion-type-stack': {
     label: 'Motion-type composition over time (stacked)',
     wide: true,
-    defaults: { topN: 6 },
+    defaults: { topN: 6, exclude: '' },
     title:    (cfg, g) => `Top ${cfg.topN || 6} motion types per ${granularityLabel(g)}`,
-    configFields: [['topN', 'Top N', 'number']],
+    configFields: [
+      ['topN',    'Top N',   'number'],
+      ['exclude', 'Exclude', 'exclude'],
+    ],
     render:   async (panel, where, g) => {
       const bucket = dateBucketSql(g);
       const rows = (await conn.query(
@@ -1277,9 +1445,11 @@ const PANEL_PRESETS = {
          GROUP BY b, department, calendar_matter ORDER BY b`)).toArray();
       const buckets = []; const seen = new Set();
       const map = new Map(); // bucket -> Map(type -> count)
+      const keep = makeExcludeMatcher(panel.cfg.exclude);
       for (const r of rows) {
-        if (!seen.has(r.b)) { buckets.push(r.b); seen.add(r.b); }
         const t = lookupMotion(r.department, r.calendar_matter).type;
+        if (!keep(t)) continue;
+        if (!seen.has(r.b)) { buckets.push(r.b); seen.add(r.b); }
         if (!map.has(r.b)) map.set(r.b, new Map());
         const m = map.get(r.b); m.set(t, (m.get(t) || 0) + Number(r.n));
       }
@@ -1306,8 +1476,9 @@ const PANEL_PRESETS = {
   'outcome-bar': {
     label: 'Outcome breakdown (bar)',
     wide: false,
-    defaults: {},
+    defaults: { exclude: '' },
     title:    () => 'Outcome breakdown',
+    configFields: [['exclude', 'Exclude', 'exclude']],
     render:   async (panel, where) => {
       const rows = (await conn.query(
         `SELECT department, ruling FROM 'data.parquet' WHERE ${where}
@@ -1317,7 +1488,9 @@ const PANEL_PRESETS = {
         const o = lookupOutcome(r.ruling).outcome;
         counts.set(o, (counts.get(o) || 0) + 1);
       }
-      const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+      const keep = makeExcludeMatcher(panel.cfg.exclude);
+      const sorted = [...counts.entries()].filter(([o]) => keep(o))
+        .sort((a, b) => b[1] - a[1]);
       makeChart(panel.canvasId, {
         type: 'bar',
         data: { labels: sorted.map(r => r[0]), datasets: [{
@@ -1334,11 +1507,12 @@ const PANEL_PRESETS = {
   'outcome-pct-by-type': {
     label: '% of one outcome by motion type',
     wide: false,
-    defaults: { outcome: 'Granted / Sustained', topN: 12 },
+    defaults: { outcome: 'Granted / Sustained', topN: 12, exclude: '' },
     title:    (cfg) => `% ${cfg.outcome || 'Granted / Sustained'} by motion type`,
     configFields: [
       ['outcome', 'Outcome', 'outcome'],
       ['topN',    'Top N',   'number'],
+      ['exclude', 'Exclude', 'exclude'],
     ],
     render:   async (panel, where) => {
       const target = panel.cfg.outcome || 'Granted / Sustained';
@@ -1355,8 +1529,9 @@ const PANEL_PRESETS = {
       }
       // Order by total volume so the user sees the high-frequency motions
       // first; min N=20 to avoid noisy 100%-from-1-row entries dominating.
+      const keep = makeExcludeMatcher(panel.cfg.exclude);
       const ranked = [...total.entries()]
-        .filter(([, n]) => n >= 20)
+        .filter(([t, n]) => n >= 20 && keep(t))
         .sort((a, b) => b[1] - a[1])
         .slice(0, panel.cfg.topN || 12)
         .map(([t, n]) => [t, (match.get(t) || 0) / n * 100, match.get(t) || 0, n]);
@@ -1385,18 +1560,25 @@ const PANEL_PRESETS = {
   'outcome-stack-by-type': {
     label: 'Outcome composition by motion type (stacked)',
     wide: true,
-    defaults: { topN: 10 },
+    defaults: { topN: 10, exclude: '' },
     title:    (cfg) => `Outcome composition — top ${cfg.topN || 10} motion types`,
-    configFields: [['topN', 'Top N motion types', 'number']],
+    configFields: [
+      ['topN',    'Top N motion types', 'number'],
+      ['exclude', 'Exclude',            'exclude'],
+    ],
     render:   async (panel, where) => {
       const rows = (await conn.query(
         `SELECT department, calendar_matter, ruling FROM 'data.parquet'
          WHERE ${where} AND ruling IS NOT NULL`)).toArray();
+      const keep = makeExcludeMatcher(panel.cfg.exclude);
       const byType = new Map();      // type -> Map(outcome -> count)
       const typeTotals = new Map();
       for (const r of rows) {
         const t = lookupMotion(r.department, r.calendar_matter).type;
         const o = lookupOutcome(r.ruling).outcome;
+        // Exclude entries that match either the type or the outcome label —
+        // the panel mixes both dimensions so it's natural to filter on either.
+        if (!keep(t) || !keep(o)) continue;
         if (!byType.has(t)) byType.set(t, new Map());
         const m = byType.get(t);
         m.set(o, (m.get(o) || 0) + 1);
@@ -1445,18 +1627,17 @@ const PANEL_PRESETS = {
   },
 };
 
+// Default to a minimal two-panel layout. Users add more via "+ Add panel".
+// Bumped the storage key so existing browsers see the new default; their
+// previous custom layout is dropped on first load after this change.
 const DEFAULT_PANELS = [
-  { id: 'p1', preset: 'time-series',         cfg: {} },
-  { id: 'p2', preset: 'top-motion-types',    cfg: { topN: 12 } },
-  { id: 'p3', preset: 'top-judges',          cfg: { topN: 12 } },
-  { id: 'p4', preset: 'motion-type-stack',   cfg: { topN: 6 } },
-  { id: 'p5', preset: 'outcome-bar',         cfg: {} },
-  { id: 'p6', preset: 'outcome-pct-by-type', cfg: { outcome: 'Granted / Sustained', topN: 12 } },
+  { id: 'p1', preset: 'time-series',      cfg: {} },
+  { id: 'p2', preset: 'top-motion-types', cfg: { topN: 12 } },
 ];
 
 // Panel state. Loaded from localStorage on first refresh; reset button
 // restores DEFAULT_PANELS.
-const PANEL_STORAGE_KEY = 'sfsc-panels-v1';
+const PANEL_STORAGE_KEY = 'sfsc-panels-v2';
 let panels = loadPanels();
 let panelIdSeq = 1;
 function nextPanelId() { return 'p' + (++panelIdSeq); }
@@ -1479,8 +1660,11 @@ function savePanels() {
 }
 
 // Render the entire panel grid. Each panel becomes a chart-card with a
-// header (title + edit/delete buttons) and a canvas. We re-render the cards
-// only on layout changes; data refresh just re-runs the preset render fns.
+// header (drag handle + title + export/edit/delete buttons) and a canvas.
+// We re-render the cards only on layout changes; data refresh just re-runs
+// the preset render fns. Drag-and-drop uses the HTML5 API on the card; the
+// drop target is the card the cursor is over (computed in dragover so it
+// works even when the underlying canvas swallows pointer events).
 function renderPanelGrid() {
   const grid = $('charts-grid');
   grid.innerHTML = '';
@@ -1490,19 +1674,110 @@ function renderPanelGrid() {
     p.canvasId = 'canvas-' + p.id;
     const card = document.createElement('div');
     card.className = 'chart-card' + (preset.wide ? ' wide' : '');
+    card.dataset.panelId = p.id;
+    card.draggable = true;
     card.innerHTML =
       `<div class="chart-header">` +
+        `<span class="drag-handle" title="Drag to reorder">⋮⋮</span>` +
         `<h3 id="title-${p.id}"></h3>` +
-        `<button class="panel-btn edit" title="Edit panel">⚙</button>` +
-        `<button class="panel-btn del"  title="Remove panel">×</button>` +
+        `<button class="panel-btn export" title="Export PNG">⬇</button>` +
+        `<button class="panel-btn edit"   title="Edit panel">⚙</button>` +
+        `<button class="panel-btn del"    title="Remove panel">×</button>` +
       `</div>` +
       `<div class="panel-config" id="config-${p.id}"></div>` +
       `<div class="chart-wrap"><canvas id="${p.canvasId}"></canvas></div>`;
     grid.appendChild(card);
+    card.querySelector('.export').addEventListener('click', () => exportPanel(p));
     card.querySelector('.edit').addEventListener('click', () => togglePanelConfig(p));
     card.querySelector('.del').addEventListener('click', () => removePanel(p.id));
+    attachDragHandlers(card);
     renderPanelConfig(p);
   }
+}
+
+// HTML5 drag-and-drop reorder. The dataset.panelId on each card is the
+// canonical identity; on drop we splice the dragged panel into the target
+// card's index. dragover must call preventDefault to keep the drop event
+// firing — without it the browser refuses to drop.
+let dragState = null; // { id, fromCard }
+function attachDragHandlers(card) {
+  card.addEventListener('dragstart', (e) => {
+    dragState = { id: card.dataset.panelId, fromCard: card };
+    card.classList.add('dragging');
+    // Some browsers refuse the drag without setData.
+    try { e.dataTransfer.setData('text/plain', card.dataset.panelId); } catch {}
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  card.addEventListener('dragend', () => {
+    card.classList.remove('dragging');
+    document.querySelectorAll('.chart-card.drop-target')
+      .forEach(el => el.classList.remove('drop-target'));
+    dragState = null;
+  });
+  card.addEventListener('dragover', (e) => {
+    if (!dragState || dragState.id === card.dataset.panelId) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    document.querySelectorAll('.chart-card.drop-target')
+      .forEach(el => { if (el !== card) el.classList.remove('drop-target'); });
+    card.classList.add('drop-target');
+  });
+  card.addEventListener('dragleave', (e) => {
+    // Only clear if we've actually exited the card (not just moved over a child).
+    if (e.target === card) card.classList.remove('drop-target');
+  });
+  card.addEventListener('drop', (e) => {
+    e.preventDefault();
+    card.classList.remove('drop-target');
+    if (!dragState || dragState.id === card.dataset.panelId) return;
+    const fromIdx = panels.findIndex(p => p.id === dragState.id);
+    const toIdx   = panels.findIndex(p => p.id === card.dataset.panelId);
+    if (fromIdx < 0 || toIdx < 0) return;
+    const [moved] = panels.splice(fromIdx, 1);
+    panels.splice(toIdx, 0, moved);
+    savePanels();
+    renderPanelGrid();
+    refreshAllPanels();
+  });
+}
+
+// Export the panel to a PNG file. Chart.js paints a transparent canvas, so
+// we composite it over white before encoding — otherwise the saved PNG looks
+// like dark labels on a transparent background when opened in most viewers.
+function exportPanel(p) {
+  const preset = PANEL_PRESETS[p.preset];
+  const titleText = preset?.title?.(p.cfg, pickGranularity(granularityChoice(),
+    dateFrom.value, dateTo.value)) || p.id;
+  const slug = String(titleText).toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'panel';
+  const stamp = new Date().toISOString().slice(0, 10);
+
+  const canvas = document.getElementById(p.canvasId);
+  if (!canvas) {
+    // Stat panel (count-stat) replaces the canvas with a div — fall back to
+    // a text dump rather than failing silently.
+    const wrap = canvas?.parentElement || document.getElementById('canvas-' + p.id)?.parentElement;
+    const txt = wrap?.innerText || '';
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain' }));
+    a.download = `sfsc-${slug}-${stamp}.txt`;
+    a.click();
+    return;
+  }
+  const out = document.createElement('canvas');
+  out.width  = canvas.width;
+  out.height = canvas.height;
+  const ctx = out.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, out.width, out.height);
+  ctx.drawImage(canvas, 0, 0);
+  out.toBlob((blob) => {
+    if (!blob) return;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `sfsc-${slug}-${stamp}.png`;
+    a.click();
+  }, 'image/png');
 }
 
 function renderPanelConfig(p) {
@@ -1521,11 +1796,20 @@ function renderPanelConfig(p) {
         `<input type="number" min="1" data-cfg="${key}" value="${esc(p.cfg[key] ?? PANEL_PRESETS[p.preset].defaults[key] ?? 12)}"></div>`;
     } else if (kind === 'outcome') {
       const opts = ['Granted / Sustained', 'Denied', 'Continued', 'Off calendar',
-                    'Withdrawn', 'Moot', 'Transferred', 'Under submission', 'Other'];
+                    'Hearing required', 'Withdrawn', 'Moot', 'Transferred',
+                    'Under submission', 'Other'];
       html += `<div class="panel-config-row"><label>${esc(label)}</label>` +
         `<select data-cfg="${key}">` +
         opts.map(o => `<option value="${esc(o)}"${o === p.cfg[key] ? ' selected' : ''}>${esc(o)}</option>`).join('') +
         `</select></div>`;
+    } else if (kind === 'exclude') {
+      // Comma-separated list of values to drop from the chart. Match is
+      // case-insensitive on trimmed strings, applied after computing the
+      // category for each row but before Top-N truncation.
+      html += `<div class="panel-config-row"><label>${esc(label)}</label>` +
+        `<input type="text" data-cfg="${key}" data-cfg-kind="exclude" ` +
+        `placeholder="comma-separated, e.g. (unspecified), Other" ` +
+        `value="${esc(p.cfg[key] || '')}"></div>`;
     }
   }
   wrap.innerHTML = html;
@@ -1541,6 +1825,20 @@ function renderPanelConfig(p) {
       savePanels(); refreshPanel(p);
     });
   }
+}
+
+// Parse a comma-separated exclude string into a Set of normalized labels.
+// Empty string → empty Set (everything passes). Used by panels that bin data
+// into categories (judges, motion types, outcomes) so users can drop
+// individual variables without touching global filters.
+function makeExcludeMatcher(raw) {
+  const set = new Set(
+    String(raw || '')
+      .split(',')
+      .map(s => s.trim().toLowerCase())
+      .filter(Boolean)
+  );
+  return (label) => !set.has(String(label ?? '').trim().toLowerCase());
 }
 
 function togglePanelConfig(p) {
@@ -1802,7 +2100,45 @@ function openModal(r) {
   $('modal-admin').style.display       = sp.admin ? '' : 'none';
   $('modal-cc-label').style.display    = sp.courtcall ? '' : 'none';
   $('modal-cc').style.display          = sp.courtcall ? '' : 'none';
+  populateBugReport(r, m, o, sp);
   $('overlay').classList.add('open');
+}
+
+// Each ruling carries a SHA-1 row_hash from ingest.py — that's our stable
+// unique identifier (case #, date, and full ruling text feed the hash, so
+// re-ingest of the same source yields the same ID). The footer shows it
+// alongside a "Report bug" link that pre-fills a GitHub issue with enough
+// context to find the offending row in the parquet without the reporter
+// having to copy/paste anything.
+const BUG_REPO = 'aimesy/sfsc-tentatives';
+function populateBugReport(r, m, o, sp) {
+  const id = r.row_hash || '';
+  const idEl = $('modal-ruling-id');
+  // Show a 12-char prefix in the UI; the issue body has the full hash.
+  idEl.textContent = id ? `Ruling ID: ${id.slice(0, 12)}` : 'Ruling ID: (unknown)';
+  idEl.title = id ? `Full ID: ${id}` : 'No row_hash for this ruling';
+
+  const title = `Bug report — ${r.case_number || 'unknown case'} (${r.court_date || 'unknown date'})`;
+  const body =
+    `**Ruling ID:** \`${id || '(unknown)'}\`\n` +
+    `**Department:** ${r.department || ''}\n` +
+    `**Case #:** ${r.case_number || ''}\n` +
+    `**Case title:** ${r.case_title || ''}\n` +
+    `**Court date:** ${r.court_date || ''}${r.hearing_time ? ' ' + r.hearing_time : ''}\n` +
+    `**Judge:** ${r.judge || '(unspecified)'}\n` +
+    `**Motion type (auto):** ${m.type || ''}${m.subtype ? ' · ' + m.subtype : ''}\n` +
+    `**Outcome (auto):** ${o.outcome || ''}${o.subtype ? ' · ' + o.subtype : ''}\n\n` +
+    `**Calendar matter:**\n> ${(r.calendar_matter || '').replace(/\n/g, '\n> ')}\n\n` +
+    `**Ruling excerpt:**\n> ${(sp.ruling || '').slice(0, 600).replace(/\n/g, '\n> ')}` +
+    `${(sp.ruling || '').length > 600 ? '\n> …(truncated)' : ''}\n\n` +
+    `---\n\n### What's wrong?\n` +
+    `<!-- Describe the issue here: wrong judge, wrong motion type, ruling text\n` +
+    `     missing/garbled, outcome misclassified, etc. -->\n`;
+  const url = `https://github.com/${BUG_REPO}/issues/new` +
+    `?title=${encodeURIComponent(title)}` +
+    `&body=${encodeURIComponent(body)}` +
+    `&labels=${encodeURIComponent('bug,data-quality')}`;
+  $('modal-report').href = url;
 }
 function closeModal() { $('overlay').classList.remove('open'); }
 $('modal-close').addEventListener('click', closeModal);
