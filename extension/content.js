@@ -129,6 +129,21 @@ function scrape() {
     }
   }
 
+  // Stale-page guard: when SFTC's count label explicitly says 0 records but the
+  // rulings table still holds entries from a previous search, trust the label
+  // and drop the stale rows. Otherwise the bulk scraper would commit those rows
+  // under the requested date (see e.g. raw/dept302/2020-06-10-054353.json,
+  // which had reported_total=0 but 25 rulings whose Court Date was 2016-09-16).
+  if (reportedTotal === 0 && rulings.length > 0) {
+    return {
+      department,
+      scraped_at:     new Date().toISOString(),
+      source_url:     window.location.href,
+      reported_total: 0,
+      rulings:        [],
+    };
+  }
+
   return {
     department,
     scraped_at:     new Date().toISOString(),
