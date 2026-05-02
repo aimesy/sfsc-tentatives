@@ -397,9 +397,14 @@ import Chart from 'https://cdn.jsdelivr.net/npm/chart.js@4/auto/+esm';
 
 // ─── Browser-side enrichment: motion type/subtype, admin split, CourtCall ────
 
+// Each department uses slightly different boilerplate. Rules and admin-text
+// boundaries below are keyed by department so adding a new dept is a matter
+// of dropping in another entry. Anything not in the map falls back to the
+// civil-law (Dept 302) ruleset and a generalised contestation regex.
+
 // Motion-type rules. Order matters — first match wins.
 // Each rule: [test fn, type label, optional subtype fn for Compel Discovery].
-const MOTION_RULES = [
+const CIVIL_LAW_MOTION_RULES = [
   [t => /\banti[-\s]?slapp\b|\bccp\s*425\.16\b|\b425\.16\b|\bspecial\s+motion\s+to\s+strike\b/i.test(t),
     'Special Motion to Strike (CCP 425.16/Anti-SLAPP)'],
   [t => /\bdemurrer\b/i.test(t), 'Demurrer'],
@@ -463,6 +468,19 @@ const MOTION_RULES = [
     'Structured Settlement Transfer'],
 ];
 
+// Department → motion-rule list. Other depts (Probate, Family, Criminal,
+// Asbestos, etc.) use very different vocabularies; once we have data for
+// them, add a tuned ruleset here. Depts with no entry fall back to the
+// civil-law list (better than nothing, surfaces a lot as Miscellaneous).
+const MOTION_RULES_BY_DEPT = {
+  '302': CIVIL_LAW_MOTION_RULES,
+};
+const MOTION_RULES_DEFAULT = CIVIL_LAW_MOTION_RULES;
+
+function rulesForDept(dept) {
+  return MOTION_RULES_BY_DEPT[dept] || MOTION_RULES_DEFAULT;
+}
+
 function compelSubtype(t) {
   if (/\barbitration\b/i.test(t)) return null; // handled by Compel Arbitration
   if (/\bfurther\b.*\b(?:response|production|interrog|admission|document)\b/i.test(t)
@@ -477,9 +495,9 @@ function compelSubtype(t) {
   return 'Other';
 }
 
-function classifyMotion(cm) {
+function classifyMotion(cm, dept) {
   if (!cm) return { type: 'Miscellaneous', subtype: null };
-  for (const rule of MOTION_RULES) {
+  for (const rule of rulesForDept(dept)) {
     if (rule[0](cm)) {
       const sub = rule[2] ? rule[2](cm) : null;
       return { type: rule[1], subtype: sub };
@@ -488,16 +506,37 @@ function classifyMotion(cm) {
   return { type: 'Miscellaneous', subtype: null };
 }
 
-// "Any party who contests a tentative ruling" is the canonical Dept-302
-// boundary between substantive ruling and admin boilerplate. Splitting
-// happens here in the browser so the parquet stays a single column.
-const ADMIN_BOUNDARY_RE = /\s*Any\s+part(?:y|ies)\s+who\s+contests?\s+a\s+tentative\s+ruling/i;
-// CourtCall / Zoom / remote-appearance prose lives inside the admin block.
-const COURTCALL_RE = /(?:CourtCall|9:00\s*a\.m\.\s+Discovery\s+calendar|appear\s+remotely|Zoom\b|videoconference|sfsuperiorcourt\.org|telephonic\s+appearance|remote\s+appearance)/i;
+// Department → admin-block boundary regex. The substantive ruling ends just
+// before this phrase; everything from there onward is contestation /
+// remote-appearance / boilerplate. Add new depts as their phrasing is
+// observed; depts without an entry fall back to a generalised regex covering
+// the most common SFSC contestation language.
+const ADMIN_BOUNDARIES = {
+  '302': /\s*Any\s+part(?:y|ies)\s+who\s+contests?\s+a\s+tentative\s+ruling/i,
+};
+const ADMIN_BOUNDARY_DEFAULT = new RegExp(
+  '\\s*(?:' +
+    'Any\\s+part(?:y|ies)\\s+who\\s+contests?\\s+a\\s+tentative\\s+ruling|' +
+    'If\\s+(?:a|any|the)\\s+part(?:y|ies)\\s+(?:intends|wishes|wants|desires)\\s+to\\s+contest|' +
+    'To\\s+contest\\s+(?:the|this)\\s+tentative|' +
+    'Any\\s+part(?:y|ies)\\s+(?:intending|wishing)\\s+to\\s+(?:oppose|contest)|' +
+    'Tentative\\s+ruling[s]?\\s+will\\s+become\\s+(?:the\\s+)?final|' +
+    'Pursuant\\s+to\\s+(?:CRC|California\\s+Rule(?:s)?\\s+of\\s+Court|Local\\s+Rule)' +
+  ')',
+  'i'
+);
 
-function splitRuling(full) {
+function adminBoundary(dept) {
+  return ADMIN_BOUNDARIES[dept] || ADMIN_BOUNDARY_DEFAULT;
+}
+
+// CourtCall / Zoom / remote-appearance prose lives inside the admin block.
+// Generic — same vendors and meeting-platform names regardless of dept.
+const COURTCALL_RE = /(?:CourtCall|9:00\s*a\.m\.\s+Discovery\s+calendar|appear\s+remotely|Zoom\b|videoconference|sfsuperiorcourt\.org|telephonic\s+appearance|remote\s+appearance|microsoft\s+teams\b|webex\b)/i;
+
+function splitRuling(full, dept) {
   if (!full) return { ruling: '', admin: '', courtcall: '' };
-  const m = ADMIN_BOUNDARY_RE.exec(full);
+  const m = adminBoundary(dept).exec(full);
   let substantive = full, adminBlock = '';
   if (m) {
     substantive = full.slice(0, m.index).replace(/[\s.,;:]+$/, '');
@@ -530,8 +569,9 @@ const mtypeEl   = $('mtype'),   msubEl    = $('msub'), msubChip = $('msub-chip')
 // here — not next to its consumers — because the top-level `try` block below
 // calls classifyAll() before its declaration site would otherwise be reached,
 // and a `let` in TDZ would crash with "Cannot access 'MTYPE_CACHE' before
-// initialization".
-const MTYPE_CACHE = new Map(); // calendar_matter -> {type, subtype}
+// initialization". Two-level so departments can disagree on classification of
+// the same calendar_matter string without one stomping the other.
+const MTYPE_CACHE = new Map(); // dept -> Map(calendar_matter -> {type, subtype})
 
 // Custom filters added via "+ Add filter".
 let customFilters = []; // [{id, col, op, value}]
@@ -647,13 +687,17 @@ try {
 
 async function classifyAll() {
   const all = (await conn.query(
-    `SELECT calendar_matter, COUNT(*) n FROM 'data.parquet' GROUP BY calendar_matter`
+    `SELECT department, calendar_matter, COUNT(*) n
+     FROM 'data.parquet' GROUP BY department, calendar_matter`
   )).toArray();
   const counts = new Map(); // type -> count
   for (const r of all) {
-    const cm = r.calendar_matter || '';
-    const cls = classifyMotion(cm);
-    MTYPE_CACHE.set(cm, cls);
+    const dept = r.department || '';
+    const cm   = r.calendar_matter || '';
+    const cls  = classifyMotion(cm, dept);
+    let inner = MTYPE_CACHE.get(dept);
+    if (!inner) { inner = new Map(); MTYPE_CACHE.set(dept, inner); }
+    inner.set(cm, cls);
     counts.set(cls.type, (counts.get(cls.type) || 0) + Number(r.n));
   }
   // Q4 (B): any final type below 3 → Miscellaneous.
@@ -663,9 +707,11 @@ async function classifyAll() {
   if (smallSet.size) {
     let folded = 0;
     for (const t of smallSet) folded += counts.get(t) || 0;
-    for (const [cm, cls] of MTYPE_CACHE) {
-      if (smallSet.has(cls.type)) {
-        MTYPE_CACHE.set(cm, { type: 'Miscellaneous', subtype: null });
+    for (const inner of MTYPE_CACHE.values()) {
+      for (const [cm, cls] of inner) {
+        if (smallSet.has(cls.type)) {
+          inner.set(cm, { type: 'Miscellaneous', subtype: null });
+        }
       }
     }
     counts.set('Miscellaneous', (counts.get('Miscellaneous') || 0) + folded);
@@ -674,8 +720,9 @@ async function classifyAll() {
   return counts;
 }
 
-function lookupMotion(cm) {
-  return MTYPE_CACHE.get(cm || '') || classifyMotion(cm || '');
+function lookupMotion(dept, cm) {
+  const inner = MTYPE_CACHE.get(dept || '');
+  return (inner && inner.get(cm || '')) || classifyMotion(cm || '', dept);
 }
 
 // ─── Filtering ───────────────────────────────────────────────────────────────
@@ -688,20 +735,24 @@ function escapeSql(s) { return (s ?? '').replace(/'/g, "''"); }
 
 function calendarMattersForType(type) {
   if (!type) return null;
-  const out = [];
-  for (const [cm, cls] of MTYPE_CACHE) {
-    if (cls.type === type) out.push(cm);
+  const out = new Set();
+  for (const inner of MTYPE_CACHE.values()) {
+    for (const [cm, cls] of inner) {
+      if (cls.type === type) out.add(cm);
+    }
   }
-  return out;
+  return [...out];
 }
 
 function calendarMattersForSubtype(type, sub) {
   if (!type || !sub) return null;
-  const out = [];
-  for (const [cm, cls] of MTYPE_CACHE) {
-    if (cls.type === type && cls.subtype === sub) out.push(cm);
+  const out = new Set();
+  for (const inner of MTYPE_CACHE.values()) {
+    for (const [cm, cls] of inner) {
+      if (cls.type === type && cls.subtype === sub) out.add(cm);
+    }
   }
-  return out;
+  return [...out];
 }
 
 function buildWhere() {
@@ -742,9 +793,13 @@ function filterToSql(f) {
       ? calendarMattersForType(v)
       : (() => {
           // motion_subtype filter without a type: scan all types
-          const out = [];
-          for (const [cm, cls] of MTYPE_CACHE) if (cls.subtype === v) out.push(cm);
-          return out;
+          const out = new Set();
+          for (const inner of MTYPE_CACHE.values()) {
+            for (const [cm, cls] of inner) {
+              if (cls.subtype === v) out.add(cm);
+            }
+          }
+          return [...out];
         })();
     if (!cms?.length) return 'FALSE';
     const list = cms.map(c => `'${escapeSql(c || '')}'`).join(',');
@@ -829,7 +884,7 @@ function renderTable(data) {
     return;
   }
   tbody.innerHTML = data.map((r, i) => {
-    const m = lookupMotion(r.calendar_matter);
+    const m = lookupMotion(r.department, r.calendar_matter);
     const sub = m.subtype ? `<div class="mtype-sub">${esc(m.subtype)}</div>` : '';
     return `<tr data-idx="${i}">
       <td class="col-dept">${esc(r.department)}</td>
@@ -840,7 +895,7 @@ function renderTable(data) {
       <td class="col-mtype"><span class="mtype-pill">${esc(m.type)}</span>${sub}</td>
       <td class="col-motion">${esc(r.calendar_matter)}</td>
       <td class="col-judge">${esc(r.judge)}</td>
-      <td class="col-ruling">${esc((splitRuling(r.ruling).ruling).slice(0, 140))}</td>
+      <td class="col-ruling">${esc((splitRuling(r.ruling, r.department).ruling).slice(0, 140))}</td>
     </tr>`;
   }).join('');
   window._rows = data;
@@ -886,15 +941,15 @@ async function refreshCharts(where) {
     conn.query(`SELECT strftime(CAST(court_date AS DATE), '%Y-%m') m, COUNT(*) n
                 FROM 'data.parquet' WHERE ${where}
                 GROUP BY m ORDER BY m`),
-    conn.query(`SELECT calendar_matter, COUNT(*) n
+    conn.query(`SELECT department, calendar_matter, COUNT(*) n
                 FROM 'data.parquet' WHERE ${where}
-                GROUP BY calendar_matter`),
+                GROUP BY department, calendar_matter`),
     conn.query(`SELECT COALESCE(judge, '(unspecified)') j, COUNT(*) n
                 FROM 'data.parquet' WHERE ${where}
                 GROUP BY j ORDER BY n DESC LIMIT 12`),
-    conn.query(`SELECT strftime(CAST(court_date AS DATE), '%Y') y, calendar_matter, COUNT(*) n
+    conn.query(`SELECT strftime(CAST(court_date AS DATE), '%Y') y, department, calendar_matter, COUNT(*) n
                 FROM 'data.parquet' WHERE ${where}
-                GROUP BY y, calendar_matter ORDER BY y`),
+                GROUP BY y, department, calendar_matter ORDER BY y`),
   ]);
 
   // Time series
@@ -915,7 +970,7 @@ async function refreshCharts(where) {
   // Motion-type bar (top 12)
   const mtCounts = new Map();
   for (const r of byMtype.toArray()) {
-    const t = lookupMotion(r.calendar_matter).type;
+    const t = lookupMotion(r.department, r.calendar_matter).type;
     mtCounts.set(t, (mtCounts.get(t) || 0) + Number(r.n));
   }
   const mt = [...mtCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12);
@@ -958,7 +1013,7 @@ async function refreshCharts(where) {
   // Stacked area: top 6 motion types per year
   const yMap = new Map(); // year -> Map(type -> count)
   for (const r of byMonthMtype.toArray()) {
-    const t = lookupMotion(r.calendar_matter).type;
+    const t = lookupMotion(r.department, r.calendar_matter).type;
     if (!yMap.has(r.y)) yMap.set(r.y, new Map());
     const inner = yMap.get(r.y);
     inner.set(t, (inner.get(t) || 0) + Number(r.n));
@@ -1027,8 +1082,8 @@ $('export-btn').addEventListener('click', async () => {
                 'calendar_matter','motion_type','motion_subtype','judge','ruling','admin_notes','courtcall'];
   const lines = [cols.join(',')];
   for (const r of all) {
-    const m = lookupMotion(r.calendar_matter);
-    const sp = splitRuling(r.ruling);
+    const m = lookupMotion(r.department, r.calendar_matter);
+    const sp = splitRuling(r.ruling, r.department);
     const rec = {
       department: r.department, case_number: r.case_number, case_title: r.case_title,
       court_date: r.court_date, hearing_time: r.hearing_time,
@@ -1068,8 +1123,10 @@ function refreshSubtypeOptions() {
   const t = mtypeEl.value;
   const subs = new Set();
   if (t) {
-    for (const cls of MTYPE_CACHE.values()) {
-      if (cls.type === t && cls.subtype) subs.add(cls.subtype);
+    for (const inner of MTYPE_CACHE.values()) {
+      for (const cls of inner.values()) {
+        if (cls.type === t && cls.subtype) subs.add(cls.subtype);
+      }
     }
   }
   msubEl.innerHTML = '<option value="">All</option>';
@@ -1148,8 +1205,8 @@ function renderFilterRows() {
 // ─── Modal ───────────────────────────────────────────────────────────────────
 function openModal(r) {
   $('modal-title').textContent = r.case_title ?? '';
-  const m = lookupMotion(r.calendar_matter);
-  const sp = splitRuling(r.ruling);
+  const m = lookupMotion(r.department, r.calendar_matter);
+  const sp = splitRuling(r.ruling, r.department);
   const meta = $('modal-meta');
   meta.innerHTML = '';
   const pills = [

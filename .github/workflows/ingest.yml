@@ -46,13 +46,23 @@ jobs:
             git checkout FETCH_HEAD -- tentatives.parquet
 
             for f in $NEW_FILES; do
-              echo "Ingesting $f …"
-              python3 ingest.py "$f"
+              # Pull the dept out of the path (raw/dept<N>/...) so the row gets
+              # tagged correctly even if the JSON wrapper is missing the field.
+              # The wrapper still wins when present, so this only matters for
+              # malformed scrapes.
+              DEPT=$(echo "$f" | sed -n 's|^raw/dept\([0-9]\+\)/.*|\1|p')
+              if [ -n "$DEPT" ]; then
+                echo "Ingesting $f (dept $DEPT) …"
+                python3 ingest.py --dept "$DEPT" "$f"
+              else
+                echo "Ingesting $f …"
+                python3 ingest.py "$f"
+              fi
             done
 
             python3 update-readme.py
 
-            git add tentatives.parquet README.md
+            git add tentatives.parquet README.md coverage
 
             # Move HEAD to FETCH_HEAD so our commit is a clean fast-forward
             git reset --soft FETCH_HEAD

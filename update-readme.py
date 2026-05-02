@@ -12,6 +12,10 @@ README   = HERE / 'README.md'
 COVERAGE = HERE / 'coverage'
 
 DEPT_NAMES = {
+    # Map each SFSC department number to its full name. Departments not in
+    # this map fall back to the generic "Department <N>" label, so adding a
+    # new dept never breaks anything — it just shows up un-named until you
+    # extend this dict.
     '302': 'Department 302 — Civil Law & Motion',
 }
 

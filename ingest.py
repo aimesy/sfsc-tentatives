@@ -3,21 +3,25 @@
 Ingest tentative rulings and maintain tentatives.parquet + tentatives.db.
 
 Usage:
-    python ingest.py                         # rebuild from all source files
-    python ingest.py path/to/new.xlsx        # append a new export
-    python ingest.py path/to/new.json        # append a new json export (extension output)
+    python ingest.py                              # rebuild from all source files
+    python ingest.py path/to/new.xlsx             # append a new export
+    python ingest.py --dept 525 path/to/525.xlsx  # tag the rows with a department
+    python ingest.py path/to/new.json             # append a new json export (extension output)
 
 tentatives.parquet  — canonical dataset, committed to git (~10 MB)
 tentatives.db       — local SQLite for querying, gitignored (~100 MB)
 
 JSON formats accepted:
   Legacy array:  [{Case Number, Case Title, Court Date, Calendar Matter, Rulings}, ...]
+                 (dept must be passed via --dept; defaults to 302 for back-compat)
   Extension:     {department, scraped_at, source_url, rulings: [...]}
+                 (dept comes from the wrapper; --dept is ignored if present)
 """
 
 import sys
 import json
 import re
+import argparse
 import sqlite3
 import hashlib
 from pathlib import Path
@@ -201,19 +205,22 @@ def load_xlsx_2020_plus(path, department="302"):
     return rows
 
 
-def load_json(path):
+def load_json(path, department=None):
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
 
     # Support both formats:
-    #   Legacy: [{...}, ...]
-    #   Extension: {department, rulings: [{...}, ...]}
+    #   Legacy: [{...}, ...]                                — uses `department`
+    #   Extension: {department, rulings: [{...}, ...]}      — wrapper wins
     if isinstance(data, list):
-        records   = data
-        department = "302"
+        records = data
+        if department is None:
+            department = "302"
     else:
         records    = data.get("rulings", [])
-        department = str(data.get("department", "302"))
+        # Wrapper department takes precedence; CLI --dept is a fallback for
+        # malformed scrapes that omit the field.
+        department = str(data.get("department") or department or "302")
 
     rows = []
     for rec in records:
@@ -234,19 +241,19 @@ def load_json(path):
     return rows
 
 
-def detect_and_load(path):
+def detect_and_load(path, department="302"):
     path = Path(path)
     suffix = path.suffix.lower()
     if suffix == ".json":
-        return load_json(path)
+        return load_json(path, department=department)
     if suffix in (".xlsx", ".xlsm"):
         wb = openpyxl.load_workbook(path, read_only=True, keep_vba=(suffix == ".xlsm"))
         ws = wb.active
         headers = [c.value for c in next(ws.iter_rows(min_row=1, max_row=1))]
         wb.close()
         if "Judge" in headers or "Hearing Time" in headers:
-            return load_xlsx_2020_plus(path)
-        return load_xlsm_2014_2018(path)
+            return load_xlsx_2020_plus(path, department=department)
+        return load_xlsm_2014_2018(path, department=department)
     raise ValueError(f"Unsupported file type: {path}")
 
 
@@ -356,6 +363,9 @@ def migrate_existing(df: pd.DataFrame) -> pd.DataFrame:
       - Concatenate split rulings ((Part N of M)) into one record.
     """
     if "department" not in df.columns:
+        # One-time migration: parquets predating the multi-dept schema only
+        # held Civil Law & Motion (Dept 302) data. New ingests always carry
+        # department through, so this branch is never hit twice.
         df.insert(0, "department", "302")
 
     if "admin_notes" in df.columns:
@@ -432,32 +442,31 @@ def summary(df: pd.DataFrame):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    parser.add_argument("--dept", default="302",
+                        help="Department to tag rows with when the source file "
+                             "doesn't carry one (Excel imports + legacy bare-list "
+                             "JSON). Extension-format JSON wrappers always win.")
+    parser.add_argument("paths", nargs="*",
+                        help="Source files to ingest. If omitted, falls back to "
+                             "the original Excel exports in the repo root.")
+    args = parser.parse_args()
+
     existing = pd.read_parquet(PARQUET) if PARQUET.exists() else pd.DataFrame(columns=COLUMNS)
     existing = migrate_existing(existing)
 
-    if len(sys.argv) > 1:
-        for arg in sys.argv[1:]:
-            p = Path(arg)
-            if not p.exists():
-                print(f"Not found: {p}")
-                continue
-            print(f"Loading {p.name}...")
-            new_df = to_df(detect_and_load(p))
-            existing, inserted, skipped = merge(existing, new_df)
-            print(f"  {inserted} inserted, {skipped} skipped (duplicates)")
-    else:
-        sources = [
-            HERE / "tentatives.xlsm",
-            HERE / "sfsc tentatives 01-2020 to 07-2025.xlsx",
-        ]
-        for src in sources:
-            if not src.exists():
-                print(f"Not found: {src.name}")
-                continue
-            print(f"Loading {src.name}...")
-            new_df = to_df(detect_and_load(src))
-            existing, inserted, skipped = merge(existing, new_df)
-            print(f"  {inserted} inserted, {skipped} skipped (duplicates)")
+    sources = [Path(p) for p in args.paths] if args.paths else [
+        HERE / "tentatives.xlsm",
+        HERE / "sfsc tentatives 01-2020 to 07-2025.xlsx",
+    ]
+    for p in sources:
+        if not p.exists():
+            print(f"Not found: {p.name if not args.paths else p}")
+            continue
+        print(f"Loading {p.name} (dept default = {args.dept})...")
+        new_df = to_df(detect_and_load(p, department=args.dept))
+        existing, inserted, skipped = merge(existing, new_df)
+        print(f"  {inserted} inserted, {skipped} skipped (duplicates)")
 
     print("Saving parquet...")
     save_parquet(existing)
