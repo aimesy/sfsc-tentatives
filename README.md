@@ -88,6 +88,6 @@ _None — all weekdays in range are accounted for._
 
 ### Gaps (1)
 
-- 2024-11-26 → 2026-04-30
+- 2024-11-27 → 2026-04-30
 
 </details>
