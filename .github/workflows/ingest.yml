@@ -5,8 +5,8 @@ on:
     paths:
       - 'raw/**/*.json'
   # Manual catch-up: re-ingests every raw/dept*/*.json from scratch.
-  # Use when the per-commit fast path falls behind a bulk scrape (the
-  # workflow queue can lag tens of files behind a Stop-after-50 batch).
+  # Use when something has gone sideways and the parquet has fallen
+  # noticeably behind the raw files.
   workflow_dispatch:
     inputs:
       mode:
@@ -17,11 +17,20 @@ on:
         options:
           - all-raw
 
-# Serialize runs so concurrent pushes don't race to update the parquet.
-# cancel-in-progress: false means queued runs still execute; nothing is lost.
+# Coalesce a bulk-scrape burst into one ingest. The 60-second sleep below
+# is the debounce window: any new push within that window cancels the
+# in-flight run (cancel-in-progress: true) and starts a fresh one. The
+# last push to land in a quiet ≥60s window is the one that actually
+# proceeds, and it picks up every raw file added since the previous bot
+# commit — so a 50-file burst is processed in a single pass instead of
+# fighting itself in 50 racing parallel ingests.
+#
+# Push and workflow_dispatch share the same group so they can't race on
+# the binary parquet — if you trigger a manual --all-raw repair, pause
+# scanning until it finishes (otherwise your push will cancel the repair).
 concurrency:
   group: ingest
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   ingest:
@@ -30,9 +39,16 @@ jobs:
       contents: write
 
     steps:
+      - name: Debounce push burst
+        if: github.event_name == 'push'
+        run: sleep 60
+
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          # Need history back to the previous bot commit to compute the
+          # cumulative file list. 100 covers a couple of days of bulk
+          # scrapes; the catch-up branch handles deeper backlogs.
+          fetch-depth: 100
 
       - uses: actions/setup-python@v5
         with:
@@ -45,33 +61,53 @@ jobs:
         run: |
           MODE="${{ github.event_name == 'workflow_dispatch' && inputs.mode || 'incremental' }}"
 
-          if [ "$MODE" = "all-raw" ]; then
-            echo "Catch-up mode: re-ingesting every raw/dept*/*.json"
-            NEW_FILES="ALL_RAW"
-          else
-            NEW_FILES=$(git diff --name-only HEAD^1 HEAD -- 'raw/**/*.json' 'raw/*.json')
-            if [ -z "$NEW_FILES" ]; then
-              echo "No new raw JSON files to ingest."
-              exit 0
-            fi
-          fi
-
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          for attempt in 1 2 3 4 5; do
-            # Always build on the freshest remote parquet to avoid conflicts
-            git fetch origin master
-            git checkout FETCH_HEAD -- tentatives.parquet
+          # Always work against the freshest origin/master so a parallel
+          # human commit doesn't disappear when we push.
+          git fetch origin master
+          git checkout FETCH_HEAD
 
-            if [ "$NEW_FILES" = "ALL_RAW" ]; then
+          if [ "$MODE" = "all-raw" ]; then
+            echo "Catch-up mode: re-ingesting every raw/dept*/*.json"
+            python3 ingest.py --all-raw
+          else
+            # Find every raw JSON added or modified since the last bot
+            # commit. This catches up "stranded" files left behind by a
+            # cancelled or failed previous run — the next push always
+            # re-discovers them via the same diff.
+            LAST_BOT=$(git log --author='github-actions\[bot\]' --pretty=format:%H -1 -- tentatives.parquet)
+
+            if [ -z "$LAST_BOT" ]; then
+              # No prior bot commit (first run after this workflow lands).
+              # Falling all the way back to --all-raw guarantees we don't
+              # miss anything historic.
+              echo "No prior bot commit found — running --all-raw."
               python3 ingest.py --all-raw
             else
+              echo "Diffing against last bot commit $LAST_BOT"
+              # --diff-filter=AM: only files that exist in HEAD (added or
+              # modified). Excludes deletions so we don't try to ingest a
+              # path that no longer exists.
+              NEW_FILES=$(git diff --name-only --diff-filter=AM "$LAST_BOT" HEAD -- 'raw/**/*.json' 'raw/*.json')
+
+              if [ -z "$NEW_FILES" ]; then
+                echo "No new raw JSON files since last bot commit."
+                exit 0
+              fi
+
+              echo "Files to ingest:"
+              echo "$NEW_FILES"
+
               for f in $NEW_FILES; do
-                # Pull the dept out of the path (raw/dept<N>/...) so the row gets
-                # tagged correctly even if the JSON wrapper is missing the field.
-                # The wrapper still wins when present, so this only matters for
-                # malformed scrapes.
+                if [ ! -f "$f" ]; then
+                  echo "  (skip $f — file vanished from working tree)"
+                  continue
+                fi
+                # Pull the dept out of the path (raw/dept<N>/...) so the
+                # row gets tagged correctly even if the JSON wrapper is
+                # missing the field. The wrapper still wins when present.
                 DEPT=$(echo "$f" | sed -n 's|^raw/dept\([0-9]\+\)/.*|\1|p')
                 if [ -n "$DEPT" ]; then
                   echo "Ingesting $f (dept $DEPT) …"
@@ -82,23 +118,29 @@ jobs:
                 fi
               done
             fi
+          fi
 
-            python3 update-readme.py
+          python3 update-readme.py
 
-            git add tentatives.parquet README.md coverage
+          git add tentatives.parquet README.md coverage data
 
-            # Move HEAD to FETCH_HEAD so our commit is a clean fast-forward
-            git reset --soft FETCH_HEAD
+          if git diff --staged --quiet; then
+            echo "All rows already present – no parquet changes."
+            exit 0
+          fi
 
-            if git diff --staged --quiet; then
-              echo "All rows already present – no parquet changes."
+          git commit -m "Update tentatives.parquet [skip ci]"
+
+          # Push, retrying on transient race conditions (e.g. a human
+          # commit landed while we were ingesting). Rebase between
+          # attempts so we stay a clean fast-forward.
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:master; then
               exit 0
             fi
-
-            git commit -m "Update tentatives.parquet [skip ci]"
-            git push && exit 0
-
-            echo "Push rejected (attempt $attempt/5); retrying …"
+            echo "Push rejected (attempt $attempt/5); rebasing on origin/master …"
+            git fetch origin master
+            git rebase origin/master || { git rebase --abort; exit 1; }
             sleep $((attempt * 3))
           done
 

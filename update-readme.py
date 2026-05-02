@@ -10,6 +10,7 @@ from pathlib import Path
 HERE     = Path(__file__).parent
 README   = HERE / 'README.md'
 COVERAGE = HERE / 'coverage'
+DATA_DIR = HERE / 'data'
 
 DEPT_NAMES = {
     # Map each SFSC department number to its full name. Departments not in
@@ -17,6 +18,7 @@ DEPT_NAMES = {
     # new dept never breaks anything — it just shows up un-named until you
     # extend this dict.
     '302': 'Department 302 — Civil Law & Motion',
+    '501': 'Department 501 — Real Property Court',
 }
 
 STATIC_TOP = """\
@@ -30,13 +32,16 @@ Daily archive of tentative rulings from the San Francisco Superior Court.
 
 | Path | What |
 |------|------|
-| `tentatives.parquet` | Canonical dataset (all rulings, all departments) |
+| `tentatives.parquet` | Canonical dataset (all rulings, all departments) — kept for back-compat with downstream scripts |
+| `data/tentatives-<N>.parquet` | Per-department slice the data browser fetches on demand |
+| `data/manifest.json` | Description of every per-department parquet (rulings, size, latest date) |
 | `raw/dept<N>/*.json` | Per-day raw scrapes, organised by department |
+| `coverage/dept<N>.json` | Union of dates covered by parquet rows + raw filenames; the extension reads this to find unscanned days |
 | `extension/` | Browser extension source (Chrome + Firefox) |
 | `sfsc-extension.zip` | Pre-built, installable extension |
 | `index.html` | Static data browser (served via GitHub Pages) |
 | `ingest.py` | Merges raw JSON into the parquet |
-| `update-readme.py` | Regenerates the department sections below |
+| `update-readme.py` | Regenerates the per-department parquets, coverage files, and the sections below |
 
 ## Browser extension
 
@@ -63,9 +68,13 @@ Scrapes the [SFSC tentative rulings page](https://webapps.sftc.org/tr/tr.dll) an
 - **Stop** — halts the bulk run; in-flight commits still finish. Click **Resume** (⏭) to pick up from the day after the last commit.
 - **Updates** — the popup checks GitHub for a newer `sfsc-extension.zip` and offers a one-click download.
 
+## Browse
+
+The static data browser at `index.html` lazy-loads each department on demand via the **📥 Database Downloads** dropdown in the header. Each entry shows the download percentage live, surfaces any fetch error inline, and once loaded, exposes a **Remove** action to drop the data and clear the autoload preference. The set of currently-loaded departments is persisted in `localStorage` and restored on the next visit.
+
 ## Ingest
 
-Raw JSON pushed to `raw/dept<N>/` triggers `.github/workflows/ingest.yml`, which runs `ingest.py` to merge the new rows into `tentatives.parquet` and refresh this README.
+Raw JSON pushed to `raw/dept<N>/` triggers `.github/workflows/ingest.yml`. The workflow waits 60 seconds before doing any work — any further pushes within that window cancel the in-flight run and start a fresh one (`cancel-in-progress: true`), so a 50-file bulk-scrape burst gets coalesced into a single ingest pass instead of 50 racing ones. Each pass diffs against the last bot commit, so any file that a previous cancelled run missed gets picked up automatically; `workflow_dispatch` with `mode: all-raw` re-ingests every raw JSON if a deeper repair is needed.
 
 Local:
 
@@ -74,7 +83,7 @@ pip install pandas pyarrow openpyxl
 python ingest.py raw/dept302/2026-04-28-120000.json
 ```
 
-To regenerate just the department sections below:
+To regenerate the per-department parquets, coverage files, and department sections below:
 
 ```bash
 pip install pandas pyarrow holidays
@@ -216,6 +225,27 @@ def write_coverage(dept: str, df_dept: pd.DataFrame):
     }, indent=0, separators=(',', ':')))
 
 
+def write_dept_parquet(dept: str, df_dept: pd.DataFrame):
+    """Write data/tentatives-<N>.parquet — a single-department slice the
+    browser can fetch on demand. The combined tentatives.parquet stays put
+    for back-compat with anyone scripting against it directly; the data
+    browser only ever pulls these per-dept files now."""
+    DATA_DIR.mkdir(exist_ok=True)
+    out = DATA_DIR / f'tentatives-{dept}.parquet'
+    df_dept.reset_index(drop=True).to_parquet(out, index=False, compression='zstd')
+
+
+def write_manifest(dept_stats: list[dict]):
+    """Write data/manifest.json — describes each per-dept parquet so the
+    browser can populate the Database Downloads dropdown without hard-coding
+    department numbers."""
+    DATA_DIR.mkdir(exist_ok=True)
+    out = DATA_DIR / 'manifest.json'
+    out.write_text(json.dumps({
+        'departments': dept_stats,
+    }, indent=2))
+
+
 def main():
     if not (HERE / 'tentatives.parquet').exists():
         print('tentatives.parquet not found'); return
@@ -224,14 +254,26 @@ def main():
     df['court_date'] = pd.to_datetime(df['court_date']).dt.date.astype(str)
 
     sections = ''
+    dept_stats = []
     for dept in sorted(df['department'].unique()):
         sub = df[df['department'] == dept]
         sections += dept_section(dept, sub)
         write_coverage(dept, sub)
+        write_dept_parquet(dept, sub)
+        size_bytes = (DATA_DIR / f'tentatives-{dept}.parquet').stat().st_size
+        latest = sub['court_date'].max() if not sub.empty else None
+        dept_stats.append({
+            'department': dept,
+            'name':       DEPT_NAMES.get(dept, f'Department {dept}'),
+            'rulings':    int(len(sub)),
+            'size_bytes': int(size_bytes),
+            'latest':     latest,
+        })
+    write_manifest(dept_stats)
 
     content = STATIC_TOP + '## Departments\n\n' + sections
     README.write_text(content)
-    print(f'Updated README.md and coverage/ for {len(df["department"].unique())} department(s)')
+    print(f'Updated README.md, coverage/, data/ for {len(dept_stats)} department(s)')
 
 if __name__ == '__main__':
     main()

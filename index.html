@@ -37,6 +37,88 @@
     .hbtn.active   { background: rgba(255,255,255,0.28); border-color: rgba(255,255,255,0.5); }
     .hbtn:disabled { opacity: 0.5; cursor: default; }
 
+    /* ── Database Downloads dropdown ── */
+    .dl-wrap { position: relative; display: inline-block; }
+    .dl-menu {
+      display: none; position: absolute; right: 0; top: calc(100% + 4px);
+      background: white; color: #222;
+      border: 1px solid #c2ccd9; border-radius: 5px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+      min-width: 320px; max-width: 92vw;
+      z-index: 50; padding: 0.35rem 0;
+    }
+    .dl-menu.open { display: block; }
+    .dl-menu .dl-empty {
+      padding: 0.6rem 0.85rem; font-size: 0.78rem;
+      color: #888; font-style: italic;
+    }
+    .dl-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.5rem 0.7rem;
+      border-bottom: 1px solid #eef0f4;
+      font-size: 0.78rem; color: #1a3a5c;
+    }
+    .dl-row:last-child { border-bottom: none; }
+    .dl-row .dl-meta { flex: 1; min-width: 0; }
+    .dl-row .dl-name {
+      font-weight: 600; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap;
+    }
+    .dl-row .dl-sub {
+      font-size: 0.72rem; color: #666; margin-top: 1px;
+    }
+    .dl-row .dl-bar {
+      height: 4px; background: #e3eaf5; border-radius: 2px;
+      margin-top: 4px; overflow: hidden; display: none;
+    }
+    .dl-row .dl-bar > div {
+      height: 100%; background: #2e6da4; width: 0%;
+      transition: width 0.15s linear;
+    }
+    .dl-row.downloading .dl-bar { display: block; }
+    .dl-row.error .dl-sub { color: #c0392b; white-space: normal; word-break: break-word; }
+    .dl-action {
+      padding: 0.3rem 0.55rem;
+      background: #f0f3f8; border: 1px solid #c2ccd9; border-radius: 4px;
+      cursor: pointer; font-size: 0.74rem; color: #1a3a5c;
+      white-space: nowrap;
+    }
+    .dl-action:hover:not(:disabled) { background: #e3eaf5; }
+    .dl-action:disabled  { opacity: 0.5; cursor: default; }
+    .dl-action.danger    { color: #7a2020; border-color: #f5c6c6; background: #fff7f7; }
+    .dl-action.danger:hover:not(:disabled) { background: #fdecea; }
+    .dl-status {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px; flex-shrink: 0;
+    }
+    .dl-status.idle::before {
+      content: ''; width: 11px; height: 11px;
+      border: 1.5px solid #c2ccd9; border-radius: 2px; display: block;
+    }
+    .dl-status.loaded::before {
+      content: '✓'; color: #1a5c2a; font-weight: 700; font-size: 0.95rem;
+    }
+    .dl-status.downloading::before {
+      content: ''; width: 11px; height: 11px;
+      border: 2px solid #ccc; border-top-color: #1a3a5c;
+      border-radius: 50%; animation: spin 0.6s linear infinite;
+      display: block;
+    }
+    .dl-status.error::before {
+      content: '!'; color: #c0392b; font-weight: 700; font-size: 0.95rem;
+    }
+    .dl-banner {
+      padding: 1.4rem 1rem; text-align: center;
+      color: #555; font-size: 0.85rem;
+    }
+    .dl-banner button {
+      margin-top: 0.75rem;
+      padding: 0.4rem 0.9rem;
+      background: #1a3a5c; color: white; border: none;
+      border-radius: 4px; cursor: pointer; font-size: 0.8rem;
+    }
+    .dl-banner button:hover { background: #2c5680; }
+
     /* ── Toolbar (chip filters) ── */
     .toolbar {
       background: white; border-bottom: 1px solid #d8dee8;
@@ -364,6 +446,10 @@
     <span id="stats">Loading…</span>
   </div>
   <div class="header-right">
+    <span class="dl-wrap">
+      <button class="hbtn" id="dl-btn" title="Download per-department data">📥 Database Downloads ▾</button>
+      <div class="dl-menu" id="dl-menu" role="menu" aria-label="Database Downloads"></div>
+    </span>
     <button class="hbtn" id="charts-btn" title="Show charts">📊 Charts</button>
     <button class="hbtn" id="advanced-btn" title="Add custom filter">+ Filter</button>
     <button class="hbtn" id="export-btn">⬇ CSV</button>
@@ -445,8 +531,12 @@
 <div class="table-wrap" id="table-wrap">
   <div id="loading">
     <div class="spinner"></div>
-    <div id="load-msg">Downloading data…</div>
+    <div id="load-msg">Initializing…</div>
     <div id="load-detail"></div>
+  </div>
+  <div id="empty-banner" class="dl-banner" style="display:none">
+    <div>No department data loaded. Open <strong>📥 Database Downloads</strong> in the header to fetch one or more departments.</div>
+    <button id="empty-open-dl">Open Database Downloads</button>
   </div>
   <table id="grid" style="display:none">
     <thead>
@@ -859,81 +949,347 @@ const FILTER_COLS = [
   ['courtcall',       'Remote / CourtCall info', ['contains', 'does not contain']],
 ];
 
-// ─── Init ────────────────────────────────────────────────────────────────────
-try {
-  $('load-msg').textContent = 'Downloading data…';
-  const res = await fetch('./tentatives.parquet');
-  if (!res.ok) throw new Error(`HTTP ${res.status} fetching tentatives.parquet`);
+// ─── Init / per-department lazy load ────────────────────────────────────────
+// The full parquet is now sliced per department (data/tentatives-<N>.parquet).
+// On boot we register each loaded department as its own DuckDB table and
+// expose the union as a single `data` view so every existing query works
+// unchanged. The set of "auto-load" departments is persisted in localStorage
+// and can be removed via the dropdown's Remove action.
 
-  let buf;
-  if (res.body) {
-    const total = +res.headers.get('Content-Length') || 0;
-    const reader = res.body.getReader();
-    const chunks = []; let received = 0;
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      chunks.push(value); received += value.length;
-      if (total) $('load-detail').textContent =
-        `${(received/1e6).toFixed(1)} / ${(total/1e6).toFixed(1)} MB`;
-    }
-    buf = new Uint8Array(received); let off = 0;
-    for (const c of chunks) { buf.set(c, off); off += c.length; }
-  } else {
-    buf = new Uint8Array(await res.arrayBuffer());
+const LS_KEY     = 'sfsc.loadedDepartments';
+const MANIFEST_URL = './data/manifest.json';
+let db;                              // DuckDB instance
+let manifest = { departments: [] };  // fetched manifest
+const loadedDepts = new Map();       // dept -> { rulings, latest }
+const inflight    = new Map();       // dept -> AbortController (for cancel)
+
+function loadPersistedDepts() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr.map(String) : [];
+  } catch { return []; }
+}
+function persistLoadedDepts() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify([...loadedDepts.keys()])); } catch {}
+}
+
+function tableNameFor(dept) {
+  // DuckDB identifiers can't start with a digit. Quoting works but it's
+  // simpler to prefix with "dept" everywhere.
+  return `dept${dept}`;
+}
+
+async function rebuildDataView() {
+  // Recreate the union view that every query reads from. With zero loaded
+  // departments we still need a view with the right schema so queries don't
+  // crash — DuckDB infers the types from a one-row dummy SELECT we filter
+  // out via WHERE FALSE.
+  if (!conn) return;
+  if (loadedDepts.size === 0) {
+    await conn.query(`CREATE OR REPLACE VIEW data AS
+      SELECT
+        NULL::VARCHAR AS department,
+        NULL::VARCHAR AS case_number,
+        NULL::VARCHAR AS case_title,
+        NULL::VARCHAR AS court_date,
+        NULL::VARCHAR AS hearing_time,
+        NULL::VARCHAR AS calendar_matter,
+        NULL::VARCHAR AS judge,
+        NULL::VARCHAR AS ruling,
+        NULL::VARCHAR AS row_hash
+      WHERE FALSE`);
+    return;
   }
+  const unions = [...loadedDepts.keys()]
+    .map(d => `SELECT * FROM ${tableNameFor(d)}`)
+    .join(' UNION ALL ');
+  await conn.query(`CREATE OR REPLACE VIEW data AS ${unions}`);
+}
 
+async function fetchWithProgress(url, onProgress, signal) {
+  const res = await fetch(url, { signal });
+  if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${url}`);
+  if (!res.body) return new Uint8Array(await res.arrayBuffer());
+  const total  = +res.headers.get('Content-Length') || 0;
+  const reader = res.body.getReader();
+  const chunks = []; let received = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value); received += value.length;
+    onProgress(received, total);
+  }
+  const buf = new Uint8Array(received); let off = 0;
+  for (const c of chunks) { buf.set(c, off); off += c.length; }
+  return buf;
+}
+
+async function loadDept(dept, { persist = true } = {}) {
+  if (loadedDepts.has(dept)) return;
+  if (inflight.has(dept))    return;
+  const ctl = new AbortController();
+  inflight.set(dept, ctl);
+  setDeptStatus(dept, 'downloading', { received: 0, total: 0 });
+  try {
+    const meta = manifest.departments.find(d => String(d.department) === String(dept));
+    const url  = `./data/tentatives-${dept}.parquet`;
+    const buf  = await fetchWithProgress(url,
+      (received, total) => setDeptStatus(dept, 'downloading', { received, total: total || meta?.size_bytes || 0 }),
+      ctl.signal
+    );
+    const fname = `dept-${dept}.parquet`;
+    await db.registerFileBuffer(fname, buf);
+    const tbl = tableNameFor(dept);
+    await conn.query(`CREATE OR REPLACE TABLE ${tbl} AS SELECT * FROM '${fname}'`);
+    loadedDepts.set(dept, { rulings: meta?.rulings || 0, latest: meta?.latest || null });
+    if (persist) persistLoadedDepts();
+    await rebuildDataView();
+    await onLoadedSetChanged();
+    setDeptStatus(dept, 'loaded');
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      setDeptStatus(dept, 'idle');
+    } else {
+      console.error(`Failed to load dept ${dept}:`, err);
+      setDeptStatus(dept, 'error', { message: err.message || String(err) });
+    }
+  } finally {
+    inflight.delete(dept);
+  }
+}
+
+async function unloadDept(dept) {
+  if (inflight.has(dept)) {
+    inflight.get(dept).abort();
+    inflight.delete(dept);
+  }
+  if (loadedDepts.has(dept)) {
+    try { await conn.query(`DROP TABLE IF EXISTS ${tableNameFor(dept)}`); } catch (e) { console.error(e); }
+    loadedDepts.delete(dept);
+    persistLoadedDepts();
+    await rebuildDataView();
+    await onLoadedSetChanged();
+  }
+  setDeptStatus(dept, 'idle');
+}
+
+// Called whenever the loaded set changes (load, unload). Refreshes the
+// auxiliary dropdowns (dept/judge/motion type) and the stats badge so they
+// reflect what's actually queryable right now.
+async function onLoadedSetChanged() {
+  await refreshAuxDropdowns();
+  await refreshHeaderStats();
+  toggleEmptyBanner();
+  if (loadedDepts.size > 0) await runQuery(0);
+}
+
+function toggleEmptyBanner() {
+  const empty = loadedDepts.size === 0;
+  $('empty-banner').style.display = empty ? '' : 'none';
+  $('grid').style.display       = empty ? 'none' : '';
+  $('result-bar').style.display = empty ? 'none' : '';
+  $('pager').style.display      = empty ? 'none' : '';
+  $('toolbar').style.display    = empty ? 'none' : '';
+}
+
+async function refreshHeaderStats() {
+  if (loadedDepts.size === 0) {
+    $('stats').textContent = 'No departments loaded';
+    totalRows = 0;
+    return;
+  }
+  const s = (await conn.query(
+    `SELECT COUNT(*) n, MIN(court_date) lo, MAX(court_date) hi FROM data`
+  )).toArray()[0];
+  totalRows = Number(s.n);
+  const deptCount = loadedDepts.size;
+  $('stats').textContent =
+    `${totalRows.toLocaleString()} rulings · ${s.lo} → ${s.hi} · ` +
+    `${deptCount} dept${deptCount !== 1 ? 's' : ''} loaded`;
+}
+
+async function refreshAuxDropdowns() {
+  // Repopulate the chip-filter selects (Dept / Judge / Motion type) from the
+  // currently loaded data. Preserve the user's current selection if it's
+  // still valid; otherwise reset to "All".
+  const prevDept  = deptEl.value;
+  const prevJudge = judgeEl.value;
+  const prevMtype = mtypeEl.value;
+
+  // Dept dropdown
+  deptEl.innerHTML = '<option value="">All</option>';
+  if (loadedDepts.size > 0) {
+    for (const r of (await conn.query(
+      `SELECT DISTINCT department FROM data WHERE department IS NOT NULL ORDER BY department`
+    )).toArray()) deptEl.appendChild(new Option(`Dept ${r.department}`, r.department));
+  }
+  if ([...deptEl.options].some(o => o.value === prevDept)) deptEl.value = prevDept;
+
+  // Judge dropdown — frequency ordered.
+  judgeEl.innerHTML = '<option value="">All</option>';
+  if (loadedDepts.size > 0) {
+    for (const r of (await conn.query(
+      `SELECT judge, COUNT(*) n FROM data
+       WHERE judge IS NOT NULL AND judge!=''
+       GROUP BY judge ORDER BY n DESC, judge`
+    )).toArray()) {
+      judgeEl.appendChild(new Option(`${r.judge} (${Number(r.n).toLocaleString()})`, r.judge));
+    }
+  }
+  if ([...judgeEl.options].some(o => o.value === prevJudge)) judgeEl.value = prevJudge;
+
+  // Motion type dropdown — recompute MTYPE_CACHE then frequency-order.
+  MTYPE_CACHE.clear();
+  mtypeEl.innerHTML = '<option value="">All</option>';
+  if (loadedDepts.size > 0) {
+    const motionCounts = await classifyAll();
+    for (const [t, n] of [...motionCounts.entries()].sort((a, b) => b[1] - a[1])) {
+      mtypeEl.appendChild(new Option(`${t} (${n.toLocaleString()})`, t));
+    }
+  }
+  if ([...mtypeEl.options].some(o => o.value === prevMtype)) mtypeEl.value = prevMtype;
+  refreshSubtypeOptions();
+
+  // Date range — only auto-fill if empty. Otherwise preserve whatever the
+  // user (or the URL state) explicitly set, even if the new dataset is
+  // wider; the user can hit Clear to reset back to full range.
+  if (loadedDepts.size > 0 && (!dateFrom.value || !dateTo.value)) {
+    const r = (await conn.query(`SELECT MIN(court_date) lo, MAX(court_date) hi FROM data`)).toArray()[0];
+    if (!dateFrom.value) dateFrom.value = r.lo;
+    if (!dateTo.value)   dateTo.value   = r.hi;
+  }
+}
+
+// ─── Downloads dropdown UI ──────────────────────────────────────────────────
+function setDeptStatus(dept, status, detail) {
+  const row = document.querySelector(`.dl-row[data-dept="${dept}"]`);
+  if (!row) return;
+  row.classList.remove('idle', 'downloading', 'loaded', 'error');
+  row.classList.add(status);
+  const statusEl = row.querySelector('.dl-status');
+  statusEl.className = `dl-status ${status}`;
+  const sub    = row.querySelector('.dl-sub');
+  const action = row.querySelector('.dl-action');
+  const meta   = manifest.departments.find(d => String(d.department) === String(dept));
+  const sizeMb = meta ? (meta.size_bytes / 1e6).toFixed(1) : '?';
+  const subtitle = meta ? `${meta.rulings.toLocaleString()} rulings · ${sizeMb} MB · latest ${meta.latest ?? '—'}` : '';
+
+  if (status === 'idle') {
+    sub.textContent = subtitle;
+    action.textContent = 'Download';
+    action.className = 'dl-action';
+    action.disabled = false;
+  } else if (status === 'downloading') {
+    const { received = 0, total = 0 } = detail || {};
+    const pct = total > 0 ? Math.min(100, (received / total) * 100) : 0;
+    const recvMb = (received / 1e6).toFixed(1);
+    const totMb  = total ? (total / 1e6).toFixed(1) : sizeMb;
+    sub.textContent = total > 0
+      ? `${pct.toFixed(0)}% — ${recvMb} / ${totMb} MB`
+      : `${recvMb} MB downloaded…`;
+    row.querySelector('.dl-bar > div').style.width = `${pct}%`;
+    action.textContent = 'Cancel';
+    action.className = 'dl-action danger';
+    action.disabled = false;
+  } else if (status === 'loaded') {
+    sub.textContent = subtitle + ' · loaded';
+    action.textContent = 'Remove';
+    action.className = 'dl-action danger';
+    action.disabled = false;
+  } else if (status === 'error') {
+    sub.textContent = `Error: ${detail?.message || 'unknown'}`;
+    action.textContent = 'Retry';
+    action.className = 'dl-action';
+    action.disabled = false;
+  }
+}
+
+function renderDownloadsMenu() {
+  const menu = $('dl-menu');
+  menu.innerHTML = '';
+  if (!manifest.departments?.length) {
+    const e = document.createElement('div');
+    e.className = 'dl-empty';
+    e.textContent = 'No departments available.';
+    menu.appendChild(e);
+    return;
+  }
+  for (const d of manifest.departments) {
+    const row = document.createElement('div');
+    row.className = 'dl-row idle';
+    row.dataset.dept = d.department;
+
+    const status = document.createElement('span');
+    status.className = 'dl-status idle';
+
+    const meta = document.createElement('div');
+    meta.className = 'dl-meta';
+    const name = document.createElement('div');
+    name.className = 'dl-name';
+    name.textContent = d.name || `Department ${d.department}`;
+    const sub = document.createElement('div');
+    sub.className = 'dl-sub';
+    const bar = document.createElement('div');
+    bar.className = 'dl-bar';
+    bar.appendChild(document.createElement('div'));
+    meta.append(name, sub, bar);
+
+    const action = document.createElement('button');
+    action.className = 'dl-action';
+    action.addEventListener('click', () => {
+      if (row.classList.contains('downloading')) {
+        const ctl = inflight.get(d.department);
+        if (ctl) ctl.abort();
+      } else if (row.classList.contains('loaded')) {
+        unloadDept(d.department);
+      } else {
+        loadDept(d.department);
+      }
+    });
+
+    row.append(status, meta, action);
+    menu.appendChild(row);
+    setDeptStatus(d.department, loadedDepts.has(d.department) ? 'loaded' : 'idle');
+  }
+}
+
+async function bootDuckDB() {
   $('load-msg').textContent = 'Initializing database…';
-  $('load-detail').textContent = '';
   const bundles = duckdb.getJsDelivrBundles();
   const bundle  = await duckdb.selectBundle(bundles);
   const wUrl    = URL.createObjectURL(
     new Blob([`importScripts("${bundle.mainWorker}");`], { type: 'text/javascript' })
   );
-  const db = new duckdb.AsyncDuckDB(new duckdb.VoidLogger(), new Worker(wUrl));
+  db = new duckdb.AsyncDuckDB(new duckdb.VoidLogger(), new Worker(wUrl));
   await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
   URL.revokeObjectURL(wUrl);
-  await db.registerFileBuffer('data.parquet', buf);
   conn = await db.connect();
+  await rebuildDataView();
+}
 
-  const s = (await conn.query(
-    `SELECT COUNT(*) n, MIN(court_date) lo, MAX(court_date) hi FROM 'data.parquet'`
-  )).toArray()[0];
-  totalRows = Number(s.n);
-  $('stats').textContent = `${totalRows.toLocaleString()} rulings · ${s.lo} → ${s.hi}`;
-
-  for (const r of (await conn.query(
-    `SELECT DISTINCT department FROM 'data.parquet' WHERE department IS NOT NULL ORDER BY department`
-  )).toArray()) deptEl.appendChild(new Option(`Dept ${r.department}`, r.department));
-
-  // Judge dropdown — ordered by ruling volume (most prolific first) so the
-  // user lands on a useful default. The count is appended to the label so
-  // they can see at a glance how much data each judge contributes; the
-  // option's value stays the bare name so saved filters keep working.
-  for (const r of (await conn.query(
-    `SELECT judge, COUNT(*) n FROM 'data.parquet'
-     WHERE judge IS NOT NULL AND judge!=''
-     GROUP BY judge ORDER BY n DESC, judge`
-  )).toArray()) {
-    judgeEl.appendChild(new Option(`${r.judge} (${Number(r.n).toLocaleString()})`, r.judge));
+async function fetchManifest() {
+  $('load-msg').textContent = 'Reading manifest…';
+  try {
+    const res = await fetch(MANIFEST_URL, { cache: 'no-cache' });
+    if (!res.ok) throw new Error(`HTTP ${res.status} fetching manifest`);
+    manifest = await res.json();
+  } catch (err) {
+    console.error('Manifest fetch failed:', err);
+    manifest = { departments: [] };
+    const bar = $('error-bar');
+    bar.style.display = 'block';
+    bar.textContent =
+      `Couldn't read data/manifest.json (${err.message}). ` +
+      `The Database Downloads list will be empty until this is fixed.`;
   }
+}
 
-  // Motion-type dropdown — sorted by frequency in current dataset.
-  const motionCounts = await classifyAll();
-  const sortedTypes = [...motionCounts.entries()].sort((a, b) => b[1] - a[1]);
-  for (const [t, n] of sortedTypes) {
-    mtypeEl.appendChild(new Option(`${t} (${n.toLocaleString()})`, t));
-  }
-
-  dateFrom.value = s.lo; dateTo.value = s.hi;
-
-  $('loading').style.display = 'none';
-  $('grid').style.display = '';
-  $('toolbar').style.display = '';
-  $('result-bar').style.display = '';
-  $('pager').style.display = '';
-
-  restoreState();
+try {
+  await bootDuckDB();
+  await fetchManifest();
+  renderDownloadsMenu();
 
   document.querySelectorAll('th.sortable').forEach(th =>
     th.addEventListener('click', () => {
@@ -947,15 +1303,52 @@ try {
     })
   );
 
-  await runQuery(0);
+  $('loading').style.display = 'none';
+  toggleEmptyBanner();
 
+  // Auto-load any persisted departments. If none persist (first visit), pop
+  // the menu open so the user immediately sees what's available.
+  const persisted = loadPersistedDepts().filter(d =>
+    manifest.departments.some(m => String(m.department) === String(d))
+  );
+  if (persisted.length === 0) {
+    $('dl-menu').classList.add('open');
+    $('dl-btn').classList.add('active');
+  } else {
+    // Sequential to keep memory pressure predictable. Each load fires its
+    // own runQuery via onLoadedSetChanged so the user sees partial results
+    // arrive; the final runQuery below applies any restored URL filters on
+    // top of the fully-loaded set.
+    for (const d of persisted) await loadDept(d, { persist: false });
+    restoreState();
+    if (loadedDepts.size > 0) await runQuery(currentPage || 0);
+  }
 } catch (err) {
   $('loading').style.display = 'none';
   const bar = $('error-bar');
   bar.style.display = 'block';
-  bar.textContent = 'Failed to load data: ' + err.message;
+  bar.textContent = 'Failed to initialise: ' + err.message;
   console.error(err);
 }
+
+// Dropdown open/close
+$('dl-btn').addEventListener('click', e => {
+  e.stopPropagation();
+  const menu = $('dl-menu');
+  const open = menu.classList.toggle('open');
+  $('dl-btn').classList.toggle('active', open);
+});
+document.addEventListener('click', e => {
+  const menu = $('dl-menu');
+  if (!menu.classList.contains('open')) return;
+  if (e.target.closest('.dl-wrap')) return;
+  menu.classList.remove('open');
+  $('dl-btn').classList.remove('active');
+});
+$('empty-open-dl').addEventListener('click', () => {
+  $('dl-menu').classList.add('open');
+  $('dl-btn').classList.add('active');
+});
 
 // ─── Categorisation ──────────────────────────────────────────────────────────
 // Populates MTYPE_CACHE once per page load. The dropdown's frequency labels
@@ -964,7 +1357,7 @@ try {
 async function classifyAll() {
   const all = (await conn.query(
     `SELECT department, calendar_matter, COUNT(*) n
-     FROM 'data.parquet' GROUP BY department, calendar_matter`
+     FROM data GROUP BY department, calendar_matter`
   )).toArray();
   const counts = new Map(); // type -> count
   for (const r of all) {
@@ -1138,11 +1531,11 @@ async function runQuery(page = 0) {
       // then slice. Counting accurately requires scanning the full filtered
       // set — we do it once per query which is ~O(50K rules-evals).
       const [cntR, allR] = await Promise.all([
-        conn.query(`SELECT COUNT(*) n FROM 'data.parquet' WHERE ${where}`),
+        conn.query(`SELECT COUNT(*) n FROM data WHERE ${where}`),
         conn.query(`
           SELECT department, case_number, case_title, court_date, hearing_time,
                  calendar_matter, judge, ruling, row_hash
-          FROM 'data.parquet' WHERE ${where}
+          FROM data WHERE ${where}
           ORDER BY ${sortCol} ${sortDir}, case_number
         `),
       ]);
@@ -1156,11 +1549,11 @@ async function runQuery(page = 0) {
         ` (outcome-filtered from ${Number(cntR.toArray()[0].n).toLocaleString()})`;
     } else {
       const [cntR, rowsR] = await Promise.all([
-        conn.query(`SELECT COUNT(*) n FROM 'data.parquet' WHERE ${where}`),
+        conn.query(`SELECT COUNT(*) n FROM data WHERE ${where}`),
         conn.query(`
           SELECT department, case_number, case_title, court_date, hearing_time,
                  calendar_matter, judge, ruling, row_hash
-          FROM 'data.parquet' WHERE ${where}
+          FROM data WHERE ${where}
           ORDER BY ${sortCol} ${sortDir}, case_number
           LIMIT ${PAGE_SIZE} OFFSET ${offset}
         `),
@@ -1352,7 +1745,7 @@ const PANEL_PRESETS = {
     render:   async (panel, where, g) => {
       const bucket = dateBucketSql(g);
       const r = (await conn.query(
-        `SELECT ${bucket} m, COUNT(*) n FROM 'data.parquet' WHERE ${where}
+        `SELECT ${bucket} m, COUNT(*) n FROM data WHERE ${where}
          GROUP BY m ORDER BY m`)).toArray();
       makeChart(panel.canvasId, {
         type: 'line',
@@ -1377,7 +1770,7 @@ const PANEL_PRESETS = {
     ],
     render:   async (panel, where) => {
       const rows = (await conn.query(
-        `SELECT department, calendar_matter, COUNT(*) n FROM 'data.parquet'
+        `SELECT department, calendar_matter, COUNT(*) n FROM data
          WHERE ${where} GROUP BY department, calendar_matter`)).toArray();
       const counts = new Map();
       for (const r of rows) {
@@ -1413,7 +1806,7 @@ const PANEL_PRESETS = {
       // chart to its requested length.
       const limit = (+panel.cfg.topN || 12) + 50;
       const r = (await conn.query(
-        `SELECT COALESCE(judge, '(unspecified)') j, COUNT(*) n FROM 'data.parquet'
+        `SELECT COALESCE(judge, '(unspecified)') j, COUNT(*) n FROM data
          WHERE ${where} GROUP BY j ORDER BY n DESC LIMIT ${limit}`)).toArray();
       const keep = makeExcludeMatcher(panel.cfg.exclude);
       const filtered = r.filter(x => keep(x.j)).slice(0, +panel.cfg.topN || 12);
@@ -1441,7 +1834,7 @@ const PANEL_PRESETS = {
       const bucket = dateBucketSql(g);
       const rows = (await conn.query(
         `SELECT ${bucket} b, department, calendar_matter, COUNT(*) n
-         FROM 'data.parquet' WHERE ${where}
+         FROM data WHERE ${where}
          GROUP BY b, department, calendar_matter ORDER BY b`)).toArray();
       const buckets = []; const seen = new Set();
       const map = new Map(); // bucket -> Map(type -> count)
@@ -1481,7 +1874,7 @@ const PANEL_PRESETS = {
     configFields: [['exclude', 'Exclude', 'exclude']],
     render:   async (panel, where) => {
       const rows = (await conn.query(
-        `SELECT department, ruling FROM 'data.parquet' WHERE ${where}
+        `SELECT department, ruling FROM data WHERE ${where}
          AND ruling IS NOT NULL`)).toArray();
       const counts = new Map();
       for (const r of rows) {
@@ -1517,7 +1910,7 @@ const PANEL_PRESETS = {
     render:   async (panel, where) => {
       const target = panel.cfg.outcome || 'Granted / Sustained';
       const rows = (await conn.query(
-        `SELECT department, calendar_matter, ruling FROM 'data.parquet'
+        `SELECT department, calendar_matter, ruling FROM data
          WHERE ${where} AND ruling IS NOT NULL`)).toArray();
       const total = new Map(), match = new Map();
       for (const r of rows) {
@@ -1568,7 +1961,7 @@ const PANEL_PRESETS = {
     ],
     render:   async (panel, where) => {
       const rows = (await conn.query(
-        `SELECT department, calendar_matter, ruling FROM 'data.parquet'
+        `SELECT department, calendar_matter, ruling FROM data
          WHERE ${where} AND ruling IS NOT NULL`)).toArray();
       const keep = makeExcludeMatcher(panel.cfg.exclude);
       const byType = new Map();      // type -> Map(outcome -> count)
@@ -1614,7 +2007,7 @@ const PANEL_PRESETS = {
     title:    () => 'Total rulings (filtered)',
     render:   async (panel, where) => {
       const r = (await conn.query(
-        `SELECT COUNT(*) n FROM 'data.parquet' WHERE ${where}`)).toArray()[0];
+        `SELECT COUNT(*) n FROM data WHERE ${where}`)).toArray()[0];
       const wrap = $(panel.canvasId)?.parentElement;
       if (!wrap) return;
       destroyChart(panel.canvasId);
@@ -1919,7 +2312,7 @@ $('export-btn').addEventListener('click', async () => {
   const all = (await conn.query(`
     SELECT department, case_number, case_title, court_date, hearing_time,
            calendar_matter, judge, ruling
-    FROM 'data.parquet' WHERE ${buildWhere()}
+    FROM data WHERE ${buildWhere()}
     ORDER BY ${sortCol} ${sortDir}, case_number
   `)).toArray();
   const cols = ['department','case_number','case_title','court_date','hearing_time',
@@ -1981,7 +2374,7 @@ $('clear-btn').addEventListener('click', async () => {
   renderFilterRows();
   if (conn) {
     const s = (await conn.query(
-      `SELECT MIN(court_date) lo, MAX(court_date) hi FROM 'data.parquet'`
+      `SELECT MIN(court_date) lo, MAX(court_date) hi FROM data`
     )).toArray()[0];
     dateFrom.value = s.lo; dateTo.value = s.hi;
   }
