@@ -70,23 +70,42 @@ function extractJudge(rulingText) {
 }
 
 function scrape() {
-  const container = document.getElementById('resultsRulings');
-  // Only treat the page as session-expired when the rulings container is
-  // missing or empty — otherwise a ruling that happens to quote "session
-  // expired" in its text would abort an otherwise-valid scrape.
-  const rulingsEmpty = !container || !container.querySelector('tr');
-  if (rulingsEmpty &&
-      /session\s+has\s+expired|your\s+session\s+(has\s+)?expired|session\s+timed?\s+out/i
-        .test(document.body?.innerText || '')) {
+  // Session-expiry detection runs FIRST and inspects the resultsCount
+  // element directly. Earlier versions gated this on an empty
+  // resultsRulings table, but SFTC's session-expired response leaves the
+  // previous search's <tr>s in place (only the count label is replaced
+  // with "Your session has expired."). With the rulingsEmpty gate the
+  // check missed the real case, scrape() returned the stale rulings, the
+  // stale-court-date guard in commitToGitHub then converted them to an
+  // empty marker, and the bulk run silently advanced to the next date.
+  const sessionExpiredRe = /session\s+has\s+expired|your\s+session\s+(has\s+)?expired|session\s+timed?\s+out/i;
+  const countEl   = document.getElementById('resultsCount');
+  const countText = countEl ? countEl.textContent : '';
+  if (sessionExpiredRe.test(countText)) {
+    return { sessionExpired: true };
+  }
+  // Belt-and-braces: SFTC's session-expired markup includes a Restart
+  // anchor whose href is the literal string javascript:location.reload(true).
+  // If we see that, treat the page as expired regardless of where the text
+  // landed.
+  if (document.querySelector('a[href*="location.reload(true)"]')) {
     return { sessionExpired: true };
   }
 
+  const container = document.getElementById('resultsRulings');
   if (!container) {
+    // Last resort: the rulings container is missing AND the body text
+    // mentions session expiry — the rulingsEmpty guard remains here
+    // because document.body innerText is broad enough that an actual
+    // ruling could quote "session expired" without it actually being a
+    // session-expired page.
+    if (sessionExpiredRe.test(document.body?.innerText || '')) {
+      return { sessionExpired: true };
+    }
     return { error: 'No results block found. Run a search on this page first.' };
   }
 
-  const countEl = document.getElementById('resultsCount');
-  const totalText = countEl ? countEl.textContent : '';
+  const totalText = countText;
   const totalMatch = totalText.match(/Total Records Found\s+(\d+)/i);
   const reportedTotal = totalMatch ? parseInt(totalMatch[1]) : null;
 
@@ -265,7 +284,13 @@ async function fillAndScrape(dateStr, waitMs = 2000) {
   // genuinely-empty result. If the count element now reports a numeric
   // total (even 0), the page DID render — return that scrape rather than
   // a pending marker that bulk would mis-route to errors.
+  // Session-expired is also a definitive end state: the timer can run out
+  // because pageHasResponded never tripped (the content script raced the
+  // navigation), but the scrape itself shows the expired page → bubble it
+  // up so bulkHandleResult can pause instead of treating it as `pending`
+  // (which counts as an error and skips the date).
   const finalScrape = scrape();
+  if (finalScrape?.sessionExpired) return finalScrape;
   if (finalScrape && typeof finalScrape.reported_total === 'number') return finalScrape;
   return { pending: true };
 }
