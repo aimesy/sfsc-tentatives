@@ -485,7 +485,11 @@
     .col-mtype   { width: 200px; }
     .col-outcome { width: 130px; }
     .col-judge   { width: 165px; }
-    .col-is-examiner { width: 90px; text-align: center; font-size: 0.78rem; color: #6b5300; }
+    /* "Type of Judicial Officer" — wider than the old "Examiner?" boolean
+       to fit the categorical labels ("Judge of the Superior Court",
+       "Judge pro tempore", "Examiner"). Uses col-is-examiner as its CSS
+       class name for back-compat with any user CSS overrides. */
+    .col-is-examiner { width: 175px; font-size: 0.74rem; color: #555; }
     /* Category pill — reuses the motion-type pill styling but with a
        distinct accent so the broader bucket ("Discovery", "Pleadings",
        "Dispositive", etc.) reads at a glance. */
@@ -797,10 +801,10 @@
           <span class="col-head"><span class="col-label">Motion Caption</span></span>
         </th>
         <th class="col-judge   sortable" data-col="judge">
-          <span class="col-head"><span class="col-label">Judge / Examiner</span><button class="col-filter-btn" data-filter-col="judge" data-filter-kind="value" title="Filter by Judge / Examiner">▾</button></span>
+          <span class="col-head"><span class="col-label">Judicial Officer</span><button class="col-filter-btn" data-filter-col="judge" data-filter-kind="value" title="Filter by Judicial Officer">▾</button></span>
         </th>
         <th class="col-is-examiner">
-          <span class="col-head"><span class="col-label">Examiner?</span></span>
+          <span class="col-head"><span class="col-label">Type of Judicial Officer</span><button class="col-filter-btn" data-filter-col="officer_type" data-filter-kind="value" title="Filter by type of judicial officer">▾</button></span>
         </th>
         <th class="col-ruling">
           <span class="col-head"><span class="col-label">Ruling (excerpt)</span></span>
@@ -1471,11 +1475,36 @@ const MTYPE_CACHE = new Map(); // dept -> Map(calendar_matter -> {type, subtype}
 const _colUniqueCache = new Map(); // column -> [{value, count}]; busted on load/unload
 
 // Departments where the assigned reviewer is a court Examiner rather than a
-// judge. Drives the 📋 badge in the Judge column and the derived "Examiner?"
+// judge. Drives the 📋 badge in the Judicial Officer column.
 // column. Add new departments here as the data ingest covers them.
 const EXAMINER_DEPTS = new Set(['204']);
 function isExaminer(row) {
   return !!row && !!row.judge && EXAMINER_DEPTS.has(String(row.department));
+}
+
+// Judges pro tempore: the JPT umbrella + sub-name normalisation lives in
+// judge_canonical / judge_subtype, so isJpt is just a check on the
+// canonicalised value. (A scattering of historical rows where the raw
+// judge string is "Judge Pro Tem" with no colon would otherwise miss
+// the LIKE 'Judge Pro Tem:%' branch.)
+function isJpt(row) {
+  return !!row && (
+    row.judge_canonical === 'Judge Pro Tem' ||
+    /^Judge Pro Tem(\s*$|:|\s)/i.test(row.judge || '')
+  );
+}
+
+// Type of judicial officer for a row — the categorical replacement for
+// the old "Examiner?" boolean column. Three values today, with room to
+// add more as we encounter them. The order of checks matters: a row
+// can technically satisfy both Probate's examiner condition and the
+// JPT regex (a JPT examiner) but in practice "Examiner" is always the
+// dominant label since dept 204 is reviewed by examiners by design.
+function judicialOfficerType(row) {
+  if (!row || !row.judge) return '';
+  if (isExaminer(row)) return 'Examiner';
+  if (isJpt(row))      return 'Judge pro tempore';
+  return 'Judge of the Superior Court';
 }
 
 // Motion-category lookup for a row. The category replaces the earlier
@@ -1532,8 +1561,12 @@ const COLUMN_DEFS = [
   { key: 'motion_type',     cls: 'col-mtype',        label: 'Motion Type' },
   { key: 'outcome',         cls: 'col-outcome',      label: 'Outcome' },
   { key: 'calendar_matter', cls: 'col-motion',       label: 'Motion Caption' },
-  { key: 'judge',           cls: 'col-judge',        label: 'Judge / Examiner' },
-  { key: 'is_examiner',     cls: 'col-is-examiner',  label: 'Examiner? (column)', defaultHidden: true },
+  { key: 'judge',           cls: 'col-judge',        label: 'Judicial Officer' },
+  // Categorical type column ("Judge of the Superior Court" / "Judge pro
+  // tempore" / "Examiner"). Defaults hidden — the inline 📋 / 🔍 badges
+  // in the Judicial Officer cell convey the same info at a glance, and
+  // the column is here for users who want to filter / sort on it.
+  { key: 'is_examiner',     cls: 'col-is-examiner',  label: 'Type of Judicial Officer', defaultHidden: true },
   { key: 'ruling',          cls: 'col-ruling',       label: 'Ruling (excerpt)' },
 ];
 const COL_VIS_LS_KEY = 'sfsc.columnVisibility';
@@ -1592,8 +1625,9 @@ const FILTER_COLS = [
   ['motion_category', 'Category',         ['is', 'is not']],
   ['motion_type',     'Motion Type',      ['is', 'is not']],
   ['motion_subtype',  'Motion Subtype',   ['is', 'is not', 'contains']],
-  ['judge',           'Judge',            ['is', 'is not', 'contains']],
+  ['judge',           'Judicial Officer', ['is', 'is not', 'contains']],
   ['judge_subtype',   'Judge Pro Tem name', ['is', 'is not', 'contains']],
+  ['officer_type',    'Type of Judicial Officer', ['is', 'is not']],
   ['department',      'Department',       ['is', 'is not']],
   // Outcome filtering happens in JS post-fetch (the classifier reads ruling
   // text), see runQuery + outcomeFilterMatches.
@@ -1627,12 +1661,26 @@ function loadPersistedDepts() {
   } catch { return []; }
 }
 function persistLoadedDepts() {
-  try { localStorage.setItem(LS_KEY, JSON.stringify([...loadedDepts.keys()])); } catch {}
+  try {
+    // Persist only the canonical (manifest-backed) depts. Custom-loaded
+    // parquets live in DuckDB session memory only — there's no file
+    // path to refetch them from on next visit, so persisting their
+    // synthetic ids would just produce 404s when loadDept tried to
+    // refetch a manifest entry that doesn't exist.
+    const persistable = [...loadedDepts.entries()]
+      .filter(([_, info]) => !info?.customTable)
+      .map(([dept]) => dept);
+    localStorage.setItem(LS_KEY, JSON.stringify(persistable));
+  } catch {}
 }
 
 function tableNameFor(dept) {
   // DuckDB identifiers can't start with a digit. Quoting works but it's
-  // simpler to prefix with "dept" everywhere.
+  // simpler to prefix with "dept" everywhere. Custom uploads store
+  // their own table name on the loadedDepts entry; we resolve through
+  // it instead of generating dept<N>.
+  const info = loadedDepts.get(dept);
+  if (info?.customTable) return info.customTable;
   return `dept${dept}`;
 }
 
@@ -1745,11 +1793,20 @@ async function unloadDept(dept) {
     inflight.delete(dept);
   }
   if (loadedDepts.has(dept)) {
-    try { await conn.query(`DROP TABLE IF EXISTS ${tableNameFor(dept)}`); } catch (e) { console.error(e); }
+    const tbl = tableNameFor(dept);
+    try { await conn.query(`DROP TABLE IF EXISTS ${tbl}`); } catch (e) { console.error(e); }
+    const wasCustom = !!loadedDepts.get(dept)?.customTable;
     loadedDepts.delete(dept);
     persistLoadedDepts();
     await rebuildDataView();
     await onLoadedSetChanged();
+    // Custom rows aren't part of the manifest, so the static
+    // setDeptStatus(...,'idle') below can't find their DOM. Re-render
+    // the menu instead — the custom row simply disappears.
+    if (wasCustom) {
+      renderDownloadsMenu();
+      return;
+    }
   }
   setDeptStatus(dept, 'idle');
 }
@@ -1893,14 +1950,7 @@ function setDeptStatus(dept, status, detail) {
 function renderDownloadsMenu() {
   const menu = $('dl-menu');
   menu.innerHTML = '';
-  if (!manifest.departments?.length) {
-    const e = document.createElement('div');
-    e.className = 'dl-empty';
-    e.textContent = 'No departments available.';
-    menu.appendChild(e);
-    return;
-  }
-  for (const d of manifest.departments) {
+  for (const d of (manifest.departments || [])) {
     const row = document.createElement('div');
     row.className = 'dl-row idle';
     row.dataset.dept = d.department;
@@ -1937,6 +1987,156 @@ function renderDownloadsMenu() {
     menu.appendChild(row);
     setDeptStatus(d.department, loadedDepts.has(d.department) ? 'loaded' : 'idle');
   }
+
+  // Custom-database row: lets the user point the data browser at a
+  // local parquet — their own scrape of a different jurisdiction, an
+  // older snapshot, an experimental dataset, etc. The schema needs to
+  // overlap with the canonical one (department, case_number,
+  // case_title, court_date, hearing_time, calendar_matter, judge,
+  // ruling, row_hash; judge_canonical / judge_subtype are computed by
+  // the data view if present, derivable on the fly otherwise).
+  // Loaded custom files persist in DuckDB session memory only — they
+  // aren't written anywhere — so a hard refresh wipes them. That's
+  // intentional: the local parquet on disk stays the source of truth.
+  const customRow = document.createElement('div');
+  customRow.className = 'dl-row idle';
+  customRow.style.borderTop = '2px dashed #d0d7de';
+  customRow.style.marginTop = '0.4rem';
+  customRow.style.paddingTop = '0.6rem';
+
+  const cstatus = document.createElement('span');
+  cstatus.className = 'dl-status idle';
+  cstatus.style.background = '#666';
+
+  const cmeta = document.createElement('div');
+  cmeta.className = 'dl-meta';
+  const cname = document.createElement('div');
+  cname.className = 'dl-name';
+  cname.textContent = 'Load custom database';
+  const csub = document.createElement('div');
+  csub.className = 'dl-sub';
+  csub.textContent = 'Load a local parquet file (your own scrape, an older snapshot, etc.)';
+  cmeta.append(cname, csub);
+
+  const cinput = document.createElement('input');
+  cinput.type = 'file';
+  cinput.accept = '.parquet,application/octet-stream';
+  cinput.multiple = true;
+  cinput.style.display = 'none';
+  cinput.addEventListener('change', async () => {
+    const files = [...(cinput.files || [])];
+    cinput.value = '';
+    for (const f of files) {
+      try { await loadCustomParquet(f); }
+      catch (err) {
+        console.error('custom parquet load failed:', err);
+        csub.textContent = `Error loading ${f.name}: ${err.message}`;
+        csub.style.color = '#c0392b';
+      }
+    }
+  });
+
+  const caction = document.createElement('button');
+  caction.className = 'dl-action';
+  caction.textContent = 'Choose…';
+  caction.addEventListener('click', () => cinput.click());
+
+  customRow.append(cstatus, cmeta, caction, cinput);
+  menu.appendChild(customRow);
+
+  // Render any previously-loaded custom databases so the user can see
+  // them and unload them. They use synthetic dept ids prefixed with
+  // "custom-" — anything in loadedDepts whose dept isn't in the
+  // manifest is a custom load.
+  const manifestDepts = new Set((manifest.departments || []).map(d => String(d.department)));
+  for (const [dept, info] of loadedDepts.entries()) {
+    if (manifestDepts.has(String(dept))) continue;
+    const row = document.createElement('div');
+    row.className = 'dl-row loaded';
+    row.dataset.dept = dept;
+
+    const status = document.createElement('span');
+    status.className = 'dl-status loaded';
+
+    const meta = document.createElement('div');
+    meta.className = 'dl-meta';
+    const name = document.createElement('div');
+    name.className = 'dl-name';
+    name.textContent = info.customName || `Custom (${dept})`;
+    const sub = document.createElement('div');
+    sub.className = 'dl-sub';
+    sub.textContent = `${(info.rulings || 0).toLocaleString()} rulings · loaded`;
+    meta.append(name, sub);
+
+    const action = document.createElement('button');
+    action.className = 'dl-action danger';
+    action.textContent = 'Remove';
+    action.addEventListener('click', () => unloadDept(dept));
+
+    row.append(status, meta, action);
+    menu.appendChild(row);
+  }
+
+  if (!manifest.departments?.length && !loadedDepts.size) {
+    const e = document.createElement('div');
+    e.className = 'dl-empty';
+    e.textContent = 'No remote departments available — load a local parquet via "Custom" above.';
+    menu.appendChild(e);
+  }
+}
+
+async function loadCustomParquet(file) {
+  // Synthetic dept id for an uploaded parquet. Stamped with the file
+  // name + a timestamp so the same file uploaded twice produces two
+  // distinct entries (and the second doesn't quietly overwrite the
+  // first via the `tableNameFor` collision).
+  const safeName = file.name.replace(/[^A-Za-z0-9_]+/g, '_').slice(0, 30);
+  const synthDept = `custom-${safeName}-${Date.now()}`;
+  const tbl = `dept_custom_${safeName}_${Date.now()}`;
+  const fname = `${synthDept}.parquet`;
+
+  const buf = new Uint8Array(await file.arrayBuffer());
+  await db.registerFileBuffer(fname, buf);
+  await conn.query(`CREATE OR REPLACE TABLE ${tbl} AS SELECT * FROM '${fname}'`);
+
+  // Verify the parquet has the columns the data view expects. If a
+  // critical one is missing (department, court_date, calendar_matter,
+  // judge, ruling), the rebuildDataView UNION will fail later — fail
+  // fast here with a useful message instead.
+  const cols = (await conn.query(`SELECT * FROM ${tbl} LIMIT 0`)).schema.fields.map(f => f.name);
+  const required = ['department', 'case_number', 'case_title', 'court_date',
+                    'hearing_time', 'calendar_matter', 'judge', 'ruling'];
+  const missing = required.filter(c => !cols.includes(c));
+  if (missing.length) {
+    await conn.query(`DROP TABLE IF EXISTS ${tbl}`);
+    throw new Error(`parquet is missing required columns: ${missing.join(', ')}`);
+  }
+  // Older parquets may not have row_hash — synthesise a stable one so
+  // the union view's downstream consumers (the bug-report modal, etc.)
+  // don't get NULL row_hash. SHA1 over (case_number||court_date||ruling)
+  // matches what ingest.py would have produced.
+  if (!cols.includes('row_hash')) {
+    await conn.query(`ALTER TABLE ${tbl} ADD COLUMN row_hash VARCHAR`);
+    await conn.query(`UPDATE ${tbl}
+      SET row_hash = MD5(COALESCE(case_number,'') || '|' || COALESCE(court_date,'') || '|' || COALESCE(ruling,''))`);
+  }
+
+  // Record the table name on the loadedDepts entry so rebuildDataView
+  // knows which table to UNION in (the synthetic dept can't be
+  // tableNameFor-derived because that function name-mangles a numeric
+  // dept). loadDept's existing path uses dept_<N>; custom uses
+  // dept_custom_<safe>_<ts>.
+  const rulings = (await conn.query(`SELECT COUNT(*) n FROM ${tbl}`)).toArray()[0].n;
+  loadedDepts.set(synthDept, {
+    rulings: Number(rulings),
+    latest:  null,
+    customName: file.name,
+    customTable: tbl,
+  });
+
+  await rebuildDataView();
+  await onLoadedSetChanged();
+  renderDownloadsMenu();
 }
 
 async function bootDuckDB() {
@@ -2204,7 +2404,9 @@ function columnFiltersToSql() {
   for (const col of Object.keys(columnFilters)) {
     const set = columnFilters[col];
     if (!(set instanceof Set) || set.size === 0) continue;
-    if (col === 'outcome' || col === 'motion_category') continue;  // post-filtered in JS
+    // Outcome, motion category, and officer type are all derived in JS —
+    // SQL doesn't see them, so the filter happens in columnFilterMatches.
+    if (col === 'outcome' || col === 'motion_category' || col === 'officer_type') continue;
     if (col === 'motion_type') {
       // Resolve selected types → calendar_matters via MTYPE_CACHE.
       const cms = new Set();
@@ -2250,17 +2452,21 @@ function columnFilterMatches(row) {
   if (cset instanceof Set && cset.size) {
     if (!cset.has(rowCategory(row))) return false;
   }
+  const tset = columnFilters['officer_type'];
+  if (tset instanceof Set && tset.size) {
+    if (!tset.has(judicialOfficerType(row))) return false;
+  }
   return true;
 }
 
 function filterToSql(f) {
   const v = (f.value ?? '').trim();
-  // Outcome and motion_category filters can't be expressed in plain SQL
-  // (both are derived from text classifiers). They're applied after the
-  // SQL pass — buildWhere returns them via a sentinel so runQuery can
-  // post-filter.
+  // Outcome, motion_category, and officer_type filters can't be expressed
+  // in plain SQL (all three are derived from text classifiers / row-shape
+  // checks in JS). They're applied after the SQL pass — buildWhere
+  // returns them via a sentinel so runQuery can post-filter.
   if (f.col === 'outcome' || f.col === 'outcome_subtype' ||
-      f.col === 'motion_category') return null;
+      f.col === 'motion_category' || f.col === 'officer_type') return null;
   // Some columns are derived (browser-side); for those we resolve via the
   // calendar_matter cache so the WHERE clause stays SQL-shaped.
   if (f.col === 'motion_type' || f.col === 'motion_subtype') {
@@ -2343,9 +2549,12 @@ async function runQuery(page = 0) {
                             && columnFilters['outcome'].size > 0;
   const hasColCategoryFilter = columnFilters['motion_category'] instanceof Set
                              && columnFilters['motion_category'].size > 0;
+  const hasColOfficerFilter = columnFilters['officer_type'] instanceof Set
+                            && columnFilters['officer_type'].size > 0;
   const sortIsJsDerived = JS_DERIVED_SORT_COLS.has(sortCol);
   const needsJsFilter = oFilters.length > 0 || hasColOutcomeFilter
-                      || hasColCategoryFilter || sortIsJsDerived;
+                      || hasColCategoryFilter || hasColOfficerFilter
+                      || sortIsJsDerived;
   // SQL ORDER BY is the cheap path. Fall back to court_date when the
   // user-selected sortCol is JS-derived (we'll re-sort below).
   const sqlSortCol = sortIsJsDerived ? 'court_date' : sortCol;
@@ -2439,15 +2648,27 @@ function renderTable(data) {
     const o = lookupOutcome(splitRuling(r.ruling, r.department).ruling);
     const oSub = o.subtype ? `<div class="mtype-sub">${esc(o.subtype)}</div>` : '';
     const examiner = isExaminer(r);
+    const jpt      = isJpt(r);
+    const officer  = judicialOfficerType(r);
     const cat = rowCategory(r);
-    // Judge cell: render judge_canonical (e.g. "Judge Pro Tem") with the
-    // specific JPT name as a sub-line — same visual pattern as motion type
-    // / outcome with their subtypes. Falls back to the raw judge field if
-    // judge_canonical is somehow missing (defensive — view always provides it).
+    // Judicial-Officer cell: render judge_canonical (e.g. "Judge Pro Tem")
+    // with the specific JPT name as a sub-line — same visual pattern as
+    // motion type / outcome with their subtypes. Two badges may appear
+    // inline next to the name:
+    //   📋  Examiner (probate matters)
+    //   🔍  Judge pro tempore
+    // (Examiner takes precedence when both apply — JPTs serving probate
+    // assignments are still labelled examiners by the dept.)
     const judgeMain = r.judge_canonical || r.judge || '';
     const jSub = r.judge_subtype ? `<div class="mtype-sub">${esc(r.judge_subtype)}</div>` : '';
+    let officerBadges = '';
+    if (examiner) {
+      officerBadges += '<span class="examiner-badge" title="Examiner (not a judge) — Probate matters are reviewed by court examiners.">📋</span>';
+    } else if (jpt) {
+      officerBadges += '<span class="examiner-badge" title="Judge pro tempore — a temporary judicial officer.">🔍</span>';
+    }
     const judgeCell = judgeMain
-      ? `${esc(judgeMain)}${examiner ? '<span class="examiner-badge" title="Examiner (not a judge) — Probate matters are reviewed by court examiners.">📋</span>' : ''}${jSub}`
+      ? `${esc(judgeMain)}${officerBadges}${jSub}`
       : '';
     // Category pill class — replaces spaces with hyphens so the CSS
     // class name is valid (e.g. "Real Estate" → mcat-Real-Estate).
@@ -2463,7 +2684,7 @@ function renderTable(data) {
       <td class="col-outcome"><span class="outcome-pill ${outcomeClass(o.outcome)}">${esc(o.outcome)}</span>${oSub}</td>
       <td class="col-motion">${esc(r.calendar_matter)}</td>
       <td class="col-judge">${judgeCell}</td>
-      <td class="col-is-examiner">${examiner ? '✓' : ''}</td>
+      <td class="col-is-examiner">${esc(officer)}</td>
       <td class="col-ruling">${esc((splitRuling(r.ruling, r.department).ruling).slice(0, 140))}</td>
     </tr>`;
   }).join('');
@@ -3181,7 +3402,8 @@ $('export-btn').addEventListener('click', async () => {
   const cols = ['department','case_number','case_title','court_date','hearing_time',
                 'calendar_matter','motion_category','motion_type','motion_subtype',
                 'outcome','outcome_subtype',
-                'judge','judge_subtype','ruling','admin_notes','courtcall'];
+                'judge','judge_subtype','officer_type',
+                'ruling','admin_notes','courtcall'];
   const lines = [cols.join(',')];
   for (const r of all) {
     if (!outcomeFilterMatches(r)) continue;
@@ -3197,6 +3419,7 @@ $('export-btn').addEventListener('click', async () => {
       motion_type: m.type, motion_subtype: m.subtype || '',
       outcome: o.outcome, outcome_subtype: o.subtype || '',
       judge: r.judge, judge_subtype: r.judge_subtype || '',
+      officer_type: judicialOfficerType(r),
       ruling: sp.ruling, admin_notes: sp.admin, courtcall: sp.courtcall,
     };
     lines.push(cols.map(c => csvCell(rec[c])).join(','));
@@ -3215,7 +3438,8 @@ $('export-btn').addEventListener('click', async () => {
 // the rest of runQuery doesn't need to be touched.
 function outcomeFilters() {
   return customFilters.filter(f =>
-    (f.col === 'outcome' || f.col === 'outcome_subtype' || f.col === 'motion_category')
+    (f.col === 'outcome' || f.col === 'outcome_subtype' ||
+     f.col === 'motion_category' || f.col === 'officer_type')
     && (f.value ?? '').trim()
   );
 }
@@ -3228,7 +3452,8 @@ function outcomeFilterMatches(row) {
     const v = (f.value || '').trim();
     const actual = f.col === 'outcome'          ? (o.outcome || '')
                  : f.col === 'outcome_subtype'  ? (o.subtype || '')
-                 : /* motion_category */          rowCategory(row);
+                 : f.col === 'motion_category'  ? rowCategory(row)
+                 : /* officer_type */             judicialOfficerType(row);
     if (f.op === 'is'           && actual !== v) return false;
     if (f.op === 'is not'       && actual === v) return false;
     if (f.op === 'contains'     && !actual.toLowerCase().includes(v.toLowerCase())) return false;
@@ -3266,6 +3491,20 @@ async function uniqueValuesFor(col) {
       counts.set(key, (counts.get(key) || 0) + Number(r.n));
     }
     pairs = [...counts.entries()].map(([v, n]) => ({ value: v, count: n }));
+  } else if (col === 'officer_type') {
+    // Three buckets — Judge of the Superior Court / Judge pro tempore /
+    // Examiner — derived from dept (probate → examiner), the JPT regex,
+    // and the catch-all default. Compute counts via a single full scan.
+    const rs = (await conn.query(
+      `SELECT department, judge, judge_canonical FROM data
+       WHERE judge IS NOT NULL AND judge <> ''`)).toArray();
+    const counts = new Map();
+    for (const r of rs) {
+      const t = judicialOfficerType(r);
+      if (!t) continue;
+      counts.set(t, (counts.get(t) || 0) + 1);
+    }
+    pairs = [...counts.entries()].map(([v, n]) => ({ value: v, count: n }));
   } else if (col === 'outcome') {
     // Derived: classify the substantive ruling text per row. Bucketing is
     // O(n) — fine for the ~70K-row corpus.
@@ -3298,7 +3537,8 @@ const COL_FILTER_LABELS = {
   motion_category: 'Category',
   motion_type:     'Motion Type',
   outcome:         'Outcome',
-  judge:           'Judge',
+  judge:           'Judicial Officer',
+  officer_type:    'Type of Judicial Officer',
 };
 
 let _openColFilter = null; // current column key while popup is open
@@ -3578,11 +3818,16 @@ function openModal(r) {
   const o = lookupOutcome(sp.ruling);
   const meta = $('modal-meta');
   meta.innerHTML = '';
+  const officer = judicialOfficerType(r);
   const pills = [
     r.department ? `Dept ${r.department}` : null,
     r.case_number, r.court_date, r.hearing_time,
     r.judge_canonical || r.judge,
     r.judge_subtype ? `· ${r.judge_subtype}` : null,
+    // Type pill so the kind of judicial officer is visible at a glance
+    // in the detail view too — the Examiner / JPT / Superior-Court
+    // distinction often matters for how the ruling reads.
+    officer ? `(${officer})` : null,
     m.type, m.subtype && `· ${m.subtype}`,
     o.outcome && o.outcome !== 'Other' && o.outcome !== 'Unknown' ? `→ ${o.outcome}` : null,
     o.subtype ? `· ${o.subtype}` : null,
