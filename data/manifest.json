@@ -3,8 +3,8 @@
     {
       "department": "204",
       "name": "Department 204 \u2014 Probate",
-      "rulings": 39199,
-      "size_bytes": 3714051,
+      "rulings": 39678,
+      "size_bytes": 3756696,
       "latest": "2026-05-04"
     },
     {
@@ -24,8 +24,8 @@
     {
       "department": "501",
       "name": "Department 501 \u2014 Real Property Court",
-      "rulings": 14983,
-      "size_bytes": 2201833,
+      "rulings": 15041,
+      "size_bytes": 2204423,
       "latest": "2026-05-04"
     }
   ]

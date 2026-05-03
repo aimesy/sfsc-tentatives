@@ -110,16 +110,13 @@ python update-readme.py
 ## Departments
 
 <details>
-<summary><strong>Department 204 — Probate</strong> &nbsp;·&nbsp; 39,199 rulings &nbsp;·&nbsp; Earliest: 2020-01-06 &nbsp;·&nbsp; Latest: 2026-05-04 &nbsp;·&nbsp; 7 gaps</summary>
+<summary><strong>Department 204 — Probate</strong> &nbsp;·&nbsp; 39,678 rulings &nbsp;·&nbsp; Earliest: 2020-01-06 &nbsp;·&nbsp; Latest: 2026-05-04 &nbsp;·&nbsp; 4 gaps</summary>
 
-39,199 tentative rulings. Earliest: 2020-01-06. Latest: 2026-05-04.
+39,678 tentative rulings. Earliest: 2020-01-06. Latest: 2026-05-04.
 
-### Gaps (7)
+### Gaps (4)
 
-- 2021-03-22 → 2021-03-30
-- 2021-04-02 → 2021-04-05
-- 2021-05-11 → 2021-06-01
-- 2021-06-03 → 2021-09-03
+- 2021-06-24 → 2021-09-03
 - 2021-11-01 → 2022-01-19
 - 2022-08-15 → 2022-08-16
 - 2022-08-31 → 2022-09-01
@@ -152,12 +149,12 @@ _None — all weekdays in range are accounted for._
 
 </details>
 <details>
-<summary><strong>Department 501 — Real Property Court</strong> &nbsp;·&nbsp; 14,983 rulings &nbsp;·&nbsp; Earliest: 2020-01-02 &nbsp;·&nbsp; Latest: 2026-05-04 &nbsp;·&nbsp; 0 gaps</summary>
+<summary><strong>Department 501 — Real Property Court</strong> &nbsp;·&nbsp; 15,041 rulings &nbsp;·&nbsp; Earliest: 2019-11-05 &nbsp;·&nbsp; Latest: 2026-05-04 &nbsp;·&nbsp; 1 gap</summary>
 
-14,983 tentative rulings. Earliest: 2020-01-02. Latest: 2026-05-04.
+15,041 tentative rulings. Earliest: 2019-11-05. Latest: 2026-05-04.
 
-### Gaps (0)
+### Gaps (1)
 
-_None — all weekdays in range are accounted for._
+- 2019-11-13 → 2019-12-31
 
 </details>
