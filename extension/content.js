@@ -110,6 +110,56 @@ function detectCaptchaChallenge() {
   return false;
 }
 
+// Determine the SFTC department this page belongs to. Returns the dept
+// number as a string (e.g. '302') or null when no signal is available.
+//
+// Heuristic ladder (most → least specific):
+//   1. Any heading with "Department <N>" (the canonical case).
+//   2. Heading text matching a known calendar name (Probate → 204,
+//      Discovery → 301, Real Property → 501, Civil Law & Motion → 302).
+//      SFTC's probate page reads "Probate" with no number; the discovery
+//      page is the same — without these branches both scraped into
+//      raw/dept302/ alongside the civil-law-and-motion calendars.
+//   3. The page URL's query string. SFTC's GET form preserves the calendar
+//      ID across navigations, so even when the heading is missing
+//      (CAPTCHA-cleared page, partial reload) we can still recover the
+//      dept from the URL.
+//   4. Any hidden form input whose name suggests a calendar/dept identifier.
+// Returns null when none of these fire — the caller (popup.js's
+// detectDepartment) then falls back to a tab-specific cached value
+// rather than misfiling scrapes under '302'.
+function detectPageDepartment() {
+  const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  for (const el of headings) {
+    const m = (el.textContent || '').match(/Department\s+(\d+)/i);
+    if (m) return m[1];
+  }
+  for (const el of headings) {
+    const t = el.textContent || '';
+    if (/\bProbate\b/i.test(t)) return '204';
+    if (/\bDiscovery\b/i.test(t)) return '301';
+    if (/\bReal\s+Property\b/i.test(t)) return '501';
+    if (/\bCivil\s+Law\s*(?:&|and)?\s*Motion\b/i.test(t)) return '302';
+  }
+  try {
+    const url = new URL(location.href);
+    const candidates = ['CalendarType', 'CalType', 'Calendar', 'Cal',
+                        'CalNum', 'CalNo', 'Dept', 'DeptCode', 'Department'];
+    for (const key of candidates) {
+      const v = url.searchParams.get(key);
+      if (v && /^\d+$/.test(v)) return v;
+    }
+  } catch (_) { /* ignore */ }
+  for (const input of document.querySelectorAll('input[type="hidden"], input[type="text"]')) {
+    const name = (input.name || '').toLowerCase();
+    if (/cal(?:type|num|no|endar)?$|^dept|^department|deptcode/i.test(name)
+        && /^\d+$/.test((input.value || '').trim())) {
+      return input.value.trim();
+    }
+  }
+  return null;
+}
+
 function scrape() {
   // CAPTCHA / Cloudflare challenge detection runs first — see
   // detectCaptchaChallenge for why. We surface it as a distinct field so
@@ -158,21 +208,7 @@ function scrape() {
   const totalMatch = totalText.match(/Total Records Found\s+(\d+)/i);
   const reportedTotal = totalMatch ? parseInt(totalMatch[1]) : null;
 
-  const h4 = document.querySelector('h4');
-  let department = '302';
-  if (h4) {
-    const text = h4.textContent;
-    const m = text.match(/Department\s+(\d+)/i);
-    if (m) {
-      department = m[1];
-    } else if (/\bProbate\b/i.test(text)) {
-      // SFTC's probate page heading reads "Probate" with no department number.
-      // Without this branch the script silently fell back to the "302" default
-      // and probate scrapes ended up in raw/dept302/ alongside the
-      // civil-law-and-motion calendars. Probate is heard in Dept 204.
-      department = '204';
-    }
-  }
+  const department = detectPageDepartment();
 
   const rulings = [];
   let current = {};

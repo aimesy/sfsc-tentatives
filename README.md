@@ -110,9 +110,16 @@ python update-readme.py
 ## Departments
 
 <details>
-<summary><strong>Department 204 — Probate</strong> &nbsp;·&nbsp; 41,745 rulings &nbsp;·&nbsp; Earliest: 2020-01-06 &nbsp;·&nbsp; Latest: 2026-05-04 &nbsp;·&nbsp; 3 gaps</summary>
+<summary><strong>Department 204 — Probate</strong> &nbsp;·&nbsp; 41,745 rulings &nbsp;·&nbsp; 2020-01-07 → 2026-05-04 &nbsp;·&nbsp; 1,016 hearing days &nbsp;·&nbsp; 3 gaps</summary>
 
-41,745 tentative rulings. Earliest: 2020-01-06. Latest: 2026-05-04.
+41,745 tentative rulings across 1,016 hearing days (2020-01-07 → 2026-05-04).
+
+### Coverage
+
+- **Hearing days with data:** 1,016 of 1,555 weekdays in range (65.3%)
+- **Days scanned:** 1,513 (including days the court posted no rulings)
+- **Earliest harvested:** 2020-01-06
+- **Latest harvested:** 2026-05-04 (same as last hearing day)
 
 ### Gaps (3)
 
@@ -122,29 +129,38 @@ python update-readme.py
 
 </details>
 <details>
-<summary><strong>Department 301 — Discovery</strong> &nbsp;·&nbsp; 3,023 rulings &nbsp;·&nbsp; Earliest: 2022-02-02 &nbsp;·&nbsp; Latest: 2026-05-04 &nbsp;·&nbsp; 11 gaps</summary>
+<summary><strong>Department 301 — Discovery</strong> &nbsp;·&nbsp; 3,023 rulings &nbsp;·&nbsp; 2024-03-19 → 2026-05-04 &nbsp;·&nbsp; 269 hearing days &nbsp;·&nbsp; 6 gaps</summary>
 
-3,023 tentative rulings. Earliest: 2022-02-02. Latest: 2026-05-04.
+3,023 tentative rulings across 269 hearing days (2024-03-19 → 2026-05-04).
 
-### Gaps (11)
+### Coverage
 
-- 2022-06-29 → 2022-09-21
+- **Hearing days with data:** 269 of 522 weekdays in range (51.5%)
+- **Days scanned:** 778 (including days the court posted no rulings)
+- **Earliest harvested:** 2022-02-02
+- **Latest harvested:** 2026-05-04 (same as last hearing day)
+
+### Gaps (6)
+
+- 2022-07-05 → 2022-09-21
 - 2022-11-14 → 2022-11-22
 - 2022-11-28 → 2022-12-27
 - 2023-03-14 → 2023-06-02
 - 2023-06-14
-- 2023-08-14 → 2024-03-13
-- 2024-03-15
-- 2024-03-20
-- 2024-03-25
-- 2024-03-27
-- 2024-03-29 → 2024-04-02
+- 2023-08-14 → 2024-02-13
 
 </details>
 <details>
-<summary><strong>Department 302 — Civil Law & Motion</strong> &nbsp;·&nbsp; 60,472 rulings &nbsp;·&nbsp; Earliest: 2014-01-01 &nbsp;·&nbsp; Latest: 2026-05-04 &nbsp;·&nbsp; 0 gaps</summary>
+<summary><strong>Department 302 — Civil Law & Motion</strong> &nbsp;·&nbsp; 60,472 rulings &nbsp;·&nbsp; 2014-01-02 → 2026-05-04 &nbsp;·&nbsp; 2,999 hearing days &nbsp;·&nbsp; 0 gaps</summary>
 
-60,472 tentative rulings. Earliest: 2014-01-01. Latest: 2026-05-04.
+60,472 tentative rulings across 2,999 hearing days (2014-01-02 → 2026-05-04).
+
+### Coverage
+
+- **Hearing days with data:** 2,999 of 3,038 weekdays in range (98.7%)
+- **Days scanned:** 3,052 (including days the court posted no rulings)
+- **Earliest harvested:** 2014-01-01
+- **Latest harvested:** 2026-05-04 (same as last hearing day)
 
 ### Gaps (0)
 
@@ -152,12 +168,20 @@ _None — all weekdays in range are accounted for._
 
 </details>
 <details>
-<summary><strong>Department 501 — Real Property Court</strong> &nbsp;·&nbsp; 15,832 rulings &nbsp;·&nbsp; Earliest: 2019-07-01 &nbsp;·&nbsp; Latest: 2026-05-04 &nbsp;·&nbsp; 0 gaps</summary>
+<summary><strong>Department 501 — Real Property Court</strong> &nbsp;·&nbsp; 15,832 rulings &nbsp;·&nbsp; 2019-07-01 → 2026-05-04 &nbsp;·&nbsp; 1,506 hearing days &nbsp;·&nbsp; 2 gaps</summary>
 
-15,832 tentative rulings. Earliest: 2019-07-01. Latest: 2026-05-04.
+15,832 tentative rulings across 1,506 hearing days (2019-07-01 → 2026-05-04).
 
-### Gaps (0)
+### Coverage
 
-_None — all weekdays in range are accounted for._
+- **Hearing days with data:** 1,506 of 1,682 weekdays in range (89.5%)
+- **Days scanned:** 1,689 (including days the court posted no rulings)
+- **Earliest harvested:** 2019-04-02
+- **Latest harvested:** 2026-05-04 (same as last hearing day)
+
+### Gaps (2)
+
+- 2019-04-05 → 2019-04-09
+- 2019-04-16 → 2019-06-28
 
 </details>

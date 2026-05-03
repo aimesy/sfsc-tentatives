@@ -84,9 +84,34 @@ function parseDate(str) {
 // flows in one popup session don't each pay a scrape round-trip.
 let _detectedDept = null;
 
+// Tab → last successfully-detected dept, persisted across popup opens and
+// service-worker restarts. After a stop/CAPTCHA cycle the SFTC tab can
+// land in a state where content.js can't read the dept (no h4, cleared
+// form, post-Cloudflare redirect), and the old code silently fell back
+// to '302' — which is how a Dept 301 scan ended up scraping into Dept
+// 302's raw folder. We now prefer a previously-known dept for the same
+// tab over the '302' default.
+const LAST_DEPT_KEY = '_lastDeptByTab';
+
+async function _getCachedDeptForTab(tabId) {
+  if (tabId == null) return null;
+  const all = await chrome.storage.local.get(LAST_DEPT_KEY);
+  return all[LAST_DEPT_KEY]?.[tabId] || null;
+}
+
+async function _saveCachedDeptForTab(tabId, dept) {
+  if (tabId == null || !dept) return;
+  const all = await chrome.storage.local.get(LAST_DEPT_KEY);
+  const map = all[LAST_DEPT_KEY] || {};
+  if (map[tabId] === String(dept)) return;
+  map[tabId] = String(dept);
+  await chrome.storage.local.set({ [LAST_DEPT_KEY]: map });
+}
+
 async function detectDepartment() {
   if (_detectedDept) return _detectedDept;
   const tab = await getActiveSftcTab();
+  const tabId = tab?.id ?? null;
   if (tab?.url?.includes('webapps.sftc.org')) {
     try {
       const results = await new Promise(resolve =>
@@ -96,9 +121,21 @@ async function detectDepartment() {
       );
       if (results?.department) {
         _detectedDept = String(results.department);
+        // Persist so a future popup open against this tab — even after
+        // the SFTC page enters a degraded state — can recover the dept.
+        _saveCachedDeptForTab(tabId, _detectedDept).catch(() => {});
         return _detectedDept;
       }
     } catch (_) {}
+  }
+  // Live detection failed (or returned no dept). Prefer the last value we
+  // saw for this specific tab over the generic '302' default — it's almost
+  // always right, and when it isn't the user can simply navigate to the
+  // intended SFSC page and a fresh scrape will overwrite the cache.
+  const cached = await _getCachedDeptForTab(tabId);
+  if (cached) {
+    _detectedDept = cached;
+    return cached;
   }
   return '302';
 }
@@ -543,18 +580,16 @@ function updateBulkStatus(job) {
   } else if (!job.running && job.pausedForSession) {
     // SFTC either returned the "session expired" page or Cloudflare hit us
     // with a CAPTCHA challenge. Either way we've auto-reloaded the tab so
-    // the user is now staring at the SFTC login / Cloudflare interstitial;
-    // once they solve it (and the search page comes back), Resume picks up
-    // at the same date that triggered the pause.
+    // the user is now staring at the SFTC login / Cloudflare interstitial.
+    // The background SW now auto-resumes as soon as the page is back to
+    // normal (chrome.tabs.onUpdated event-driven, with a 1-min poll
+    // backstop), so the Resume button is just a manual override.
     const reason = job.pauseReason === 'captcha'
       ? 'Cloudflare CAPTCHA challenge'
       : 'Session expired';
-    const action = job.pauseReason === 'captcha'
-      ? 'Solve the CAPTCHA in the SFTC tab, then click Resume.'
-      : 'Solve the Cloudflare CAPTCHA in the SFTC tab, then click Resume.';
     setStatus(
       `${reason} at ${job.index + 1}/${job.dates?.length} (${job.currentDate || '…'}). ` +
-      `${action} ` +
+      `Solve the challenge in the SFTC tab — the run resumes automatically once the page is back. ` +
       `(${job.committed} committed, ${job.skipped} skipped, ${job.errors} err so far)`,
       'warn'
     );
@@ -584,18 +619,82 @@ function updateBulkStatus(job) {
   }
 }
 
-// Keep popup in sync with background job even while open. Each popup only
-// renders its own tab's slice of the per-tab _bulkJobs map; a job change in
-// some other tab is not surfaced here (that other tab's popup, if open, has
-// its own listener with its own tabId).
+// Keep popup in sync with background job even while open. The status
+// strip up top is THIS tab's slice of _bulkJobs; the all-scans panel
+// below renders every other tab's job so the user can monitor parallel
+// scrapes from a single popup without juggling tabs.
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area !== 'local' || !changes._bulkJobs || currentTabId == null) return;
-  const before = changes._bulkJobs.oldValue?.[currentTabId];
-  const after  = changes._bulkJobs.newValue?.[currentTabId];
-  // Only re-render when the slice for THIS tab actually changed; avoids
-  // pointless redraws when a sibling tab's job mutates.
-  if (JSON.stringify(before) === JSON.stringify(after)) return;
-  updateBulkStatus(after);
+  if (area !== 'local' || !changes._bulkJobs) return;
+  const newAll = changes._bulkJobs.newValue || {};
+  if (currentTabId != null) {
+    const before = changes._bulkJobs.oldValue?.[currentTabId];
+    const after  = newAll[currentTabId];
+    if (JSON.stringify(before) !== JSON.stringify(after)) updateBulkStatus(after);
+  }
+  renderAllScans(newAll);
+});
+
+function renderAllScans(jobs) {
+  const container = $('all-scans');
+  const list      = $('all-scans-list');
+  if (!container || !list) return;
+  // Filter to active or recently-paused jobs from OTHER tabs. A "Done" job
+  // from a different tab isn't useful here — the user won't act on it from
+  // this popup, and it'd just clutter the panel.
+  const entries = Object.entries(jobs || {})
+    .filter(([tabId, job]) => {
+      if (Number(tabId) === currentTabId) return false;
+      if (!job) return false;
+      return job.running || job.pausedForSession || (job.fatalError && !job.done);
+    });
+  if (!entries.length) {
+    container.style.display = 'none';
+    list.innerHTML = '';
+    return;
+  }
+  container.style.display = 'block';
+  list.innerHTML = entries.map(([tabId, job]) => {
+    const total   = job.dates?.length || 0;
+    const idx     = job.index || 0;
+    const pct     = total ? Math.round(idx / total * 100) : 0;
+    const dept    = job.department ? `Dept ${esc(job.department)}` : 'Dept ?';
+    const counts  = `${job.committed || 0}✓ ${job.skipped || 0}↷ ${job.errors || 0}✗`;
+    let stateLabel, stateColor;
+    if (job.fatalError) {
+      stateLabel = 'fatal';
+      stateColor = '#c0392b';
+    } else if (job.pausedForSession) {
+      stateLabel = job.pauseReason === 'captcha' ? 'CAPTCHA' : 'session';
+      stateColor = '#b8860b';
+    } else if (job.running) {
+      stateLabel = `${pct}%`;
+      stateColor = '#2e6da4';
+    } else {
+      stateLabel = 'idle';
+      stateColor = '#888';
+    }
+    const cur = job.currentDate ? esc(job.currentDate) : '…';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.2rem 0;border-bottom:1px dashed #e8eef8;gap:0.4rem">
+      <div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+        <strong>${dept}</strong> · ${idx}/${total} · ${cur}
+        <div style="font-size:0.68rem;color:#666">${counts}</div>
+      </div>
+      <span style="color:${stateColor};font-weight:600;font-size:0.7rem">${stateLabel}</span>
+    </div>`;
+  }).join('');
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"]/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;',
+  }[c]));
+}
+
+// Initial render of the all-scans panel — pull the full _bulkJobs map
+// once at popup boot so the user sees in-flight runs immediately even if
+// nothing has changed in the brief window since the popup opened.
+chrome.storage.local.get('_bulkJobs').then(({ _bulkJobs }) => {
+  renderAllScans(_bulkJobs || {});
 });
 
 // ── Bulk Scrape ───────────────────────────────────────────────────────────────

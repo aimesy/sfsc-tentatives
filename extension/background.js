@@ -30,13 +30,20 @@ chrome.runtime.onMessage.addListener((msg, _sender, respond) => {
 // Drop a tab's job state when the tab itself goes away — otherwise we'd
 // accumulate stale per-tab entries in storage forever. Also release any
 // in-flight date claims this tab held so sibling tabs aren't permanently
-// locked out of those dates.
+// locked out of those dates, and forget the per-tab dept cache (a future
+// tab assigned the same id is presumably for a different page).
 chrome.tabs.onRemoved.addListener(async (tabId) => {
   await chrome.alarms.clear(bulkAlarmName(tabId));
+  await chrome.alarms.clear(captchaPollAlarmName(tabId));
   const all = await readAllJobs();
   if (all[tabId]) {
     delete all[tabId];
     await chrome.storage.local.set({ _bulkJobs: all });
+  }
+  const { _lastDeptByTab = {} } = await chrome.storage.local.get('_lastDeptByTab');
+  if (_lastDeptByTab && _lastDeptByTab[tabId]) {
+    delete _lastDeptByTab[tabId];
+    await chrome.storage.local.set({ _lastDeptByTab });
   }
   await releaseAllForTab(tabId);
 });
@@ -531,7 +538,19 @@ async function commitBatchToGitHub({ token, owner, repo, branch, items }) {
 const BULK_FLUSH_EVERY = 25;
 
 const BULK_ALARM_PREFIX = 'sfsc-bulk-next:';
-function bulkAlarmName(tabId) { return `${BULK_ALARM_PREFIX}${tabId}`; }
+const CAPTCHA_POLL_PREFIX = 'sfsc-captcha-check:';
+// Chrome enforces a 1-minute floor on periodic alarms in production
+// extensions; that's also the lowest period we want anyway. The primary
+// auto-resume signal is event-driven (chrome.tabs.onUpdated, fired the
+// instant Cloudflare redirects after the user solves the challenge).
+// The alarm exists only as a backstop for the rarer case where the
+// CAPTCHA clears in-place without triggering a navigation — a fast
+// poll cadence would burn SW wakeups for no benefit.
+const CAPTCHA_POLL_PERIOD_MIN = 1;
+
+function bulkAlarmName(tabId)        { return `${BULK_ALARM_PREFIX}${tabId}`; }
+function captchaPollAlarmName(tabId) { return `${CAPTCHA_POLL_PREFIX}${tabId}`; }
+
 function tabIdFromAlarm(name) {
   if (!name?.startsWith(BULK_ALARM_PREFIX)) return null;
   const n = parseInt(name.slice(BULK_ALARM_PREFIX.length), 10);
@@ -539,18 +558,28 @@ function tabIdFromAlarm(name) {
 }
 
 chrome.alarms.onAlarm.addListener(alarm => {
-  const tabId = tabIdFromAlarm(alarm.name);
-  if (tabId != null) bulkStep(tabId);
+  const bulkTab = tabIdFromAlarm(alarm.name);
+  if (bulkTab != null) { bulkStep(bulkTab); return; }
+  if (alarm.name?.startsWith(CAPTCHA_POLL_PREFIX)) {
+    const n = parseInt(alarm.name.slice(CAPTCHA_POLL_PREFIX.length), 10);
+    if (Number.isFinite(n)) maybeAutoResumeFromPause(n).catch(() => {});
+  }
 });
 
-// When an SFTC tab finishes loading after a form-submit navigation,
-// resume scraping immediately rather than waiting for the next alarm.
-// Each tab is matched to its own job state.
+// When an SFTC tab finishes loading, re-enter the appropriate path:
+//   • running + waitingForTab → resume the scrape (form-submit navigation
+//     completed and we should now read the result page).
+//   • paused for session / captcha → check whether the page is back to
+//     normal; if Cloudflare cleared the user, auto-resume the run with
+//     no further click required. Without this the user had to babysit
+//     the popup and click Resume every time, which is exactly the kind
+//     of context-switch the run was supposed to avoid.
 chrome.tabs.onUpdated.addListener(async (tabId, info) => {
   if (info.status !== 'complete') return;
   const job = await readJob(tabId);
-  if (!job?.running || !job.waitingForTab) return;
-  bulkScrapeAfterLoad(job);
+  if (!job) return;
+  if (job.running && job.waitingForTab) { bulkScrapeAfterLoad(job); return; }
+  if (job.pausedForSession) maybeAutoResumeFromPause(tabId).catch(() => {});
 });
 
 async function readAllJobs() {
@@ -624,6 +653,7 @@ async function startBulk({ dates, tabId, settings, waitMs, department }) {
 async function stopBulk({ tabId } = {}) {
   if (tabId == null) return { error: 'No tabId on stop-bulk request.' };
   await chrome.alarms.clear(bulkAlarmName(tabId));
+  await chrome.alarms.clear(captchaPollAlarmName(tabId));
   const current = await readJob(tabId);
   if (current) {
     await writeJob(tabId, { ...current, running: false, pausedForSession: false, pauseReason: null });
@@ -649,6 +679,9 @@ async function resumeBulk({ tabId }) {
     return { error: 'Nothing left to scrape.' };
   }
   await chrome.alarms.clear(bulkAlarmName(tabId));
+  // Resume cancels the captcha-poll alarm — no need to keep waking the SW
+  // once the run is moving again.
+  await chrome.alarms.clear(captchaPollAlarmName(tabId));
   const next = {
     ...current,
     runId: Date.now(),
@@ -808,6 +841,56 @@ async function bulkStep(tabId) {
   await bulkHandleResult(job, date, result);
 }
 
+// Probe a paused-for-session SFTC tab to see if the user has cleared the
+// CAPTCHA. If the page now scrapes cleanly (no captcha / no expired
+// session) AND is back on a normal results page (or at least one with
+// the date input, meaning the form is interactive), auto-resume the
+// paused run from the same date that triggered the pause. Called from
+// chrome.tabs.onUpdated and from the periodic captcha-poll alarm.
+//
+// Re-entrancy: multiple onUpdated events can fire as Cloudflare redirects
+// chain through their challenge platform. We early-return if the job is
+// no longer paused, so duplicate calls are harmless.
+async function maybeAutoResumeFromPause(tabId) {
+  const job = await readJob(tabId);
+  if (!job || job.running || !job.pausedForSession) {
+    // Job is either gone, already running, or no longer paused — nothing
+    // to do. Clear the poll alarm so we stop wasting SW wakeups.
+    await chrome.alarms.clear(captchaPollAlarmName(tabId));
+    return;
+  }
+
+  let probe;
+  try {
+    await chrome.scripting.executeScript({ target: { tabId }, files: ['content.js'] });
+    probe = await new Promise(resolve =>
+      chrome.tabs.sendMessage(tabId, { action: 'scrape' }, r =>
+        resolve(chrome.runtime.lastError ? null : r)
+      )
+    );
+  } catch (_) {
+    // Tab gone, content script can't load — bail; the next onUpdated or
+    // poll will re-attempt.
+    return;
+  }
+
+  if (!probe || probe.captchaChallenge || probe.sessionExpired) {
+    // Still blocked. The next onUpdated (or the next poll tick) will check
+    // again — keep the alarm running.
+    return;
+  }
+  // 'No results block found' is fine here: the user may not have re-run a
+  // search yet, but the page is interactive, so we can resume. The very
+  // next bulkStep will fillAndScrape with the next pending date.
+  // Anything else (a normal scrape result with rulings) is also fine.
+
+  // Auto-resume the same way the user clicking "Resume after CAPTCHA"
+  // would. Clear the poll alarm first so the resumed run isn't woken
+  // again by a stale alarm tick.
+  await chrome.alarms.clear(captchaPollAlarmName(tabId));
+  await resumeBulk({ tabId });
+}
+
 async function bulkScrapeAfterLoad(job) {
   if (!await injectContentScript(job)) return;
   await new Promise(r => setTimeout(r, 200));
@@ -918,6 +1001,17 @@ async function bulkHandleResult(job, date, data) {
     // await it — the reload tears down the message channel, and the popup's
     // status listener already shows the paused-for-session prompt.
     chrome.tabs.sendMessage(job.tabId, { action: 'restart-session' }).catch(() => {});
+    // Schedule a low-frequency backstop poll. The main auto-resume path
+    // is the chrome.tabs.onUpdated listener — Cloudflare's redirect after
+    // a successful challenge fires onUpdated with status=complete almost
+    // immediately. The alarm only catches the edge case where the CAPTCHA
+    // clears without a navigation (e.g. JS-only Turnstile widget). 1
+    // minute is the minimum periodic alarm Chrome allows in production
+    // and is plenty often given the event-driven primary path.
+    chrome.alarms.create(captchaPollAlarmName(job.tabId), {
+      delayInMinutes:  CAPTCHA_POLL_PERIOD_MIN,
+      periodInMinutes: CAPTCHA_POLL_PERIOD_MIN,
+    });
     return;
   }
 

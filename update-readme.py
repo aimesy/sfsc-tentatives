@@ -214,6 +214,14 @@ def scraped_dates_for_dept(dept: str) -> set[str]:
 def dept_section(dept: str, df_dept: pd.DataFrame) -> str:
     name    = DEPT_NAMES.get(dept, f'Department {dept}')
     count   = len(df_dept)
+    # `dates`: hearing dates that produced rulings — the meaningful coverage
+    #          for someone searching the archive ("days with data").
+    # `scraped`: dates we have a raw scrape file for — includes days the
+    #            court posted nothing, which still close gaps but aren't
+    #            useful as search anchors.
+    # The collapsed summary leads with first/last day-with-data because
+    # that's what users actually care about; the harvest extents and gap
+    # mechanics live inside as an aside.
     dates   = set(df_dept['court_date'].unique())
     scraped = scraped_dates_for_dept(dept)
     checked = dates | scraped
@@ -221,25 +229,46 @@ def dept_section(dept: str, df_dept: pd.DataFrame) -> str:
     if not checked:
         return ''
 
-    min_d        = min(checked)
-    max_checked  = max(checked)
-    latest_data  = max(dates) if dates else max_checked
+    earliest_harvest = min(checked)
+    latest_harvest   = max(checked)
+    earliest_data    = min(dates) if dates else earliest_harvest
+    latest_data      = max(dates) if dates else latest_harvest
+    n_days_data      = len(dates)
+    n_days_scanned   = len(checked)
 
-    holidays = ca_court_holidays(int(min_d[:4]), int(max_checked[:4]))
-    gaps     = find_gap_runs(min_d, max_checked, checked, holidays)
+    holidays = ca_court_holidays(int(earliest_harvest[:4]), int(latest_harvest[:4]))
+    gaps     = find_gap_runs(earliest_harvest, latest_harvest, checked, holidays)
     n_gaps   = len(gaps)
+
+    # Total weekdays (excluding court holidays) inside the harvest window —
+    # the denominator for "X of Y weekdays scanned".
+    holidays_within_data = ca_court_holidays(int(earliest_data[:4]), int(latest_data[:4]))
+    weekdays_in_data_range = sum(
+        1 for d in pd.date_range(earliest_data, latest_data)
+        if d.weekday() < 5 and d.strftime('%Y-%m-%d') not in holidays_within_data
+    ) if dates else 0
 
     # Markdown bold (`**...**`) inside a <summary> tag is rendered literally
     # by GitHub — the asterisks show up as text. Use <strong> so the
     # department name renders bold in the collapsed header.
-    summary = (f'<strong>{name}</strong> &nbsp;·&nbsp; {count:,} rulings'
-               f' &nbsp;·&nbsp; Earliest: {min_d}'
-               f' &nbsp;·&nbsp; Latest: {latest_data}'
+    summary = (f'<strong>{name}</strong>'
+               f' &nbsp;·&nbsp; {count:,} rulings'
+               f' &nbsp;·&nbsp; {earliest_data} → {latest_data}'
+               f' &nbsp;·&nbsp; {n_days_data:,} hearing day{"s" if n_days_data != 1 else ""}'
                f' &nbsp;·&nbsp; {n_gaps} gap{"s" if n_gaps != 1 else ""}')
+
+    coverage_pct = (n_days_data / weekdays_in_data_range * 100) if weekdays_in_data_range else 0
 
     body = f"""\
 
-{count:,} tentative rulings. Earliest: {min_d}. Latest: {latest_data}.
+{count:,} tentative rulings across {n_days_data:,} hearing day{"s" if n_days_data != 1 else ""} ({earliest_data} → {latest_data}).
+
+### Coverage
+
+- **Hearing days with data:** {n_days_data:,} of {weekdays_in_data_range:,} weekdays in range ({coverage_pct:.1f}%)
+- **Days scanned:** {n_days_scanned:,} (including days the court posted no rulings)
+- **Earliest harvested:** {earliest_harvest}{' (same as first hearing day)' if earliest_harvest == earliest_data else ''}
+- **Latest harvested:** {latest_harvest}{' (same as last hearing day)' if latest_harvest == latest_data else ''}
 
 ### Gaps ({n_gaps})
 
