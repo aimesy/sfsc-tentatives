@@ -123,9 +123,9 @@ python update-readme.py
 ## Departments
 
 <details>
-<summary>**Department 204 — Probate** &nbsp;·&nbsp; 14,817 rulings &nbsp;·&nbsp; Latest: 2026-02-19 &nbsp;·&nbsp; 31 gaps</summary>
+<summary>**Department 204 — Probate** &nbsp;·&nbsp; 15,153 rulings &nbsp;·&nbsp; Latest: 2026-02-19 &nbsp;·&nbsp; 31 gaps</summary>
 
-14,817 tentative rulings. Latest: 2026-02-19.
+15,153 tentative rulings. Latest: 2026-02-19.
 
 ### Gaps (31)
 
