@@ -481,11 +481,38 @@
     .col-date    { width: 95px; white-space: nowrap; }
     .col-time    { width: 65px; white-space: nowrap; }
     .col-case    { width: 110px; font-family: monospace; }
+    .col-mcat    { width: 110px; }
     .col-mtype   { width: 200px; }
     .col-outcome { width: 130px; }
     .col-judge   { width: 165px; }
     .col-is-examiner { width: 90px; text-align: center; font-size: 0.78rem; color: #6b5300; }
-    .col-is-discovery { width: 90px; text-align: center; font-size: 0.78rem; color: #1a3a5c; }
+    /* Category pill — reuses the motion-type pill styling but with a
+       distinct accent so the broader bucket ("Discovery", "Pleadings",
+       "Dispositive", etc.) reads at a glance. */
+    .mcat-pill {
+      display: inline-block; padding: 0.1rem 0.45rem;
+      border-radius: 9px; font-size: 0.7rem; font-weight: 600;
+      background: #eef3fb; color: #1a3a5c; border: 1px solid #c8d8f0;
+      white-space: nowrap;
+    }
+    .mcat-Discovery   { background: #fff3cd; color: #7a5c00; border-color: #e8c060; }
+    .mcat-Dispositive { background: #f3e3ff; color: #4c1d8a; border-color: #c8a8e0; }
+    .mcat-Pleadings   { background: #e3f3e3; color: #1a5c2a; border-color: #b0d8b0; }
+    .mcat-Injunctive  { background: #ffe3e3; color: #7a2020; border-color: #e8a0a0; }
+    .mcat-Post-Trial  { background: #ffeacd; color: #7a4500; border-color: #e8b870; }
+    .mcat-Post-Judgment { background: #e3eaff; color: #1a3a8a; border-color: #a8b8e0; }
+    .mcat-Settlement  { background: #d8f0e8; color: #1a5c5c; border-color: #a0d0c0; }
+    .mcat-Arbitration { background: #f0e8d8; color: #5c4500; border-color: #c0b080; }
+    .mcat-Real.Estate { background: #d8e8f0; color: #1a4a5c; border-color: #a0c0d0; }
+    .mcat-Real-Estate { background: #d8e8f0; color: #1a4a5c; border-color: #a0c0d0; }
+    .mcat-Class.Action { background: #f0d8e8; color: #5c1a4a; border-color: #d0a0c0; }
+    .mcat-Class-Action { background: #f0d8e8; color: #5c1a4a; border-color: #d0a0c0; }
+    .mcat-Writ        { background: #e0e0f0; color: #2a2a5c; border-color: #b0b0d0; }
+    .mcat-Sanctions   { background: #ffe0e0; color: #5c1a1a; border-color: #d0a0a0; }
+    .mcat-Fees       { background: #f0f0d8; color: #5c5c1a; border-color: #d0d0a0; }
+    .mcat-Procedural  { background: #f0f0f0; color: #555; border-color: #ccc; }
+    .mcat-Probate     { background: #ffe8d8; color: #5c3a1a; border-color: #d0b090; }
+    .mcat-Other       { background: #f4f4f4; color: #888; border-color: #d0d0d0; }
     .col-ruling  { color: #666; }
     .col-hidden  { display: none !important; }
     .examiner-badge {
@@ -643,9 +670,9 @@
 <div id="error-bar"></div>
 
 <div class="toolbar" id="toolbar" style="display:none">
-  <span class="chip" data-tip="Free-text search: matches case number, party names, the ruling text, and the motion caption.">
+  <span class="chip" data-tip="Free-text search across case number, party names, ruling text, and motion caption. Wildcards: * matches any sequence (e.g. Smith*Jones), ? matches a single character.">
     <label for="search">Search</label>
-    <input type="search" id="search" placeholder="case #, title, ruling…">
+    <input type="search" id="search" placeholder="case #, title, ruling…  (* and ? wildcards)">
   </span>
   <span class="chip" data-tip="Earliest hearing date to include.">
     <label for="date-from">From</label>
@@ -655,19 +682,30 @@
     <label for="date-to">To</label>
     <input type="date" id="date-to">
   </span>
-  <span class="chip" data-tip="Restrict to one department (e.g. 302 = Civil Law and Motion, 304 = Asbestos Law and Motion).">
+  <!--
+    Dept / Judge / Motion-type / Subtype dropdowns are kept around (and
+    populated by refreshAuxDropdowns) so saveState/restoreState URL
+    params (`?dept=302`, `?judge=Karnow`, `?mtype=Demurrer`,
+    `?msub=Production`) still round-trip and the existing filter
+    machinery keeps working — but they're hidden in the toolbar UI
+    because per-column sorting and the ▾ filter pop on each column
+    header already cover the same facets. The chips duplicated work
+    and the "All" label looked like a global filter even after a
+    column filter was applied, making the toolbar state hard to read.
+  -->
+  <span class="chip" id="dept-chip"  style="display:none">
     <label for="dept">Dept</label>
     <select id="dept"><option value="">All</option></select>
   </span>
-  <span class="chip" data-tip="Restrict to one judge. Number in parentheses is the count of rulings by that judge in the loaded data.">
+  <span class="chip" id="judge-chip" style="display:none">
     <label for="judge">Judge</label>
     <select id="judge"><option value="">All</option></select>
   </span>
-  <span class="chip" data-tip="Restrict to one auto-classified motion type (Demurrer, Summary Judgment, Compel Discovery, etc.).">
+  <span class="chip" id="mtype-chip" style="display:none">
     <label for="mtype">Motion type</label>
     <select id="mtype"><option value="">All</option></select>
   </span>
-  <span class="chip" id="msub-chip" style="display:none" data-tip="Further narrow by subtype (e.g. for Compel Discovery: Production / Deposition / Interrogatories / etc.).">
+  <span class="chip" id="msub-chip"  style="display:none">
     <label for="msub">Subtype</label>
     <select id="msub"><option value="">All</option></select>
   </span>
@@ -740,6 +778,15 @@
         <th class="col-title   sortable" data-col="case_title">
           <span class="col-head"><span class="col-label">Case Title</span></span>
         </th>
+        <!-- Category column: sortable + filterable. Both go through the
+             JS post-pass machinery (motion_category is derived from
+             calendar_matter via the motion-type classifier, so SQL can't
+             ORDER BY it directly). buildWhere keeps the filter; sortBy
+             in runQuery falls back to a post-fetch sort when sortCol
+             names a derived column. Same pattern as outcome's filter. -->
+        <th class="col-mcat    sortable" data-col="motion_category">
+          <span class="col-head"><span class="col-label">Category</span><button class="col-filter-btn" data-filter-col="motion_category" data-filter-kind="value" title="Filter by Category">▾</button></span>
+        </th>
         <th class="col-mtype">
           <span class="col-head"><span class="col-label">Motion Type</span><button class="col-filter-btn" data-filter-col="motion_type" data-filter-kind="value" title="Filter by Motion Type">▾</button></span>
         </th>
@@ -754,9 +801,6 @@
         </th>
         <th class="col-is-examiner">
           <span class="col-head"><span class="col-label">Examiner?</span></span>
-        </th>
-        <th class="col-is-discovery">
-          <span class="col-head"><span class="col-label">Discovery?</span></span>
         </th>
         <th class="col-ruling">
           <span class="col-head"><span class="col-label">Ruling (excerpt)</span></span>
@@ -799,6 +843,123 @@
 <script type="module">
 import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm/+esm';
 import Chart from 'https://cdn.jsdelivr.net/npm/chart.js@4/auto/+esm';
+
+// ─── Error reporting ────────────────────────────────────────────────────────
+// Every uncaught error and unhandled promise rejection lands in localStorage
+// (capped at 50 entries; oldest evicted) and surfaces as a small bar at the
+// bottom of the page. Click "Report" to open a pre-filled GitHub issue —
+// that's our "error handling system" for a no-backend static site. The
+// floor for "automatic" is then "captured the moment it happens, one click
+// to file" rather than "silently logged to the user's console".
+//
+// We do this BEFORE any other JS runs so a startup error (DuckDB load,
+// Chart.js parse, etc.) is captured, not lost to a still-empty page.
+const ERROR_LOG_KEY = 'sfsc.errorLog';
+const ERROR_LOG_MAX = 50;
+const ERROR_REPO    = 'aimesy/sfsc-tentatives';
+
+function _readErrorLog() {
+  try { return JSON.parse(localStorage.getItem(ERROR_LOG_KEY) || '[]'); }
+  catch { return []; }
+}
+function _writeErrorLog(arr) {
+  try { localStorage.setItem(ERROR_LOG_KEY, JSON.stringify(arr.slice(-ERROR_LOG_MAX))); }
+  catch { /* quota exceeded — drop silently rather than blow up */ }
+}
+function _logError(kind, payload) {
+  const entry = {
+    t:        Date.now(),
+    iso:      new Date().toISOString(),
+    kind,
+    message:  payload.message || String(payload),
+    stack:    payload.stack || null,
+    src:      payload.filename || null,
+    line:     payload.lineno || null,
+    col:      payload.colno || null,
+    href:     location.href,
+    ua:       navigator.userAgent,
+  };
+  const log = _readErrorLog();
+  log.push(entry);
+  _writeErrorLog(log);
+  _renderErrorBanner();
+  // Also surface in the console for live debugging.
+  console.error(`[sfsc:${kind}]`, payload);
+}
+function _renderErrorBanner() {
+  const log = _readErrorLog();
+  let bar = document.getElementById('error-banner');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'error-banner';
+    bar.style.cssText = `
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 10000;
+      background: #fff0f0; border-top: 1px solid #f5c6c6;
+      color: #7a2020; font-size: 0.78rem; padding: 0.4rem 1rem;
+      display: flex; align-items: center; gap: 0.6rem;
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.06);
+    `;
+    document.body.appendChild(bar);
+  }
+  if (!log.length) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  const last = log[log.length - 1];
+  const truncated = (last.message || '').slice(0, 160);
+  bar.innerHTML =
+    `<span style="font-weight:600">⚠ ${log.length} error${log.length !== 1 ? 's' : ''}</span>` +
+    `<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escapeHtml(last.message || '')}">${escapeHtml(truncated)}</span>` +
+    `<button id="err-report" style="padding:0.18rem 0.55rem;background:#7a2020;color:white;border:none;border-radius:3px;cursor:pointer;font-size:0.72rem;font-weight:600">Report</button>` +
+    `<button id="err-dismiss" style="padding:0.18rem 0.55rem;background:transparent;color:#7a2020;border:1px solid #d8a0a0;border-radius:3px;cursor:pointer;font-size:0.72rem">Dismiss</button>`;
+  document.getElementById('err-report').addEventListener('click', _fileErrorIssue);
+  document.getElementById('err-dismiss').addEventListener('click', () => {
+    _writeErrorLog([]);
+    _renderErrorBanner();
+  });
+}
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"]/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;',
+  }[c]));
+}
+function _fileErrorIssue() {
+  const log = _readErrorLog();
+  if (!log.length) return;
+  const recent = log.slice(-10).reverse();
+  const title = `Browser error: ${(recent[0].message || 'Unknown').slice(0, 60)}`;
+  const body =
+    `**Browser:** ${navigator.userAgent}\n` +
+    `**URL:** ${location.href}\n\n` +
+    `### Recent errors (${recent.length} of ${log.length})\n\n` +
+    recent.map(e =>
+      `- **${e.iso}** \`${e.kind}\`\n` +
+      `  ${e.message}\n` +
+      (e.src ? `  at ${e.src}:${e.line}:${e.col}\n` : '') +
+      (e.stack ? '  ```\n  ' + (e.stack.split('\n').slice(0, 8).join('\n  ')) + '\n  ```\n' : '')
+    ).join('\n');
+  const url = `https://github.com/${ERROR_REPO}/issues/new` +
+    `?title=${encodeURIComponent(title)}` +
+    `&body=${encodeURIComponent(body)}` +
+    `&labels=${encodeURIComponent('bug,auto-error-report')}`;
+  window.open(url, '_blank', 'noopener');
+}
+
+window.addEventListener('error', e => {
+  _logError('error', {
+    message:  e.message,
+    filename: e.filename, lineno: e.lineno, colno: e.colno,
+    stack:    e.error?.stack,
+  });
+});
+window.addEventListener('unhandledrejection', e => {
+  const r = e.reason;
+  _logError('unhandledrejection', {
+    message: (r && r.message) || String(r),
+    stack:   r && r.stack,
+  });
+});
+// Render any errors carried over from a previous session (e.g. the user
+// hit a startup crash, hard-refreshed, and wants to file the report).
+document.addEventListener('DOMContentLoaded', _renderErrorBanner);
 
 // ─── Browser-side enrichment: motion type/subtype, admin split, CourtCall ────
 
@@ -851,7 +1012,18 @@ const CIVIL_LAW_MOTION_RULES = [
   [t => /\breceiver\b/i.test(t), 'Receiver'],
   [t => /\bpreliminary injunction\b|\btemporary restraining order\b|\btro\b/i.test(t), 'Injunction / TRO'],
   [t => /\blis pendens\b|\bexpunge\b/i.test(t), 'Lis Pendens / Expunge'],
-  [t => /\breconsider(?:ation)?\b|\bnew trial\b/i.test(t), 'Reconsideration / New Trial'],
+  // New Trial and Reconsideration are distinct post-trial motions —
+  // CCP § 657 (new trial) addresses errors at the trial itself, CCP
+  // § 1008 (reconsideration) targets earlier rulings on motions, and
+  // they have different timing rules and standards. The earlier
+  // combined "Reconsideration / New Trial" entry made it impossible to
+  // study one without the other. Order matters: "new trial" must come
+  // first so a "motion for reconsideration of new trial denial" still
+  // routes to Reconsideration (the inner phrase that drives the
+  // motion). Plain "new trial" wins everywhere else.
+  [t => /\bnew trial\b/i.test(t) && !/\breconsider(?:ation)?\b/i.test(t),
+                                                                 'New Trial'],
+  [t => /\breconsider(?:ation)?\b/i.test(t),                     'Reconsideration'],
   [t => /\bclass certificat(?:ion|e)\b|\bcertify class\b|\bcertify a class\b/i.test(t), 'Class Certification'],
   [t => /\bintervene\b|\bintervention\b/i.test(t), 'Intervene'],
   [t => /\bleave to file\b|\bleave to amend\b|\bamend complaint\b|\bfile (?:an? )?amended\b/i.test(t),
@@ -911,6 +1083,115 @@ const MOTION_RULES_DEFAULT = CIVIL_LAW_MOTION_RULES;
 
 function rulesForDept(dept) {
   return MOTION_RULES_BY_DEPT[dept] || MOTION_RULES_DEFAULT;
+}
+
+// ─── Motion categories ──────────────────────────────────────────────────────
+// Coarse-grained taxonomy that groups every motion type into one of a
+// dozen-ish broader buckets. Replaces the earlier 🔍 Discovery flag with
+// a sortable column that surfaces the motion's strategic role rather
+// than just whether it's a discovery dispute.
+//
+// Grouping rationale:
+//   • Pleadings — challenges to the form/sufficiency of pleadings before
+//     merits-based adjudication. Quash service goes here (jurisdiction
+//     attack), so do leave-to-amend and venue motions.
+//   • Discovery — disputes over written discovery, depositions, and the
+//     mechanics of the discovery process.
+//   • Dispositive — motions that resolve a claim or the whole case on
+//     the merits (or strike-equivalent like Anti-SLAPP).
+//   • Injunctive — TROs, preliminary injunctions; equitable relief
+//     pending merits.
+//   • Post-Trial — challenges to a trial verdict or earlier ruling
+//     (new trial, reconsideration, set aside, vacate).
+//   • Post-Judgment — collection / enforcement post-judgment plus
+//     procedural moves on a final judgment.
+//   • Settlement — class-action approval, good-faith settlements,
+//     enforcement of settlement agreements.
+//   • Arbitration — compelling, confirming, vacating arb awards.
+//   • Real Estate — RP-specific writs and lien/sale motions (Dept 501
+//     and probate sale-of-real-property petitions).
+//   • Class Action — certification.
+//   • Writ — writ-of-mandate/prohibition petitions (CCP § 1085 / § 1094.5).
+//   • Sanctions — standalone sanctions motions (NOT discovery sanctions,
+//     which fall under Discovery via "Compel Discovery" → "Sanctions"
+//     subtype).
+//   • Fees & Costs — attorneys-fees, cost-bill motions.
+//   • Probate — accountings, letters, conservatorships, trustee
+//     petitions (Dept 204's vocabulary).
+//   • Procedural — everything else that's procedural plumbing
+//     (consolidate, sever, stay, OSC, intervene, sealing, etc.).
+//   • Other — Miscellaneous fallthrough.
+const MOTION_CATEGORY = {
+  'Special Motion to Strike (CCP 425.16/Anti-SLAPP)': 'Dispositive',
+  'Demurrer':                                          'Pleadings',
+  'Motion to Strike':                                  'Pleadings',
+  'Summary Judgment / Adjudication':                   'Dispositive',
+  'Judgment on the Pleadings':                         'Pleadings',
+  'Compel Arbitration':                                'Arbitration',
+  'Compel Discovery':                                  'Discovery',
+  'Quash Subpoena':                                    'Discovery',
+  'Quash Service / Jurisdiction':                      'Pleadings',
+  'Protective Order':                                  'Discovery',
+  'Deem RFAs Admitted':                                'Discovery',
+  'Sanctions':                                         'Sanctions',
+  'Attorney Fees / Costs':                             'Fees & Costs',
+  'Pro Hac Vice':                                      'Procedural',
+  'Counsel — Withdraw / Be Relieved':                  'Procedural',
+  'Set Aside / Vacate':                                'Post-Trial',
+  'Claim of Exemption':                                'Post-Judgment',
+  'Right to Attach':                                   'Post-Judgment',
+  'Order to Show Cause':                               'Procedural',
+  'Petition to Confirm Arbitration Award':             'Arbitration',
+  'Arbitration (other)':                               'Arbitration',
+  'Good Faith Settlement':                             'Settlement',
+  'Final Approval Hearing':                            'Settlement',
+  'Approve Settlement':                                'Settlement',
+  'Consolidate':                                       'Procedural',
+  'Sever / Bifurcate':                                 'Procedural',
+  'Forum Non Conveniens':                              'Pleadings',
+  'Stay':                                              'Procedural',
+  'Dismiss':                                           'Pleadings',
+  'Receiver':                                          'Procedural',
+  'Injunction / TRO':                                  'Injunctive',
+  'Lis Pendens / Expunge':                             'Real Estate',
+  'New Trial':                                         'Post-Trial',
+  'Reconsideration':                                   'Post-Trial',
+  'Class Certification':                               'Class Action',
+  'Intervene':                                         'Procedural',
+  'Leave to Amend / File':                             'Pleadings',
+  'Sale of Dwelling / Property':                       'Real Estate',
+  'Assignment Order':                                  'Post-Judgment',
+  'Renewal of Judgment':                               'Post-Judgment',
+  'Contempt':                                          'Post-Judgment',
+  'Continuance / Advance':                             'Procedural',
+  'Sealing':                                           'Procedural',
+  'Venue':                                             'Pleadings',
+  'Compliance Hearing':                                'Procedural',
+  'Writ of Mandate':                                   'Writ',
+  'Writ of Possession':                                'Real Estate',
+  'Enforce Settlement':                                'Settlement',
+  'Entry of Judgment':                                 'Post-Judgment',
+  'Structured Settlement Transfer':                    'Settlement',
+  // Probate (Dept 204)
+  'Accounting Petition':                               'Probate',
+  'Account / Status of Account':                       'Probate',
+  'Petition for Letters / Probate of Will':            'Probate',
+  'Spousal / Domestic Property Petition':              'Probate',
+  'Petition for Instructions':                         'Probate',
+  'Trustee Appointment / Removal':                     'Probate',
+  'Sale of Real Property':                             'Real Estate',
+  'Conservatorship / Guardianship':                    'Probate',
+  'Status / Compliance Hearing':                       'Procedural',
+  'Case Management':                                   'Procedural',
+  'Petition (other)':                                  'Probate',
+  // Fallthrough for any future motion type that's added without an
+  // explicit mapping — surfaces as "Other" rather than throwing.
+  'Miscellaneous':                                     'Other',
+};
+
+function motionCategory(motionType) {
+  if (!motionType) return 'Other';
+  return MOTION_CATEGORY[motionType] || 'Other';
 }
 
 function compelSubtype(t) {
@@ -1197,32 +1478,18 @@ function isExaminer(row) {
   return !!row && !!row.judge && EXAMINER_DEPTS.has(String(row.department));
 }
 
-// Discovery-motion tag — surfaces a 🔍 badge in the Motion Type cell and
-// drives the hidden "Discovery? (column)" Excel-style filter. Signals,
-// in order of confidence:
-//   1. Dept 301 — the Discovery department itself. Every ruling there
-//      is treated as discovery (the user confirmed "301 was always
-//      discovery; it only sometimes heard asbestos matters"). Rare
-//      non-discovery business calendared in 301 — CEQA, writs — is
-//      accepted as a known false positive in exchange for catching
-//      every genuine discovery motion without case-by-case classification.
-//   2. Auto-classified motion type matches a discovery-flavoured
-//      taxonomy entry — catches discovery motions calendared in any
-//      other department. Dept 304 used to also have a discovery
-//      sub-calendar branch here, but the user confirmed that
-//      sub-calendar isn't in use, so the only thing left for 304 is
-//      the motion-type heuristic that applies everywhere.
-const DISCOVERY_MOTION_TYPES = new Set([
-  'Compel Discovery',
-  'Quash Subpoena',
-  'Protective Order',
-  'Deem RFAs Admitted',
-]);
-function isDiscovery(row) {
-  if (!row) return false;
-  if (String(row.department) === '301') return true;
+// Motion-category lookup for a row. The category replaces the earlier
+// boolean "Discovery?" badge with a coarse-grained taxonomy bucket
+// surfaced as a sortable Category column. Every Dept 301 (Discovery)
+// row defaults to "Discovery" regardless of motion-type classifier
+// output — the dept is named for it, and the user confirmed that the
+// rare non-discovery calendared business there (CEQA, writs) is
+// acceptably mis-bucketed.
+function rowCategory(row) {
+  if (!row) return 'Other';
+  if (String(row.department) === '301') return 'Discovery';
   const m = lookupMotion(row.department, row.calendar_matter);
-  return DISCOVERY_MOTION_TYPES.has(m.type);
+  return motionCategory(m.type);
 }
 
 // ─── Column visibility ──────────────────────────────────────────────────────
@@ -1236,12 +1503,17 @@ const COLUMN_DEFS = [
   { key: 'hearing_time',    cls: 'col-time',         label: 'Time' },
   { key: 'case_number',     cls: 'col-case',         label: 'Case #' },
   { key: 'case_title',      cls: 'col-title',        label: 'Case Title' },
+  // Motion category sits between Motion Type and Outcome — a sortable,
+  // filterable column showing the coarse-grained bucket (Discovery,
+  // Dispositive, Pleadings, Injunctive, Post-Trial, Real Estate, etc.)
+  // that the auto-classified motion type rolls up into. Replaces the
+  // older 🔍 Discovery badge.
+  { key: 'motion_category', cls: 'col-mcat',         label: 'Category' },
   { key: 'motion_type',     cls: 'col-mtype',        label: 'Motion Type' },
   { key: 'outcome',         cls: 'col-outcome',      label: 'Outcome' },
   { key: 'calendar_matter', cls: 'col-motion',       label: 'Motion Caption' },
   { key: 'judge',           cls: 'col-judge',        label: 'Judge / Examiner' },
   { key: 'is_examiner',     cls: 'col-is-examiner',  label: 'Examiner? (column)', defaultHidden: true },
-  { key: 'is_discovery',    cls: 'col-is-discovery', label: 'Discovery? (column)', defaultHidden: true },
   { key: 'ruling',          cls: 'col-ruling',       label: 'Ruling (excerpt)' },
 ];
 const COL_VIS_LS_KEY = 'sfsc.columnVisibility';
@@ -1297,6 +1569,7 @@ const FILTER_COLS = [
   ['court_date',      'Court Date',       ['on', 'before', 'after', 'between']],
   ['hearing_time',    'Hearing Time',     ['is', 'is not', 'contains']],
   ['calendar_matter', 'Motion Caption',   ['contains', 'is', 'is not']],
+  ['motion_category', 'Category',         ['is', 'is not']],
   ['motion_type',     'Motion Type',      ['is', 'is not']],
   ['motion_subtype',  'Motion Subtype',   ['is', 'is not', 'contains']],
   ['judge',           'Judge',            ['is', 'is not', 'contains']],
@@ -1835,8 +2108,39 @@ function calendarMattersForSubtype(type, sub) {
   return [...out];
 }
 
+// Translate user-facing wildcards (`*` zero-or-more, `?` exactly one)
+// into ILIKE wildcards (`%` and `_`). Bare-text searches with no
+// wildcard get implicit `%…%` wrapping, the way Search has always
+// behaved — wildcards are a precision tool, not a substitute for the
+// default substring match. SQL-special characters that could otherwise
+// inject ("'", `\`) are still escaped via escapeSql before this step,
+// so the only thing to handle here is the *→% / ?→_ translation and
+// keeping literal % / _ from the user's query escaped via the ILIKE
+// `\` escape (which DuckDB doesn't honour by default — we pre-replace
+// `%` and `_` with characters that won't match anything common: a
+// trailing `%` is fine because it'd be a no-op anyway in ILIKE, but
+// we don't want the user's literal "%" to act as a wildcard mid-term).
+//
+// Behaviour summary:
+//   • "Smith"      → ILIKE '%Smith%'                  (substring, unchanged)
+//   • "Smith*"     → ILIKE 'Smith%'                   (anchored prefix)
+//   • "*Smith"     → ILIKE '%Smith'                   (anchored suffix)
+//   • "Smith*Jones"→ ILIKE 'Smith%Jones'              (full-control glob)
+//   • "Smit?"      → ILIKE 'Smit_'                    (single-char)
+//   • "100% off"   → literal "%" as text, not a wildcard
+function searchTermToIlike(raw) {
+  // Strip the user's literal % and _ — we don't want them to leak as
+  // wildcards. (DuckDB ILIKE ESCAPE is verbose and would still leave
+  // ambiguity around bare wildcards; replacing the literals is simpler
+  // and matches the intent of "I typed *, that's the wildcard".)
+  let q = raw.replace(/[%_]/g, ' ');
+  const hasWildcard = /[*?]/.test(q);
+  q = q.replace(/\*/g, '%').replace(/\?/g, '_');
+  return hasWildcard ? q : `%${q}%`;
+}
+
 function buildWhere() {
-  const q     = escapeSql(searchEl.value.trim());
+  const rawSearch = searchEl.value.trim();
   const from  = dateFrom.value, to = dateTo.value;
   const dept  = deptEl.value, judge = judgeEl.value;
   const mtype = mtypeEl.value, msub = msubEl.value;
@@ -1847,7 +2151,10 @@ function buildWhere() {
   // Judge dropdown values are canonical (JPT umbrella collapsed) so we
   // match against judge_canonical, not the raw judge field.
   if (judge) parts.push(`judge_canonical = '${escapeSql(judge)}'`);
-  if (q)     parts.push(`(case_number ILIKE '%${q}%' OR case_title ILIKE '%${q}%' OR ruling ILIKE '%${q}%' OR calendar_matter ILIKE '%${q}%')`);
+  if (rawSearch) {
+    const pattern = escapeSql(searchTermToIlike(rawSearch));
+    parts.push(`(case_number ILIKE '${pattern}' OR case_title ILIKE '${pattern}' OR ruling ILIKE '${pattern}' OR calendar_matter ILIKE '${pattern}')`);
+  }
   if (mtype) {
     const cms = msub ? calendarMattersForSubtype(mtype, msub) : calendarMattersForType(mtype);
     if (cms?.length) {
@@ -1877,7 +2184,7 @@ function columnFiltersToSql() {
   for (const col of Object.keys(columnFilters)) {
     const set = columnFilters[col];
     if (!(set instanceof Set) || set.size === 0) continue;
-    if (col === 'outcome') continue;          // post-filtered in JS
+    if (col === 'outcome' || col === 'motion_category') continue;  // post-filtered in JS
     if (col === 'motion_type') {
       // Resolve selected types → calendar_matters via MTYPE_CACHE.
       const cms = new Set();
@@ -1909,22 +2216,31 @@ function columnFiltersToSql() {
   return out;
 }
 
-// True if the row's derived outcome value passes the column filter on
-// `outcome` (if any). Combined with the existing outcomeFilters() check.
+// True if the row's derived values pass the column filters on `outcome`
+// and `motion_category` (both classifier-driven and so off-limits to
+// plain SQL — same JS post-pass treatment).
 function columnFilterMatches(row) {
-  const set = columnFilters['outcome'];
-  if (!(set instanceof Set) || set.size === 0) return true;
-  const sp = splitRuling(row.ruling, row.department);
-  const o  = lookupOutcome(sp.ruling).outcome || '';
-  return set.has(o);
+  const oset = columnFilters['outcome'];
+  if (oset instanceof Set && oset.size) {
+    const sp = splitRuling(row.ruling, row.department);
+    const o  = lookupOutcome(sp.ruling).outcome || '';
+    if (!oset.has(o)) return false;
+  }
+  const cset = columnFilters['motion_category'];
+  if (cset instanceof Set && cset.size) {
+    if (!cset.has(rowCategory(row))) return false;
+  }
+  return true;
 }
 
 function filterToSql(f) {
   const v = (f.value ?? '').trim();
-  // Outcome filters can't be expressed in plain SQL (the classifier reads
-  // ruling text). They're applied after the SQL pass — buildWhere returns
-  // them via a sentinel so runQuery can post-filter.
-  if (f.col === 'outcome' || f.col === 'outcome_subtype') return null;
+  // Outcome and motion_category filters can't be expressed in plain SQL
+  // (both are derived from text classifiers). They're applied after the
+  // SQL pass — buildWhere returns them via a sentinel so runQuery can
+  // post-filter.
+  if (f.col === 'outcome' || f.col === 'outcome_subtype' ||
+      f.col === 'motion_category') return null;
   // Some columns are derived (browser-side); for those we resolve via the
   // calendar_matter cache so the WHERE clause stays SQL-shaped.
   if (f.col === 'motion_type' || f.col === 'motion_subtype') {
@@ -1989,6 +2305,24 @@ function filterToSql(f) {
 }
 
 // ─── Query ───────────────────────────────────────────────────────────────────
+// Columns that DuckDB doesn't know how to ORDER BY because they're
+// derived in JS from the calendar_matter / ruling text. When sortCol
+// names one of these, we drop the SQL ORDER BY and sort the rows
+// post-fetch in JS — same machinery the outcome filter already uses,
+// just extended to also drive sorting.
+const JS_DERIVED_SORT_COLS = new Set([
+  'motion_category',  // bucketed via MOTION_CATEGORY[lookupMotion(...).type]
+  'motion_type',      // lookupMotion(department, calendar_matter)
+  'outcome',          // classifyOutcome(splitRuling(...).ruling)
+]);
+
+function jsSortKey(row, col) {
+  if (col === 'motion_category') return rowCategory(row) || '';
+  if (col === 'motion_type')     return lookupMotion(row.department, row.calendar_matter).type || '';
+  if (col === 'outcome')         return lookupOutcome(splitRuling(row.ruling, row.department).ruling).outcome || '';
+  return row[col] ?? '';
+}
+
 async function runQuery(page = 0) {
   if (!conn) return;
   currentPage = page;
@@ -1997,14 +2331,23 @@ async function runQuery(page = 0) {
   // The Excel-style column filter on `outcome` also requires the JS post-pass.
   const hasColOutcomeFilter = columnFilters['outcome'] instanceof Set
                             && columnFilters['outcome'].size > 0;
-  const needsJsFilter = oFilters.length > 0 || hasColOutcomeFilter;
+  const hasColCategoryFilter = columnFilters['motion_category'] instanceof Set
+                             && columnFilters['motion_category'].size > 0;
+  const sortIsJsDerived = JS_DERIVED_SORT_COLS.has(sortCol);
+  const needsJsFilter = oFilters.length > 0 || hasColOutcomeFilter
+                      || hasColCategoryFilter || sortIsJsDerived;
+  // SQL ORDER BY is the cheap path. Fall back to court_date when the
+  // user-selected sortCol is JS-derived (we'll re-sort below).
+  const sqlSortCol = sortIsJsDerived ? 'court_date' : sortCol;
+  const sqlSortDir = sortIsJsDerived ? 'DESC'       : sortDir;
   $('qspinner').classList.add('on');
   saveState();
   try {
     if (needsJsFilter) {
-      // Outcome filters live outside SQL. Pull a wider page, classify in JS,
-      // then slice. Counting accurately requires scanning the full filtered
-      // set — we do it once per query which is ~O(50K rules-evals).
+      // Outcome / Category filters and JS-derived sorts live outside SQL.
+      // Pull a wider page, classify/sort in JS, then slice. Counting
+      // accurately requires scanning the full filtered set — we do it
+      // once per query which is ~O(N rules-evals).
       const [cntR, allR] = await Promise.all([
         conn.query(`SELECT COUNT(*) n FROM data WHERE ${where}`),
         conn.query(`
@@ -2012,19 +2355,30 @@ async function runQuery(page = 0) {
                  calendar_matter, judge, judge_canonical, judge_subtype,
                  ruling, row_hash
           FROM data WHERE ${where}
-          ORDER BY ${sortCol} ${sortDir}, case_number
+          ORDER BY ${sqlSortCol} ${sqlSortDir}, case_number
         `),
       ]);
-      const allRows = allR.toArray()
+      let allRows = allR.toArray()
         .filter(outcomeFilterMatches)
         .filter(columnFilterMatches);
+      if (sortIsJsDerived) {
+        const sign = sortDir === 'ASC' ? 1 : -1;
+        allRows = allRows.slice().sort((a, b) => {
+          const ka = jsSortKey(a, sortCol), kb = jsSortKey(b, sortCol);
+          if (ka < kb) return -1 * sign;
+          if (ka > kb) return  1 * sign;
+          // Tie-break on case_number for stability (same as the SQL path).
+          const ca = a.case_number || '', cb = b.case_number || '';
+          return ca < cb ? -1 : ca > cb ? 1 : 0;
+        });
+      }
       lastCount = allRows.length;
       rows = allRows.slice(offset, offset + PAGE_SIZE);
       renderTable(rows);
       renderPager(lastCount, page);
       $('result-info').textContent =
         `${lastCount.toLocaleString()} row${lastCount !== 1 ? 's' : ''}` +
-        ` (outcome-filtered from ${Number(cntR.toArray()[0].n).toLocaleString()})`;
+        ` (post-filtered from ${Number(cntR.toArray()[0].n).toLocaleString()})`;
     } else {
       const [cntR, rowsR] = await Promise.all([
         conn.query(`SELECT COUNT(*) n FROM data WHERE ${where}`),
@@ -2033,7 +2387,7 @@ async function runQuery(page = 0) {
                  calendar_matter, judge, judge_canonical, judge_subtype,
                  ruling, row_hash
           FROM data WHERE ${where}
-          ORDER BY ${sortCol} ${sortDir}, case_number
+          ORDER BY ${sqlSortCol} ${sqlSortDir}, case_number
           LIMIT ${PAGE_SIZE} OFFSET ${offset}
         `),
       ]);
@@ -2075,7 +2429,7 @@ function renderTable(data) {
     const o = lookupOutcome(splitRuling(r.ruling, r.department).ruling);
     const oSub = o.subtype ? `<div class="mtype-sub">${esc(o.subtype)}</div>` : '';
     const examiner = isExaminer(r);
-    const discovery = isDiscovery(r);
+    const cat = rowCategory(r);
     // Judge cell: render judge_canonical (e.g. "Judge Pro Tem") with the
     // specific JPT name as a sub-line — same visual pattern as motion type
     // / outcome with their subtypes. Falls back to the raw judge field if
@@ -2085,24 +2439,21 @@ function renderTable(data) {
     const judgeCell = judgeMain
       ? `${esc(judgeMain)}${examiner ? '<span class="examiner-badge" title="Examiner (not a judge) — Probate matters are reviewed by court examiners.">📋</span>' : ''}${jSub}`
       : '';
-    // Discovery badge in the Motion Type cell — same visual treatment as
-    // the Examiner 📋 in the Judge cell. Hidden by default (column is
-    // opt-in via the 🧰 Columns menu).
-    const discBadge = discovery
-      ? '<span class="examiner-badge" title="Discovery motion — auto-tagged from dept (301) or motion-type classification.">🔍</span>'
-      : '';
+    // Category pill class — replaces spaces with hyphens so the CSS
+    // class name is valid (e.g. "Real Estate" → mcat-Real-Estate).
+    const catClass = `mcat-${cat.replace(/[^A-Za-z0-9]+/g, '-')}`;
     return `<tr data-idx="${i}">
       <td class="col-dept">${esc(r.department)}</td>
       <td class="col-date">${r.court_date ?? ''}</td>
       <td class="col-time">${r.hearing_time ?? ''}</td>
       <td class="col-case">${esc(r.case_number)}</td>
       <td class="col-title">${esc(r.case_title)}</td>
-      <td class="col-mtype"><span class="mtype-pill">${esc(m.type)}</span>${discBadge}${sub}</td>
+      <td class="col-mcat"><span class="mcat-pill ${catClass}">${esc(cat)}</span></td>
+      <td class="col-mtype"><span class="mtype-pill">${esc(m.type)}</span>${sub}</td>
       <td class="col-outcome"><span class="outcome-pill ${outcomeClass(o.outcome)}">${esc(o.outcome)}</span>${oSub}</td>
       <td class="col-motion">${esc(r.calendar_matter)}</td>
       <td class="col-judge">${judgeCell}</td>
       <td class="col-is-examiner">${examiner ? '✓' : ''}</td>
-      <td class="col-is-discovery">${discovery ? '✓' : ''}</td>
       <td class="col-ruling">${esc((splitRuling(r.ruling, r.department).ruling).slice(0, 140))}</td>
     </tr>`;
   }).join('');
@@ -2818,7 +3169,8 @@ $('export-btn').addEventListener('click', async () => {
   // with anyone scripting against earlier exports; judge_subtype rides
   // alongside as the extracted name only (empty for sitting judges).
   const cols = ['department','case_number','case_title','court_date','hearing_time',
-                'calendar_matter','motion_type','motion_subtype','outcome','outcome_subtype',
+                'calendar_matter','motion_category','motion_type','motion_subtype',
+                'outcome','outcome_subtype',
                 'judge','judge_subtype','ruling','admin_notes','courtcall'];
   const lines = [cols.join(',')];
   for (const r of all) {
@@ -2830,7 +3182,9 @@ $('export-btn').addEventListener('click', async () => {
     const rec = {
       department: r.department, case_number: r.case_number, case_title: r.case_title,
       court_date: r.court_date, hearing_time: r.hearing_time,
-      calendar_matter: r.calendar_matter, motion_type: m.type, motion_subtype: m.subtype || '',
+      calendar_matter: r.calendar_matter,
+      motion_category: rowCategory(r),
+      motion_type: m.type, motion_subtype: m.subtype || '',
       outcome: o.outcome, outcome_subtype: o.subtype || '',
       judge: r.judge, judge_subtype: r.judge_subtype || '',
       ruling: sp.ruling, admin_notes: sp.admin, courtcall: sp.courtcall,
@@ -2844,11 +3198,15 @@ $('export-btn').addEventListener('click', async () => {
   $('export-btn').disabled = false; $('export-btn').textContent = orig;
 });
 
-// Outcome filters live outside SQL because the classifier reads ruling text.
-// Apply them in JS to whatever rows the SQL pass returns.
+// Outcome and motion_category filters live outside SQL because both are
+// derived from text classifiers. Apply them in JS to whatever rows the
+// SQL pass returns. The function name's a bit anachronistic now —
+// "outcomeFilters" predates the category column — but kept stable so
+// the rest of runQuery doesn't need to be touched.
 function outcomeFilters() {
   return customFilters.filter(f =>
-    (f.col === 'outcome' || f.col === 'outcome_subtype') && (f.value ?? '').trim()
+    (f.col === 'outcome' || f.col === 'outcome_subtype' || f.col === 'motion_category')
+    && (f.value ?? '').trim()
   );
 }
 function outcomeFilterMatches(row) {
@@ -2858,7 +3216,9 @@ function outcomeFilterMatches(row) {
   const o  = lookupOutcome(sp.ruling);
   for (const f of filters) {
     const v = (f.value || '').trim();
-    const actual = f.col === 'outcome' ? (o.outcome || '') : (o.subtype || '');
+    const actual = f.col === 'outcome'          ? (o.outcome || '')
+                 : f.col === 'outcome_subtype'  ? (o.subtype || '')
+                 : /* motion_category */          rowCategory(row);
     if (f.op === 'is'           && actual !== v) return false;
     if (f.op === 'is not'       && actual === v) return false;
     if (f.op === 'contains'     && !actual.toLowerCase().includes(v.toLowerCase())) return false;
@@ -2879,24 +3239,21 @@ function invalidateColumnFilterCache() { _colUniqueCache.clear(); }
 async function uniqueValuesFor(col) {
   if (_colUniqueCache.has(col)) return _colUniqueCache.get(col);
   let pairs;
-  if (col === 'motion_type') {
-    // Derived: aggregate calendar_matter classifications.
-    const counts = new Map();
-    for (const inner of MTYPE_CACHE.values()) {
-      for (const cls of inner.values()) {
-        counts.set(cls.type, (counts.get(cls.type) || 0) + 1);
-      }
-    }
-    // Re-weight by actual rulings since MTYPE_CACHE keys are unique
-    // (department, calendar_matter) pairs. Pull the per-matter row count
-    // and multiply through.
+  if (col === 'motion_type' || col === 'motion_category') {
+    // Both derived from calendar_matter via the motion-type classifier.
+    // Aggregate by classification, re-weighting by actual ruling counts
+    // (MTYPE_CACHE keys are unique department × calendar_matter pairs,
+    // not row counts).
     const cmCounts = (await conn.query(
       `SELECT department, calendar_matter, COUNT(*) n FROM data
        GROUP BY department, calendar_matter`)).toArray();
-    counts.clear();
+    const counts = new Map();
     for (const r of cmCounts) {
-      const t = lookupMotion(r.department, r.calendar_matter).type;
-      counts.set(t, (counts.get(t) || 0) + Number(r.n));
+      const cls = lookupMotion(r.department, r.calendar_matter);
+      const key = col === 'motion_type'
+        ? cls.type
+        : (String(r.department) === '301' ? 'Discovery' : motionCategory(cls.type));
+      counts.set(key, (counts.get(key) || 0) + Number(r.n));
     }
     pairs = [...counts.entries()].map(([v, n]) => ({ value: v, count: n }));
   } else if (col === 'outcome') {
@@ -2926,11 +3283,12 @@ async function uniqueValuesFor(col) {
 }
 
 const COL_FILTER_LABELS = {
-  department:   'Dept',
-  hearing_time: 'Hearing Time',
-  motion_type:  'Motion Type',
-  outcome:      'Outcome',
-  judge:        'Judge',
+  department:      'Dept',
+  hearing_time:    'Hearing Time',
+  motion_category: 'Category',
+  motion_type:     'Motion Type',
+  outcome:         'Outcome',
+  judge:           'Judge',
 };
 
 let _openColFilter = null; // current column key while popup is open

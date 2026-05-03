@@ -1150,24 +1150,12 @@ if (IS_DETACHED) {
   });
 }
 
-// ── Tooltips toggle ──────────────────────────────────────────────────────────
-// Each interactable element carries a data-tip attribute; CSS in popup.html
-// renders the tooltip on hover but ONLY when body.tips-on is set. The toggle
-// state persists across popup opens via chrome.storage.local.
-function applyTipsState(on) {
-  document.body.classList.toggle('tips-on', !!on);
-  const btn = $('tips-toggle');
-  if (btn) {
-    btn.classList.toggle('on', !!on);
-    btn.textContent = on ? '✓ Tips' : '? Tips';
-  }
-}
-chrome.storage.local.get('_tipsOn').then(({ _tipsOn }) => applyTipsState(!!_tipsOn));
-$('tips-toggle').addEventListener('click', async () => {
-  const next = !document.body.classList.contains('tips-on');
-  applyTipsState(next);
-  chrome.storage.local.set({ _tipsOn: next });
-});
+// Tooltips system removed: every actionable element used to carry a
+// data-tip attribute and a "? Tips" toggle drove an opt-in CSS hover
+// bubble. Per user feedback the chrome was noise — native browser
+// title= attributes still cover the few places where a tooltip is
+// genuinely useful (the calendar 📅 buttons, "First gap" / "Resume",
+// etc.) without a global toggle to manage.
 
 // ── Diagnose ──────────────────────────────────────────────────────────────────
 
