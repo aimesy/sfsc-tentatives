@@ -352,7 +352,15 @@ async function autoScanUnscanned() {
   );
 }
 
-// ── Date inputs (text + hidden calendar picker) ───────────────────────────────
+// ── Date inputs (text + custom calendar widget) ───────────────────────────────
+// The native <input type="date"> picker we used to call via showPicker() was
+// flaky inside MV3 popups (Firefox would silently no-op, Chrome would render
+// the picker outside the popup viewport on narrow screens) and couldn't
+// decorate days with scan status. The custom widget below renders inside the
+// popup, highlights dates by archive coverage AND by which dates other tabs
+// are currently scraping (so the user can see a sibling tab is mid-scan
+// before they pick the same day), and falls back gracefully if the
+// inflight/coverage fetches fail.
 
 function wireDateInput(textId, pickerId, calBtnId) {
   const text   = $(textId);
@@ -377,19 +385,231 @@ function wireDateInput(textId, pickerId, calBtnId) {
     if (iso) { e.preventDefault(); applyIso(iso); }
   });
 
-  // Calendar button opens the native date picker
-  calBtn.addEventListener('click', () => {
-    if (picker.showPicker) picker.showPicker();
-    else picker.click();
-  });
-
-  picker.addEventListener('change', () => {
-    if (picker.value) applyIso(picker.value);
+  calBtn.addEventListener('click', e => {
+    // stopPropagation so the document-level "click outside" listener
+    // doesn't immediately close the popup we're about to open.
+    e.stopPropagation();
+    openCustomCalendar(text, picker, calBtn);
   });
 }
 
 wireDateInput('bulk-from', 'bulk-from-picker', 'cal-from');
 wireDateInput('bulk-to',   'bulk-to-picker',   'cal-to');
+
+// ── Custom calendar widget ────────────────────────────────────────────────────
+// Shared instance: only one popup is ever open. _calOpen carries the
+// inputs that pinned it open and the month currently rendered. The
+// status sets are populated lazily on first open and refreshed each
+// time so the inflight indicator stays current as sibling tabs claim
+// and release dates.
+
+let _calOpen = null;       // { text, picker, btn, monthDate }
+let _calCovered = null;    // Set<ISODate>
+let _calInflight = null;   // Map<ISODate, {tabId,...}>
+let _calLastFetch = 0;     // ms timestamp; rate-limit re-fetches
+let _calStatusError = null;
+
+async function refreshCalendarStatus(force = false) {
+  // Cache for 30s so flipping months doesn't pound the GitHub API. The
+  // inflight set is read from chrome.storage and is essentially free, so
+  // we always pull a fresh copy of that even when we're using cached
+  // coverage.
+  const now = Date.now();
+  const stale = !_calCovered || (now - _calLastFetch) > 30_000;
+  if (!stale && !force) {
+    _calInflight = await loadInflightDates();
+    return;
+  }
+  _calStatusError = null;
+  try {
+    const dept = await detectDepartment();
+    const s    = await loadSettings();
+    const err  = validateSettings(s);
+    if (err) {
+      _calCovered  = new Set();
+      _calInflight = new Map();
+      _calStatusError = 'Settings missing — coverage shading disabled.';
+      _calLastFetch = now;
+      return;
+    }
+    const [scanned, inflight] = await Promise.all([
+      fetchScannedDates(s).catch(() => null),
+      loadInflightDates(dept),
+    ]);
+    _calCovered  = new Set(scanned || []);
+    _calInflight = inflight;
+    _calLastFetch = now;
+  } catch (e) {
+    _calCovered  = _calCovered  || new Set();
+    _calInflight = _calInflight || new Map();
+    _calStatusError = `Couldn't fetch scan status: ${e.message}`;
+  }
+}
+
+async function loadInflightDates(deptHint) {
+  // background.js maintains _inFlightClaims keyed by department; the
+  // inflight-dates message returns the per-dept claim map. We pass the
+  // detected dept so we only get the claims relevant to this calendar
+  // (otherwise sibling tabs scraping a different dept would muddy the
+  // visualisation).
+  const dept = deptHint || await detectDepartment();
+  return new Promise(resolve => {
+    chrome.runtime.sendMessage(
+      { action: 'inflight-dates', payload: { department: dept } },
+      r => {
+        if (!r || r.error || typeof r !== 'object') return resolve(new Map());
+        resolve(new Map(Object.entries(r)));
+      }
+    );
+  });
+}
+
+function openCustomCalendar(text, picker, btn) {
+  const iso = parseDate(text.value) || localISO(new Date());
+  const d = new Date(iso + 'T12:00:00');
+  _calOpen = {
+    text, picker, btn,
+    monthDate: new Date(d.getFullYear(), d.getMonth(), 1),
+  };
+  // Position immediately so the loading state renders in the right place.
+  positionCalendar();
+  $('cal-pop').classList.add('open');
+  $('cal-pop').innerHTML =
+    '<div class="cal-status-line cal-status-loading">Loading scan status…</div>';
+  refreshCalendarStatus().then(() => { if (_calOpen) renderCalendar(); });
+}
+
+function positionCalendar() {
+  if (!_calOpen) return;
+  const pop  = $('cal-pop');
+  const rect = _calOpen.btn.getBoundingClientRect();
+  // Keep within viewport horizontally; the popup is 232px wide.
+  const left = Math.min(window.innerWidth - 240,
+                        Math.max(8, rect.left + window.scrollX - 50));
+  pop.style.left = `${left}px`;
+  pop.style.top  = `${rect.bottom + window.scrollY + 4}px`;
+}
+
+function closeCustomCalendar() {
+  $('cal-pop').classList.remove('open');
+  _calOpen = null;
+}
+
+function renderCalendar() {
+  if (!_calOpen) return;
+  const { monthDate } = _calOpen;
+  const year  = monthDate.getFullYear();
+  const month = monthDate.getMonth();
+  const firstDow    = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const monthLabel  = monthDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+  const todayIso    = localISO(new Date());
+
+  let inflightCount = 0;
+  let coveredCount  = 0;
+
+  let cells = '';
+  for (let i = 0; i < firstDow; i++) cells += '<div class="cal-empty"></div>';
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dt = new Date(year, month, day);
+    const iso = localISO(dt);
+    const dow = dt.getDay();
+    const isWeekend  = dow === 0 || dow === 6;
+    const isHoliday  = COURT_HOLIDAYS.has(iso);
+    const isCovered  = _calCovered && _calCovered.has(iso);
+    const inflight   = _calInflight && _calInflight.get(iso);
+    const isInflight = !!inflight;
+    const isToday    = iso === todayIso;
+
+    if (isInflight) inflightCount++;
+    if (isCovered)  coveredCount++;
+
+    const classes = ['cal-day'];
+    if (isWeekend)  classes.push('cal-weekend');
+    if (isHoliday)  classes.push('cal-holiday');
+    if (isCovered)  classes.push('cal-covered');
+    if (isInflight) classes.push('cal-inflight');
+    if (isToday)    classes.push('cal-today');
+
+    const tipParts = [iso];
+    if (isHoliday)  tipParts.push('court holiday');
+    else if (isWeekend) tipParts.push('weekend');
+    if (isCovered)  tipParts.push('already in archive');
+    if (isInflight) tipParts.push(`being scanned by tab ${inflight.tabId}`);
+    const tip = tipParts.join(' — ');
+
+    cells += `<button class="${classes.join(' ')}" data-iso="${iso}" title="${tip}">${day}</button>`;
+  }
+
+  const html =
+    '<div class="cal-header">' +
+      '<button class="cal-nav" data-dir="-1" title="Previous month">‹</button>' +
+      `<span class="cal-title">${monthLabel}</span>` +
+      '<button class="cal-nav" data-dir="1" title="Next month">›</button>' +
+    '</div>' +
+    '<div class="cal-dow">' +
+      '<div>S</div><div>M</div><div>T</div><div>W</div>' +
+      '<div>T</div><div>F</div><div>S</div>' +
+    '</div>' +
+    `<div class="cal-grid">${cells}</div>` +
+    '<div class="cal-legend">' +
+      '<span><i class="cal-swatch" style="background:#e3f3e3"></i>scanned</span>' +
+      '<span><i class="cal-swatch" style="background:#fff3cd;border:1px solid #e8c060"></i>in flight</span>' +
+      '<span><i class="cal-swatch" style="background:#f0f0f0"></i>holiday</span>' +
+      '<span><i class="cal-swatch" style="border:1px solid #1a3a5c"></i>today</span>' +
+    '</div>' +
+    (_calStatusError
+      ? `<div class="cal-status-line cal-status-error">${_calStatusError}</div>`
+      : `<div class="cal-status-line">${coveredCount} scanned · ${inflightCount} in flight in this month</div>`);
+
+  const pop = $('cal-pop');
+  pop.innerHTML = html;
+  positionCalendar();
+
+  pop.querySelectorAll('.cal-nav').forEach(b => {
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      const dir = parseInt(b.dataset.dir, 10);
+      _calOpen.monthDate = new Date(
+        _calOpen.monthDate.getFullYear(),
+        _calOpen.monthDate.getMonth() + dir, 1);
+      // Refresh inflight on each nav so a sibling tab claiming a date
+      // mid-session shows up without the user closing/reopening the popup.
+      refreshCalendarStatus().then(() => renderCalendar());
+    });
+  });
+  pop.querySelectorAll('.cal-day').forEach(b => {
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      const iso = b.dataset.iso;
+      _calOpen.text.value   = iso;
+      _calOpen.picker.value = iso;
+      _calOpen.text.classList.remove('invalid');
+      closeCustomCalendar();
+    });
+  });
+}
+
+document.addEventListener('click', e => {
+  if (!_calOpen) return;
+  const pop = $('cal-pop');
+  if (pop.contains(e.target) || _calOpen.btn.contains(e.target)) return;
+  closeCustomCalendar();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && _calOpen) closeCustomCalendar();
+});
+
+// Pick up storage updates so the calendar's inflight indicator stays
+// current while it's open — a sibling tab claiming a new date will fire
+// _bulkJobs change which we use as a low-cost proxy for a claim change
+// (the exact _inFlightClaims storage key is internal to background.js
+// but bulk job updates correlate well with claim activity).
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== 'local' || !_calOpen) return;
+  if (!changes._bulkJobs && !changes._inFlightClaims) return;
+  refreshCalendarStatus(true).then(() => { if (_calOpen) renderCalendar(); });
+});
 
 // ── Settings: auto-save on blur ───────────────────────────────────────────────
 
