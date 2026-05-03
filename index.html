@@ -560,7 +560,7 @@
       text-align: center; padding: 2.5rem; color: #888; font-style: italic;
     }
     #loading {
-      padding: 3rem 1rem; text-align: center; color: #555;
+      padding: 2.4rem 1rem 3rem; text-align: center; color: #555;
     }
     #loading .spinner {
       width: 28px; height: 28px;
@@ -568,7 +568,45 @@
       border-radius: 50%; animation: spin 0.8s linear infinite;
       margin: 0 auto 0.6rem;
     }
+    #load-msg { font-weight: 600; color: #1a3a5c; font-size: 0.95rem; }
     #load-detail { font-size: 0.78rem; color: #888; margin-top: 0.3rem; }
+    /* Stage list — each top-level operation gets its own line so the
+       user can see what's done, what's active, and what's still
+       queued. Without this the silence between "Reading manifest…"
+       and the first ruling row landing was indistinguishable from
+       the page being broken. */
+    #load-stages {
+      display: inline-block; text-align: left;
+      margin-top: 1rem; min-width: 320px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
+      font-size: 0.82rem; line-height: 1.5;
+      color: #555;
+    }
+    #load-stages .stage {
+      display: flex; align-items: baseline; gap: 0.5rem;
+      padding: 0.15rem 0;
+    }
+    #load-stages .stage-icon {
+      width: 1.2em; flex-shrink: 0; text-align: center; font-weight: 700;
+    }
+    #load-stages .stage.queued   { color: #aaa; }
+    #load-stages .stage.queued   .stage-icon::before { content: '·'; }
+    #load-stages .stage.active   { color: #1a3a5c; }
+    #load-stages .stage.active   .stage-icon::before {
+      content: ''; display: inline-block;
+      width: 0.65em; height: 0.65em;
+      border: 2px solid #c8d8f0; border-top-color: #1a3a5c;
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+    }
+    #load-stages .stage.done     { color: #1a5c2a; }
+    #load-stages .stage.done     .stage-icon::before { content: '✓'; }
+    #load-stages .stage.error    { color: #a02020; }
+    #load-stages .stage.error    .stage-icon::before { content: '⚠'; }
+    #load-stages .stage-detail   {
+      color: #888; font-size: 0.92em; margin-left: auto; padding-left: 1rem;
+      white-space: nowrap; font-variant-numeric: tabular-nums;
+    }
+    #load-elapsed { font-size: 0.7rem; color: #aaa; margin-top: 0.6rem; }
     #error-bar {
       padding: 0.6rem 1rem; background: #fff0f0;
       border-bottom: 1px solid #f5c6c6; color: #7a2020;
@@ -770,8 +808,10 @@
 <div class="table-wrap" id="table-wrap">
   <div id="loading">
     <div class="spinner"></div>
-    <div id="load-msg">Initializing…</div>
+    <div id="load-msg">Loading…</div>
     <div id="load-detail"></div>
+    <div id="load-stages"></div>
+    <div id="load-elapsed"></div>
   </div>
   <div id="empty-banner" class="dl-banner" style="display:none">
     <div>No department data loaded. Open <strong>📥 Database Downloads</strong> in the header to fetch one or more departments.</div>
@@ -1913,28 +1953,55 @@ async function loadDept(dept, { persist = true } = {}) {
   const ctl = new AbortController();
   inflight.set(dept, ctl);
   setDeptStatus(dept, 'downloading', { received: 0, total: 0 });
+  // If a boot-stage was pre-registered for this dept (auto-load on
+  // page open), drive it from here too so the loading panel reflects
+  // the same progress as the dl-menu row. No-op when called from a
+  // user-initiated download mid-session — the dl-menu row is the
+  // active progress display by then.
+  const stage = _bootStages.has(`dept-${dept}`)
+    ? bootStage(`dept-${dept}`, _bootStages.get(`dept-${dept}`).label)
+    : null;
+  stage?.start('queued…');
   try {
     const meta = manifest.departments.find(d => String(d.department) === String(dept));
+    const sizeMb = meta ? (meta.size_bytes / 1e6).toFixed(1) : '?';
+    stage?.start(`downloading (${sizeMb} MB)…`);
     const url  = `./data/tentatives-${dept}.parquet`;
     const buf  = await fetchWithProgress(url,
-      (received, total) => setDeptStatus(dept, 'downloading', { received, total: total || meta?.size_bytes || 0 }),
+      (received, total) => {
+        setDeptStatus(dept, 'downloading', { received, total: total || meta?.size_bytes || 0 });
+        const totalBytes = total || meta?.size_bytes || 0;
+        const recvMb = (received / 1e6).toFixed(1);
+        if (totalBytes > 0) {
+          const pct = Math.min(100, (received / totalBytes) * 100);
+          stage?.progress(`${pct.toFixed(0)}% · ${recvMb} / ${(totalBytes / 1e6).toFixed(1)} MB`);
+        } else {
+          stage?.progress(`${recvMb} MB`);
+        }
+      },
       ctl.signal
     );
+    stage?.progress('parsing parquet…');
     const fname = `dept-${dept}.parquet`;
     await db.registerFileBuffer(fname, buf);
     const tbl = tableNameFor(dept);
     await conn.query(`CREATE OR REPLACE TABLE ${tbl} AS SELECT * FROM '${fname}'`);
     loadedDepts.set(dept, { rulings: meta?.rulings || 0, latest: meta?.latest || null });
     if (persist) persistLoadedDepts();
+    stage?.progress('indexing…');
     await rebuildDataView();
     await onLoadedSetChanged();
     setDeptStatus(dept, 'loaded');
+    const rulings = meta?.rulings || 0;
+    stage?.done(`${rulings.toLocaleString()} ruling${rulings !== 1 ? 's' : ''}`);
   } catch (err) {
     if (err.name === 'AbortError') {
       setDeptStatus(dept, 'idle');
+      stage?.error('cancelled');
     } else {
       console.error(`Failed to load dept ${dept}:`, err);
       setDeptStatus(dept, 'error', { message: err.message || String(err) });
+      stage?.error(err.message || String(err));
     }
   } finally {
     inflight.delete(dept);
@@ -2293,29 +2360,116 @@ async function loadCustomParquet(file) {
   renderDownloadsMenu();
 }
 
+// ─── Boot-time stage tracker ────────────────────────────────────────────────
+// The page used to flash a single "Initializing…" → "Reading manifest…" →
+// "" sequence and then go silent while parquets downloaded behind the
+// scenes — it looked like nothing was happening even though several
+// MB were streaming in. Instead, surface every long-running step
+// (DuckDB WASM bootstrap, manifest fetch, per-dept parquet
+// downloads) as its own line in a checklist with live progress and a
+// total-elapsed counter. The user can immediately tell what's done,
+// what's currently working, and what's queued.
+
+const _bootStages = new Map();   // id → { label, status, detail, el }
+let   _bootStartMs = Date.now();
+let   _bootHeartbeat = null;
+
+function bootStageEl() { return document.getElementById('load-stages'); }
+
+function startBootHeartbeat() {
+  if (_bootHeartbeat) return;
+  _bootHeartbeat = setInterval(() => {
+    const el = document.getElementById('load-elapsed');
+    if (!el) return;
+    const secs = Math.round((Date.now() - _bootStartMs) / 1000);
+    el.textContent = secs >= 1
+      ? `Working… ${secs}s elapsed`
+      : '';
+  }, 250);
+}
+function stopBootHeartbeat() {
+  if (_bootHeartbeat) clearInterval(_bootHeartbeat);
+  _bootHeartbeat = null;
+}
+
+function bootStageRender(stage) {
+  if (stage.el) {
+    stage.el.className = `stage ${stage.status}`;
+    stage.el.querySelector('.stage-detail').textContent = stage.detail || '';
+    return;
+  }
+  const container = bootStageEl();
+  if (!container) return;
+  stage.el = document.createElement('div');
+  stage.el.className = `stage ${stage.status}`;
+  stage.el.innerHTML =
+    '<span class="stage-icon"></span>' +
+    `<span class="stage-label"></span>` +
+    '<span class="stage-detail"></span>';
+  stage.el.querySelector('.stage-label').textContent = stage.label;
+  stage.el.querySelector('.stage-detail').textContent = stage.detail || '';
+  container.appendChild(stage.el);
+}
+
+function bootStage(id, label) {
+  let s = _bootStages.get(id);
+  if (!s) {
+    s = { id, label, status: 'queued', detail: '', el: null };
+    _bootStages.set(id, s);
+  }
+  bootStageRender(s);
+  return {
+    start(detail) {
+      s.status = 'active';
+      if (detail !== undefined) s.detail = detail;
+      bootStageRender(s);
+    },
+    progress(detail) { s.detail = detail; bootStageRender(s); },
+    done(detail) {
+      s.status = 'done';
+      if (detail !== undefined) s.detail = detail;
+      bootStageRender(s);
+    },
+    error(detail) {
+      s.status = 'error';
+      if (detail !== undefined) s.detail = detail;
+      bootStageRender(s);
+    },
+  };
+}
+
 async function bootDuckDB() {
-  $('load-msg').textContent = 'Initializing database…';
+  const stage = bootStage('duckdb', 'Initialising database engine');
+  stage.start('downloading WebAssembly runtime…');
+  $('load-msg').textContent = 'Initialising database engine…';
   const bundles = duckdb.getJsDelivrBundles();
   const bundle  = await duckdb.selectBundle(bundles);
   const wUrl    = URL.createObjectURL(
     new Blob([`importScripts("${bundle.mainWorker}");`], { type: 'text/javascript' })
   );
   db = new duckdb.AsyncDuckDB(new duckdb.VoidLogger(), new Worker(wUrl));
+  stage.progress('compiling…');
   await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
   URL.revokeObjectURL(wUrl);
   conn = await db.connect();
   await rebuildDataView();
+  stage.done('ready');
 }
 
 async function fetchManifest() {
+  const stage = bootStage('manifest', 'Reading dataset manifest');
+  stage.start();
   $('load-msg').textContent = 'Reading manifest…';
   try {
     const res = await fetch(MANIFEST_URL, { cache: 'no-cache' });
     if (!res.ok) throw new Error(`HTTP ${res.status} fetching manifest`);
     manifest = await res.json();
+    const n = (manifest.departments || []).length;
+    stage.done(`${n} department${n !== 1 ? 's' : ''} available`);
   } catch (err) {
     console.error('Manifest fetch failed:', err);
     manifest = { departments: [] };
+    stage.error(err.message || String(err));
     const bar = $('error-bar');
     bar.style.display = 'block';
     bar.textContent =
@@ -2325,6 +2479,14 @@ async function fetchManifest() {
 }
 
 try {
+  _bootStartMs = Date.now();
+  startBootHeartbeat();
+  // Pre-register the stages we know about so the user can see what's
+  // queued from the start, not just what's already happened.
+  bootStage('duckdb',     'Initialising database engine');
+  bootStage('manifest',   'Reading dataset manifest');
+  // The auto-load stage is shown once we know how many depts are
+  // persisted (it's added inside the auto-load branch below).
   await bootDuckDB();
   await fetchManifest();
   renderDownloadsMenu();
@@ -2344,28 +2506,61 @@ try {
     })
   );
 
-  $('loading').style.display = 'none';
-  toggleEmptyBanner();
-
-  // Auto-load any persisted departments. If none persist (first visit), pop
-  // the menu open so the user immediately sees what's available.
+  // Auto-load any persisted departments. If none persist (first visit),
+  // pop the menu open so the user immediately sees what's available.
+  // The loading panel STAYS up while these load — the previous flow
+  // hid it after the manifest and the user saw a blank table while
+  // megabytes of parquet streamed in silently.
   const persisted = loadPersistedDepts().filter(d =>
     manifest.departments.some(m => String(m.department) === String(d))
   );
+
   if (persisted.length === 0) {
+    $('loading').style.display = 'none';
+    toggleEmptyBanner();
+    stopBootHeartbeat();
     $('dl-menu').classList.add('open');
     $('dl-btn').classList.add('active');
   } else {
-    // Sequential to keep memory pressure predictable. Each load fires its
-    // own runQuery via onLoadedSetChanged so the user sees partial results
-    // arrive; the final runQuery below applies any restored URL filters on
-    // top of the fully-loaded set.
+    // Pre-register a stage per dept so the user sees the whole list
+    // as queued; loadDept's progress callback flips them to active /
+    // done as it goes. Use the manifest entry's display name so the
+    // panel reads "Loading Department 204 — Probate".
+    $('load-msg').textContent = persisted.length === 1
+      ? 'Loading 1 department…'
+      : `Loading ${persisted.length} departments…`;
+    for (const d of persisted) {
+      const meta = manifest.departments.find(m => String(m.department) === String(d));
+      bootStage(`dept-${d}`, `Loading ${meta?.name || `Department ${d}`}`);
+    }
+    // Sequential to keep memory pressure predictable. Each load fires
+    // its own runQuery via onLoadedSetChanged so the user sees
+    // partial results arrive in the table behind the panel; the
+    // final runQuery below applies any restored URL filters on top
+    // of the fully-loaded set.
     for (const d of persisted) await loadDept(d, { persist: false });
+    bootStage('finalising', 'Restoring saved filters and rendering').start();
     restoreState();
     if (loadedDepts.size > 0) await runQuery(currentPage || 0);
+    bootStage('finalising', 'Restoring saved filters and rendering').done();
+    $('loading').style.display = 'none';
+    toggleEmptyBanner();
+    stopBootHeartbeat();
   }
 } catch (err) {
-  $('loading').style.display = 'none';
+  // Mark whatever stage was active when we threw. If none, add a
+  // catch-all so the user sees the failure even if the error happened
+  // before any stage was registered.
+  for (const s of _bootStages.values()) {
+    if (s.status === 'active') { s.status = 'error'; s.detail = err.message || String(err); bootStageRender(s); }
+  }
+  if (![..._bootStages.values()].some(s => s.status === 'error')) {
+    bootStage('init', 'Initial load').error(err.message || String(err));
+  }
+  stopBootHeartbeat();
+  // Keep the loading panel visible so the stage list — including the
+  // failed one — is still readable. The error bar at the top has the
+  // full message too.
   const bar = $('error-bar');
   bar.style.display = 'block';
   bar.textContent = 'Failed to initialise: ' + err.message;
