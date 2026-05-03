@@ -116,35 +116,23 @@ python update-readme.py
 ## Departments
 
 <details>
-<summary><strong>Department 204 — Probate</strong> &nbsp;·&nbsp; 86,718 rulings &nbsp;·&nbsp; 2015-01-05 → 2026-05-04 &nbsp;·&nbsp; 1,944 hearing days &nbsp;·&nbsp; 15 gaps</summary>
+<summary><strong>Department 204 — Probate</strong> &nbsp;·&nbsp; 87,436 rulings &nbsp;·&nbsp; 2015-01-05 → 2026-05-04 &nbsp;·&nbsp; 1,960 hearing days &nbsp;·&nbsp; 3 gaps</summary>
 
-86,718 tentative rulings across 1,944 hearing days (2015-01-05 → 2026-05-04).
+87,436 tentative rulings across 1,960 hearing days (2015-01-05 → 2026-05-04).
 
 ### Coverage
 
-- **Hearing days with data:** 1,944 of 2,790 weekdays in range (69.7%)
-- **Days scanned:** 2,655 (including days the court posted no rulings)
+- **Hearing days with data:** 1,960 of 2,790 weekdays in range (70.3%)
+- **Days scanned:** 2,695 (including days the court posted no rulings)
 - **Earliest harvested:** 2015-01-05 (same as first hearing day)
 - **Latest harvested:** 2026-05-04 (same as last hearing day)
 
 
-### Gaps (15)
+### Gaps (3)
 
 - 2015-09-29 → 2015-10-13
 - 2015-12-30 → 2016-05-02
 - 2016-06-15
-- 2017-03-30
-- 2017-04-11
-- 2017-04-14 → 2017-04-19
-- 2017-06-27 → 2017-08-02
-- 2017-08-04
-- 2017-08-09
-- 2017-08-11
-- 2017-08-16
-- 2017-08-18
-- 2017-08-23
-- 2017-08-25
-- 2017-08-30
 
 </details>
 <details>
