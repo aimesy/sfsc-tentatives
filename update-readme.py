@@ -36,7 +36,7 @@ Daily archive of tentative rulings from the San Francisco Superior Court.
 | `data/tentatives-<N>.parquet` | Per-department slice the data browser fetches on demand |
 | `data/manifest.json` | Description of every per-department parquet (rulings, size, latest date) |
 | `raw/dept<N>/*.json` | Per-day raw scrapes, organised by department |
-| `coverage/dept<N>.json` | Union of dates covered by parquet rows + raw filenames; the extension reads this to find unscanned days |
+| `coverage/dept<N>.json` | Union of dates covered by parquet rows + raw filenames; one of three inputs the extension reads to find unscanned days (alongside the live `raw/dept<N>/` listing and an in-extension commit log) |
 | `extension/` | Browser extension source (Chrome + Firefox) |
 | `sfsc-extension.zip` | Pre-built, installable extension |
 | `index.html` | Static data browser (served via GitHub Pages) |
@@ -66,7 +66,7 @@ Scrapes the [SFSC tentative rulings page](https://webapps.sftc.org/tr/tr.dll) an
 - **Date range** — fill From/To, click **Bulk Scrape Range**. Iterates every weekday in range, skipping weekends and California court holidays.
 - **Auto-fill gaps** — **Scan Unscanned Pages** finds every weekday from the first scanned date to today that's missing, then bulk-scrapes them.
 - **Session expiry** — when SFTC returns its "Your session has expired" page (typically after ~50 search submissions, but the extension watches for the actual page text rather than counting), the bulk run auto-pauses and reloads the SFTC tab so you hit the Cloudflare CAPTCHA. Solve the CAPTCHA, then click **Resume after CAPTCHA** in the popup — scraping resumes at the date that triggered the expiry (no skipped days).
-- **Stop** — halts the bulk run; in-flight commits still finish. Click **Resume** (⏭) to pick up from the day after the last commit.
+- **Stop** — halts the bulk run; in-flight commits still finish. Click **Resume** (⏭) to pick up from the day after the last commit. The extension unions `coverage/dept<N>.json` with the live `raw/` listing and a local commit log, so a fresh **Scan Unscanned Pages** right after a stop (or right after finishing a batch) won't replay the same dates while the ingest workflow is still catching up.
 - **Updates** — the popup checks GitHub for a newer `sfsc-extension.zip` and offers a one-click download.
 
 ## Browse

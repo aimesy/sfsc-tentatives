@@ -60,35 +60,56 @@ async function fetchScannedDates(s) {
     } catch (_) {}
   }
 
-  // Prefer coverage/dept<N>.json — it's the union of parquet court_dates and
-  // raw scrape files. The raw filenames alone miss the historical Excel
-  // imports (2014-2024) and trigger a "rescan everything since 2015" bug.
+  // Union three sources, in order of staleness:
+  //   • coverage/dept<N>.json — parquet court_dates ∪ raw filenames; only
+  //     refreshed when the ingest workflow runs, so it lags behind by
+  //     ~throttle window + workflow runtime. Required for the historical
+  //     Excel-imports (2014-2024) which have no raw files.
+  //   • raw/dept<N>/ listing  — live within seconds of any commit.
+  //   • _localCommitted log   — survives popup reopen and SW restart, so a
+  //     scan stopped mid-flight (or finished but pre-ingest) doesn't replay
+  //     its committed dates as "still unscanned".
   const branch = s.branch || 'master';
-  const covRes = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/contents/coverage/dept${dept}.json?ref=${branch}`,
-    { headers: { Authorization: `Bearer ${s.token}`, 'X-GitHub-Api-Version': '2022-11-28' } }
-  );
-  if (covRes.ok) {
+  const headers = { Authorization: `Bearer ${s.token}`, 'X-GitHub-Api-Version': '2022-11-28' };
+  const [covRes, dirRes, storage] = await Promise.allSettled([
+    fetch(`https://api.github.com/repos/${owner}/${repo}/contents/coverage/dept${dept}.json?ref=${branch}`, { headers }),
+    fetch(`https://api.github.com/repos/${owner}/${repo}/contents/raw/dept${dept}?ref=${branch}`, { headers }),
+    chrome.storage.local.get('_localCommitted'),
+  ]);
+
+  const covered = new Set();
+
+  if (covRes.status === 'fulfilled' && covRes.value.ok) {
     try {
-      const meta = await covRes.json();
+      const meta = await covRes.value.json();
       const json = JSON.parse(atob((meta.content || '').replace(/\n/g, '')));
-      if (Array.isArray(json.covered)) return json.covered.slice().sort();
-    } catch (_) { /* fall through to raw listing */ }
+      if (Array.isArray(json.covered)) json.covered.forEach(d => covered.add(d));
+    } catch (_) { /* fall through */ }
   }
 
-  // Fallback: list raw/dept<N>/ directly. Used before coverage.json exists,
-  // and as a safety net if the file is malformed.
-  const res = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/contents/raw/dept${dept}?ref=${branch}`,
-    { headers: { Authorization: `Bearer ${s.token}`, 'X-GitHub-Api-Version': '2022-11-28' } }
-  );
-  if (!res.ok) return null;
-  const files = await res.json();
-  if (!Array.isArray(files)) return null;
-  return files
-    .map(f => f.name.match(/^(\d{4}-\d{2}-\d{2})/)?.[1])
-    .filter(Boolean)
-    .sort();
+  if (dirRes.status === 'fulfilled' && dirRes.value.ok) {
+    try {
+      const files = await dirRes.value.json();
+      if (Array.isArray(files)) {
+        for (const f of files) {
+          const iso = f.name?.match(/^(\d{4}-\d{2}-\d{2})/)?.[1];
+          if (iso) covered.add(iso);
+        }
+      }
+    } catch (_) { /* fall through */ }
+  }
+
+  if (storage.status === 'fulfilled') {
+    const TTL = 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    const local = storage.value._localCommitted?.[dept] || [];
+    for (const e of local) {
+      if (e?.d && now - (e.t || 0) < TTL) covered.add(e.d);
+    }
+  }
+
+  if (!covered.size) return null;
+  return Array.from(covered).sort();
 }
 
 async function jumpToFirstGap() {

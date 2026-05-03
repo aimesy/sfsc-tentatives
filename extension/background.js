@@ -72,6 +72,37 @@ async function getDeptDir(token, owner, repo, branch, department) {
   return files;
 }
 
+// ── Local commit log (chrome.storage.local._localCommitted) ───────────────────
+// Records every successful commit immediately so the next "Scan Unscanned
+// Pages" sees freshly-scraped dates even when coverage/dept<N>.json hasn't
+// caught up yet. coverage.json only refreshes after the ingest workflow runs
+// (throttled to ~once/minute). Without this log, stopping a bulk scan and
+// restarting it inside that window would replay the same dates from the top.
+//
+// Schema: { [department]: [{ d: 'YYYY-MM-DD', t: epoch_ms }, ...] }
+// Entries older than LOCAL_LOG_TTL_MS are pruned on every write — by then
+// the workflow has long since baked the date into coverage.json.
+
+const LOCAL_LOG_TTL_MS = 24 * 60 * 60 * 1000;
+
+async function trackLocalCommit(department, date) {
+  const { _localCommitted = {} } = await chrome.storage.local.get('_localCommitted');
+  const now = Date.now();
+  const list = (_localCommitted[department] || [])
+    .filter(e => e && e.d && e.d !== date && now - (e.t || 0) < LOCAL_LOG_TTL_MS);
+  list.push({ d: date, t: now });
+  _localCommitted[department] = list;
+  await chrome.storage.local.set({ _localCommitted });
+}
+
+async function readLocalCommitted(department) {
+  const { _localCommitted = {} } = await chrome.storage.local.get('_localCommitted');
+  const now = Date.now();
+  return (_localCommitted[department] || [])
+    .filter(e => e && e.d && now - (e.t || 0) < LOCAL_LOG_TTL_MS)
+    .map(e => e.d);
+}
+
 // ── Commit ────────────────────────────────────────────────────────────────────
 
 function parseCourtDateISO(raw) {
@@ -145,6 +176,11 @@ async function commitToGitHub({ token, owner, repo, branch, data }) {
       entry.dates.push(date);
     }
   }
+
+  // Persist the commit so a popup reopen, service-worker restart, or a fresh
+  // "Scan Unscanned Pages" started before the ingest workflow runs still sees
+  // this date as covered. Best-effort — failure here only loses a 24h cache.
+  trackLocalCommit(department, date).catch(() => {});
 
   const json = await res.json();
   return { ok: true, path, sha: json.content?.sha, stale: !!staleCount, staleCount };
@@ -453,21 +489,29 @@ async function commitAndAdvance() {
 }
 
 // Walk forward from `after` until we find a weekday that isn't a court holiday
-// AND isn't already covered (parquet rulings or raw scrape file). Coverage
-// merges parquet court_dates with raw filenames, which keeps the hotkey from
-// jumping back into 2017-2024 (the Excel-imported range with no raw files).
+// AND isn't already covered. We union three sources so a freshly-committed
+// raw JSON closes its gap immediately, even before the ingest workflow has
+// rebuilt coverage.json:
+//   • coverage/dept<N>.json — parquet court_dates ∪ raw filenames (lags by
+//     workflow runtime; covers historical Excel-imports with no raw files)
+//   • raw/dept<N>/ listing  — live within seconds of any commit
+//   • _localCommitted log   — instant, survives popup reopen and SW restart
 async function nextUnscannedBusinessDay({ after, until, token, owner, repo, branch, department }) {
-  let covered = new Set();
-  try {
-    const dates = await getCoverage(token, owner, repo, branch, department);
-    covered = new Set(dates);
-  } catch {
-    // If coverage fails, fall back to raw listing.
-    try {
-      const files = await getDeptDir(token, owner, repo, branch, department);
-      covered = new Set(files.map(f => f.name?.slice(0, 10)).filter(Boolean));
-    } catch { /* fall through to plain next-business-day */ }
+  const covered = new Set();
+  const [covRes, dirRes, localRes] = await Promise.allSettled([
+    getCoverage(token, owner, repo, branch, department),
+    getDeptDir(token, owner, repo, branch, department),
+    readLocalCommitted(department),
+  ]);
+  if (covRes.status === 'fulfilled') covRes.value.forEach(d => covered.add(d));
+  if (dirRes.status === 'fulfilled') {
+    for (const f of dirRes.value) {
+      const iso = f.name?.slice(0, 10);
+      if (iso && /^\d{4}-\d{2}-\d{2}$/.test(iso)) covered.add(iso);
+    }
   }
+  if (localRes.status === 'fulfilled') localRes.value.forEach(d => covered.add(d));
+
   let d = nextBusinessDay(after);
   while (d <= until) {
     if (!covered.has(d)) return d;
