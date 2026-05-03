@@ -22,7 +22,7 @@
     .header-text { flex: 1; min-width: 0; }
     header h1 { font-size: 0.95rem; font-weight: 600; margin: 0; }
     header p  { font-size: 0.75rem; opacity: 0.7; margin: 0.15rem 0 0; }
-    #tips-toggle {
+    #tips-toggle, #detach-btn {
       width: auto;
       flex-shrink: 0;
       background: rgba(255,255,255,0.12);
@@ -36,7 +36,7 @@
       cursor: pointer;
       line-height: 1.1;
     }
-    #tips-toggle:hover { background: rgba(255,255,255,0.22); }
+    #tips-toggle:hover, #detach-btn:hover { background: rgba(255,255,255,0.22); }
     #tips-toggle.on    { background: #ffce5b; color: #5b4400; border-color: #ffce5b; }
 
     /* Custom tooltips — visible only when body has .tips-on. We use ::before
@@ -292,6 +292,7 @@
       <h1>SFSC Tentative Rulings</h1>
       <p>SF Superior Court scraper</p>
     </div>
+    <button id="detach-btn" data-tip-pos="below" data-tip="Open this popup in a separate window that stays open until you close it. Useful for monitoring a long bulk scan without the popup closing every time you click somewhere else.">⧉ Detach</button>
     <button id="tips-toggle" data-tip-pos="below" data-tip="Toggle tooltips: hover any button or field to see what it does.">? Tips</button>
   </header>
 

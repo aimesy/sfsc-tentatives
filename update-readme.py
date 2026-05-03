@@ -18,6 +18,7 @@ DEPT_NAMES = {
     # new dept never breaks anything — it just shows up un-named until you
     # extend this dict.
     '204': 'Department 204 — Probate',
+    '301': 'Department 301 — Discovery',
     '302': 'Department 302 — Civil Law & Motion',
     '501': 'Department 501 — Real Property Court',
 }
@@ -25,22 +26,9 @@ DEPT_NAMES = {
 STATIC_TOP = """\
 # SFSC Tentative Rulings
 
-A searchable archive of every **tentative ruling** posted by the San Francisco Superior Court — Department 204 (Probate), Department 302 (Civil Law & Motion), Department 501 (Real Property), and any others added over time. Updated every business day.
+A searchable archive of every **tentative ruling** posted by the San Francisco Superior Court — Department 204 (Probate), Department 301 (Discovery), Department 302 (Civil Law & Motion), Department 501 (Real Property), and any others added over time. Updated every business day.
 
 **[Open the searchable database →](https://aimesy.github.io/sfsc-tentatives/)**
-
-## What this is, and who it's for
-
-San Francisco Superior Court posts a **tentative ruling** for many civil and real-property motions the day before the hearing. The court's own website only lets you look up rulings by date and case number, one at a time, and only keeps recent ones online. This project keeps a permanent, searchable copy.
-
-If you practice in San Francisco — or follow a particular judge, motion type, or kind of dispute — you can use this archive to:
-
-- **See how a specific judge tends to rule** on a given motion (e.g. demurrers, anti-SLAPP, motions to compel).
-- **Pull every ruling on a topic** (sanctions, attorney fees, summary judgment, anti-SLAPP, etc.) across years.
-- **Look up an old ruling** that's no longer on the court's site.
-- **Export results to a spreadsheet** for further analysis or to share with colleagues.
-
-You don't need to install anything to browse the data — the link above opens it in your web browser. The browser extension described below is only for *contributors* who want to help keep the archive current.
 
 ## How to use the searchable database
 
@@ -97,7 +85,7 @@ Open the SFSC tentative rulings page (<https://webapps.sftc.org/tr/tr.dll>) in y
 ## Glossary
 
 - **Tentative ruling** — the court's preliminary written ruling on a motion, posted the day before the hearing. Becomes final unless a party "contests" it under the local rules.
-- **Department** — a courtroom and the judge assigned to it. Department 204 hears probate matters; Department 302 hears civil law-and-motion calendars; Department 501 hears real-property matters; etc.
+- **Department** — a courtroom and the judge assigned to it. Department 204 hears probate matters; Department 301 hears discovery motions; Department 302 hears civil law-and-motion calendars; Department 501 hears real-property matters; etc.
 - **Motion type** — the kind of motion (demurrer, summary judgment, motion to compel, anti-SLAPP, etc.). Auto-classified from the calendar caption; you can correct misclassifications by filing a bug report from the ruling's detail view.
 - **Outcome** — whether the motion was granted, denied, continued, taken off calendar, etc. Auto-classified from the ruling text; same correction path as motion type.
 
@@ -241,13 +229,17 @@ def dept_section(dept: str, df_dept: pd.DataFrame) -> str:
     gaps     = find_gap_runs(min_d, max_checked, checked, holidays)
     n_gaps   = len(gaps)
 
-    summary = (f'**{name}** &nbsp;·&nbsp; {count:,} rulings'
+    # Markdown bold (`**...**`) inside a <summary> tag is rendered literally
+    # by GitHub — the asterisks show up as text. Use <strong> so the
+    # department name renders bold in the collapsed header.
+    summary = (f'<strong>{name}</strong> &nbsp;·&nbsp; {count:,} rulings'
+               f' &nbsp;·&nbsp; Earliest: {min_d}'
                f' &nbsp;·&nbsp; Latest: {latest_data}'
                f' &nbsp;·&nbsp; {n_gaps} gap{"s" if n_gaps != 1 else ""}')
 
     body = f"""\
 
-{count:,} tentative rulings. Latest: {latest_data}.
+{count:,} tentative rulings. Earliest: {min_d}. Latest: {latest_data}.
 
 ### Gaps ({n_gaps})
 

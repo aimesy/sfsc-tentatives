@@ -11,6 +11,37 @@ let currentTabId = null;
 // Firefox extensions live under moz-extension://; Chrome under chrome-extension://.
 const IS_FIREFOX = chrome.runtime.getURL('').startsWith('moz-extension://');
 
+// True when this popup is running inside the standalone detached window
+// (chrome.windows.create with type: 'popup'), false when it's running as
+// the regular toolbar-icon popup. We use this to hide the Detach button
+// once we're already detached, and to re-target SFTC tab queries to the
+// last-active normal window rather than the popup window itself.
+const IS_DETACHED = new URLSearchParams(location.search).get('detached') === '1';
+// When detached, we bind to a specific SFTC tab id passed via URL — the
+// "active tab in current window" pattern would otherwise resolve to the
+// detached popup window itself, where there is no SFTC page.
+const DETACHED_TAB_ID = (() => {
+  const raw = new URLSearchParams(location.search).get('tabId');
+  const n = parseInt(raw || '', 10);
+  return Number.isFinite(n) ? n : null;
+})();
+
+// Return the SFTC tab the popup is bound to. In the regular toolbar popup
+// this is the active tab of the current window; in the detached popup it's
+// the tab id captured at detach time (which may now live in any window).
+async function getActiveSftcTab() {
+  if (IS_DETACHED && DETACHED_TAB_ID != null) {
+    try {
+      const tab = await chrome.tabs.get(DETACHED_TAB_ID);
+      return tab || null;
+    } catch {
+      return null;
+    }
+  }
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  return tab || null;
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function setStatus(msg, type = '') {
@@ -49,11 +80,13 @@ function parseDate(str) {
 
 // ── GitHub date helpers ───────────────────────────────────────────────────────
 
-async function fetchScannedDates(s) {
-  const [owner, repo] = s.repo.split('/');
-  // Determine department from current page if possible, default to 302
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  let dept = '302';
+// Cache the department determined from the current tab so multiple bulk
+// flows in one popup session don't each pay a scrape round-trip.
+let _detectedDept = null;
+
+async function detectDepartment() {
+  if (_detectedDept) return _detectedDept;
+  const tab = await getActiveSftcTab();
   if (tab?.url?.includes('webapps.sftc.org')) {
     try {
       const results = await new Promise(resolve =>
@@ -61,9 +94,21 @@ async function fetchScannedDates(s) {
           resolve(chrome.runtime.lastError ? null : r)
         )
       );
-      if (results?.department) dept = results.department;
+      if (results?.department) {
+        _detectedDept = String(results.department);
+        return _detectedDept;
+      }
     } catch (_) {}
   }
+  return '302';
+}
+
+async function fetchScannedDates(s) {
+  const [owner, repo] = s.repo.split('/');
+  // Determine department from current page if possible, default to 302.
+  // Cached on _detectedDept so the bulk-start handler can read it without a
+  // second scrape round-trip.
+  const dept = await detectDepartment();
 
   // Union three sources, in order of staleness:
   //   • coverage/dept<N>.json — parquet court_dates ∪ raw filenames; only
@@ -173,7 +218,7 @@ async function autoScanUnscanned() {
   const err = validateSettings(s);
   if (err) { setStatus(err, 'error'); return; }
 
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const tab = await getActiveSftcTab();
   if (!tab?.url?.includes('webapps.sftc.org/tr/')) {
     setStatus('Navigate to the SFSC page first.', 'warn');
     return;
@@ -184,6 +229,7 @@ async function autoScanUnscanned() {
 
   const scannedDates = await fetchScannedDates(s);
   const today = localISO(new Date());
+  const department = await detectDepartment();
 
   let allWeekdays;
   if (scannedDates?.length) {
@@ -198,7 +244,30 @@ async function autoScanUnscanned() {
   let unscanned = allWeekdays.filter(d => !scanned.has(d));
 
   if (!unscanned.length) {
-    setStatus('All dates up to today are already scanned!', 'success');
+    // Distinguish the two "no work to do" cases so the user knows whether
+    // to start a sibling tab on a different dept, navigate further back,
+    // or just wait. Without this we say "all scanned" for both cases and
+    // the user assumes the popup is broken when another tab is mid-scrape.
+    const inflight = await new Promise(resolve =>
+      chrome.runtime.sendMessage(
+        { action: 'inflight-dates', payload: { department } },
+        r => resolve((r && typeof r === 'object' && !r.error) ? r : {})
+      )
+    );
+    const inflightCount = Object.keys(inflight || {}).length;
+    if (inflightCount > 0) {
+      setStatus(
+        `All weekdays from ${scannedDates[0]} → today (Dept ${department}) are either committed or being scanned by another tab (${inflightCount} in flight). ` +
+        `Either wait for that tab to finish, or set a manual From date earlier than ${scannedDates[0]}.`,
+        'warn'
+      );
+    } else {
+      setStatus(
+        `All weekdays from ${scannedDates[0]} → today are already scanned for Dept ${department}. ` +
+        `Set a manual From date earlier than ${scannedDates[0]} to fill earlier gaps.`,
+        'success'
+      );
+    }
     $('auto-scan-btn').disabled = false;
     return;
   }
@@ -220,7 +289,7 @@ async function autoScanUnscanned() {
   setStatus(`Starting scan of ${unscanned.length} unscanned dates (${dirNote})…`, 'loading');
 
   chrome.runtime.sendMessage(
-    { action: 'start-bulk', payload: { dates: unscanned, tabId: tab.id, settings, waitMs } },
+    { action: 'start-bulk', payload: { dates: unscanned, tabId: tab.id, settings, waitMs, department } },
     res => {
       if (res?.error) {
         setStatus('Error starting auto-scan: ' + res.error, 'error');
@@ -338,11 +407,13 @@ $('update-dismiss').addEventListener('click', () => {
 async function init() {
   setStatus('Checking page…', 'loading');
 
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const tab = await getActiveSftcTab();
   currentTabId = tab?.id ?? null;
 
-  if (!tab.url?.includes('webapps.sftc.org/tr/')) {
-    setStatus('Navigate to the SFSC Tentative Rulings page first.', 'warn');
+  if (!tab?.url?.includes('webapps.sftc.org/tr/')) {
+    setStatus(IS_DETACHED
+      ? 'The SFSC tab this popup was detached from is gone. Close this window and reopen the popup from a SFSC tab.'
+      : 'Navigate to the SFSC Tentative Rulings page first.', 'warn');
     return;
   }
 
@@ -353,11 +424,13 @@ async function init() {
     await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
   } catch (_) {}
 
-  // Pre-fill date range from current page date input
+  // Pre-fill the From date from the current page's date input. To is left
+  // blank intentionally — the bulk handler treats blank-To as "today", which
+  // is what you want 99% of the time, and forcing the user to clear an
+  // auto-populated value before opening the calendar picker was friction.
   chrome.tabs.sendMessage(tab.id, { action: 'get-date' }, r => {
     if (!chrome.runtime.lastError && r?.date) {
       if (!$('bulk-from').value) { $('bulk-from').value = r.date; $('bulk-from-picker').value = r.date; }
-      if (!$('bulk-to').value)   { $('bulk-to').value   = r.date; $('bulk-to-picker').value   = r.date; }
     }
   });
 
@@ -379,14 +452,13 @@ async function init() {
     scrapedData = result;
     const n    = result.rulings.length;
     const dept = result.department;
+    if (dept) _detectedDept = String(dept);
 
-    // Pre-fill date range from scraped ruling court date
+    // Pre-fill From from the scraped court date if the page input didn't
+    // give us one. Don't touch To.
     if (!$('bulk-from').value && result.rulings[0]?.['Court Date']) {
       const iso = parseDate(result.rulings[0]['Court Date']);
-      if (iso) {
-        if (!$('bulk-from').value) { $('bulk-from').value = iso; $('bulk-from-picker').value = iso; }
-        if (!$('bulk-to').value)   { $('bulk-to').value   = iso; $('bulk-to-picker').value   = iso; }
-      }
+      if (iso) { $('bulk-from').value = iso; $('bulk-from-picker').value = iso; }
     }
 
     if (n === 0) { setStatus('No rulings found on this page.', 'warn'); return; }
@@ -453,10 +525,20 @@ function updateBulkStatus(job) {
     resetBulkButtons();
   } else if (job.done) {
     const flushNote = job.lastFlushError ? ` — last flush: ${job.lastFlushError}` : '';
-    setStatus(
-      `Done: ${job.committed} committed, ${job.skipped} skipped, ${job.errors} errors${flushNote}`,
-      job.errors > 0 ? 'warn' : 'success'
-    );
+    // If everything was skipped (sibling tab held the claims, or every date
+    // was already in the archive), say so explicitly. The previous "Done: 0
+    // committed" wording read like a failure when in fact the run completed
+    // cleanly.
+    const total = (job.dates?.length || 0);
+    let kind = job.errors > 0 ? 'warn' : 'success';
+    let line;
+    if (total > 0 && job.committed === 0 && job.errors === 0 && job.skipped === total) {
+      line = `Done: all ${total} dates were already in the archive or being scanned by another tab — nothing to do here${flushNote}`;
+      kind = 'success';
+    } else {
+      line = `Done: ${job.committed} committed, ${job.skipped} skipped, ${job.errors} errors${flushNote}`;
+    }
+    setStatus(line, kind);
     resetBulkButtons();
   } else if (!job.running && job.pausedForSession) {
     // SFTC either returned the "session expired" page or Cloudflare hit us
@@ -534,7 +616,7 @@ $('bulk-btn').addEventListener('click', async () => {
   let dates  = weekdaysBetween(from, to);
   if (!dates.length) { setStatus('No weekdays in that range.', 'warn'); return; }
 
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const tab = await getActiveSftcTab();
   if (!tab?.url?.includes('webapps.sftc.org/tr/')) {
     setStatus('Navigate to the SFSC page first.', 'warn');
     return;
@@ -575,8 +657,9 @@ $('bulk-btn').addEventListener('click', async () => {
   const dirNote = direction === 'backward' ? ', newest-first' : ', oldest-first';
   setStatus(`Starting background scrape of ${dates.length} dates${dirNote}${skipNote}…`, 'loading');
 
+  const department = await detectDepartment();
   chrome.runtime.sendMessage(
-    { action: 'start-bulk', payload: { dates, tabId: tab.id, settings, waitMs } },
+    { action: 'start-bulk', payload: { dates, tabId: tab.id, settings, waitMs, department } },
     res => {
       if (res?.error) {
         setStatus('Error starting bulk: ' + res.error, 'error');
@@ -593,7 +676,7 @@ $('bulk-stop').addEventListener('click', () => {
 });
 
 $('bulk-resume').addEventListener('click', async () => {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const tab = await getActiveSftcTab();
   if (!tab?.url?.includes('webapps.sftc.org/tr/')) {
     setStatus('Navigate to the SFSC page first.', 'warn');
     return;
@@ -663,6 +746,45 @@ document.querySelectorAll('input[name="scan-direction"]').forEach(r => {
   });
 });
 
+// Persist "Skip dates already scanned in this range" so contributors who
+// always run with it on don't have to re-tick it every time they reopen
+// the popup.
+chrome.storage.local.get('_skipScanned').then(({ _skipScanned }) => {
+  if (typeof _skipScanned === 'boolean') $('skip-scanned').checked = _skipScanned;
+});
+$('skip-scanned').addEventListener('change', () => {
+  chrome.storage.local.set({ _skipScanned: $('skip-scanned').checked });
+});
+
+// ── Detach popup into a standalone window ───────────────────────────────────
+// MV3 toolbar popups close every time focus leaves them, which is hostile to
+// monitoring a long bulk scan: every click on the SFSC tab dismisses the
+// progress display. Detach opens this same popup as a standalone browser
+// window (chrome.windows.create with type: 'popup') that stays open until
+// the user closes it. The window is bound to the SFTC tab id captured at
+// detach time so all the per-tab status, claim, and resume routing keeps
+// working even though "active tab in current window" no longer points at
+// the SFTC page.
+
+if (IS_DETACHED) {
+  const btn = $('detach-btn');
+  if (btn) btn.style.display = 'none';
+} else {
+  $('detach-btn').addEventListener('click', async () => {
+    const tab = await getActiveSftcTab();
+    if (!tab?.id) {
+      setStatus('Open this from a SFSC tab to detach the popup.', 'warn');
+      return;
+    }
+    const url = chrome.runtime.getURL('popup.html') + `?detached=1&tabId=${tab.id}`;
+    chrome.windows.create({
+      url, type: 'popup', width: 380, height: 720, focused: true,
+    });
+    // Close this transient popup so the user isn't left with two copies.
+    window.close();
+  });
+}
+
 // ── Tooltips toggle ──────────────────────────────────────────────────────────
 // Each interactable element carries a data-tip attribute; CSS in popup.html
 // renders the tooltip on hover but ONLY when body.tips-on is set. The toggle
@@ -685,7 +807,8 @@ $('tips-toggle').addEventListener('click', async () => {
 // ── Diagnose ──────────────────────────────────────────────────────────────────
 
 $('diag-btn').addEventListener('click', async () => {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const tab = await getActiveSftcTab();
+  if (!tab) { setStatus('No SFSC tab found.', 'warn'); return; }
   try {
     await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
   } catch (_) {}
@@ -716,7 +839,7 @@ loadSettings().then(s => {
 // their own popups.
 async function restoreOwnTabJob() {
   if (currentTabId == null) {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const tab = await getActiveSftcTab();
     currentTabId = tab?.id ?? null;
   }
   if (currentTabId == null) return;

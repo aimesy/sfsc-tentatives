@@ -1267,6 +1267,7 @@ const FILTER_COLS = [
   ['motion_type',     'Motion Type',      ['is', 'is not']],
   ['motion_subtype',  'Motion Subtype',   ['is', 'is not', 'contains']],
   ['judge',           'Judge',            ['is', 'is not', 'contains']],
+  ['judge_subtype',   'Judge Pro Tem name', ['is', 'is not', 'contains']],
   ['department',      'Department',       ['is', 'is not']],
   // Outcome filtering happens in JS post-fetch (the classifier reads ruling
   // text), see runQuery + outcomeFilterMatches.
@@ -1314,6 +1315,15 @@ async function rebuildDataView() {
   // departments we still need a view with the right schema so queries don't
   // crash — DuckDB infers the types from a one-row dummy SELECT we filter
   // out via WHERE FALSE.
+  //
+  // Two derived columns ride along on the view:
+  //   • judge_canonical — collapses every "Judge Pro Tem: <name>" entry to
+  //     a single "Judge Pro Tem" umbrella so the Judge dropdown / column
+  //     filter shows one row instead of dozens of low-count individuals.
+  //   • judge_subtype   — the trailing name (e.g. "Bruce Highman"), null
+  //     when judge isn't a JPT. Filterable via "+ Filter" → Judge Pro Tem
+  //     name, and rendered as a sub-line under "Judge Pro Tem" in the
+  //     table — same visual pattern as outcome → outcome_subtype.
   if (!conn) return;
   if (loadedDepts.size === 0) {
     await conn.query(`CREATE OR REPLACE VIEW data AS
@@ -1325,13 +1335,28 @@ async function rebuildDataView() {
         NULL::VARCHAR AS hearing_time,
         NULL::VARCHAR AS calendar_matter,
         NULL::VARCHAR AS judge,
+        NULL::VARCHAR AS judge_canonical,
+        NULL::VARCHAR AS judge_subtype,
         NULL::VARCHAR AS ruling,
         NULL::VARCHAR AS row_hash
       WHERE FALSE`);
     return;
   }
   const unions = [...loadedDepts.keys()]
-    .map(d => `SELECT * FROM ${tableNameFor(d)}`)
+    .map(d => `SELECT
+        department, case_number, case_title, court_date, hearing_time,
+        calendar_matter, judge,
+        CASE
+          WHEN judge LIKE 'Judge Pro Tem:%' OR judge LIKE 'Judge Pro Tem' OR judge LIKE 'Judge Pro Tem %'
+            THEN 'Judge Pro Tem'
+          ELSE judge
+        END AS judge_canonical,
+        CASE
+          WHEN judge LIKE 'Judge Pro Tem:%' THEN TRIM(SUBSTRING(judge FROM 16))
+          ELSE NULL
+        END AS judge_subtype,
+        ruling, row_hash
+      FROM ${tableNameFor(d)}`)
     .join(' UNION ALL ');
   await conn.query(`CREATE OR REPLACE VIEW data AS ${unions}`);
 }
@@ -1458,13 +1483,15 @@ async function refreshAuxDropdowns() {
   }
   if ([...deptEl.options].some(o => o.value === prevDept)) deptEl.value = prevDept;
 
-  // Judge dropdown — frequency ordered.
+  // Judge dropdown — frequency ordered. Uses judge_canonical so every
+  // "Judge Pro Tem: <name>" entry collapses into one "Judge Pro Tem" row
+  // (with the named JPTs filterable via the judge_subtype "+ Filter" rule).
   judgeEl.innerHTML = '<option value="">All</option>';
   if (loadedDepts.size > 0) {
     for (const r of (await conn.query(
-      `SELECT judge, COUNT(*) n FROM data
-       WHERE judge IS NOT NULL AND judge!=''
-       GROUP BY judge ORDER BY n DESC, judge`
+      `SELECT judge_canonical AS judge, COUNT(*) n FROM data
+       WHERE judge_canonical IS NOT NULL AND judge_canonical!=''
+       GROUP BY judge_canonical ORDER BY n DESC, judge_canonical`
     )).toArray()) {
       judgeEl.appendChild(new Option(`${r.judge} (${Number(r.n).toLocaleString()})`, r.judge));
     }
@@ -1784,7 +1811,9 @@ function buildWhere() {
   if (from)  parts.push(`court_date >= '${from}'`);
   if (to)    parts.push(`court_date <= '${to}'`);
   if (dept)  parts.push(`department = '${escapeSql(dept)}'`);
-  if (judge) parts.push(`judge = '${escapeSql(judge)}'`);
+  // Judge dropdown values are canonical (JPT umbrella collapsed) so we
+  // match against judge_canonical, not the raw judge field.
+  if (judge) parts.push(`judge_canonical = '${escapeSql(judge)}'`);
   if (q)     parts.push(`(case_number ILIKE '%${q}%' OR case_title ILIKE '%${q}%' OR ruling ILIKE '%${q}%' OR calendar_matter ILIKE '%${q}%')`);
   if (mtype) {
     const cms = msub ? calendarMattersForSubtype(mtype, msub) : calendarMattersForType(mtype);
@@ -1829,15 +1858,19 @@ function columnFiltersToSql() {
       out.push(`COALESCE(calendar_matter, '') IN (${list})`);
       continue;
     }
-    // Direct SQL columns. Empty-string values are treated as "blank cells",
-    // so we wrap them in COALESCE for matching to NULL too.
+    // Judge values come from uniqueValuesFor('judge'), which uses
+    // judge_canonical — so the filter must apply to that derived column,
+    // not the raw `judge` field (otherwise selecting "Judge Pro Tem" in
+    // the column-header filter would only match rows whose raw judge
+    // string is exactly "Judge Pro Tem", missing every "Judge Pro Tem: X").
+    const sqlCol = col === 'judge' ? 'judge_canonical' : col;
     const vals = [...set];
     const hasBlank = vals.some(v => v === '' || v == null);
     const literals = vals.filter(v => v !== '' && v != null)
                          .map(v => `'${escapeSql(v)}'`);
     const clauses = [];
-    if (literals.length) clauses.push(`${col} IN (${literals.join(',')})`);
-    if (hasBlank)        clauses.push(`(${col} IS NULL OR ${col} = '')`);
+    if (literals.length) clauses.push(`${sqlCol} IN (${literals.join(',')})`);
+    if (hasBlank)        clauses.push(`(${sqlCol} IS NULL OR ${sqlCol} = '')`);
     out.push(clauses.length === 1 ? clauses[0] : `(${clauses.join(' OR ')})`);
   }
   return out;
@@ -1899,7 +1932,11 @@ function filterToSql(f) {
       : `${boundary} AND ${hit}`;
   }
   if (!v && f.op !== 'is' && f.op !== 'is not') return null;
-  const col = f.col;
+  // The judge chip-filter and column filter both target the canonical
+  // (JPT-collapsed) value, so the "+ Filter" judge rule has to as well —
+  // otherwise typing "Judge Pro Tem" here would match nothing because no
+  // raw judge value equals that exact string.
+  const col = f.col === 'judge' ? 'judge_canonical' : f.col;
   const ev = escapeSql(v);
   switch (f.op) {
     case 'is':              return `${col} = '${ev}'`;
@@ -1939,7 +1976,8 @@ async function runQuery(page = 0) {
         conn.query(`SELECT COUNT(*) n FROM data WHERE ${where}`),
         conn.query(`
           SELECT department, case_number, case_title, court_date, hearing_time,
-                 calendar_matter, judge, ruling, row_hash
+                 calendar_matter, judge, judge_canonical, judge_subtype,
+                 ruling, row_hash
           FROM data WHERE ${where}
           ORDER BY ${sortCol} ${sortDir}, case_number
         `),
@@ -1959,7 +1997,8 @@ async function runQuery(page = 0) {
         conn.query(`SELECT COUNT(*) n FROM data WHERE ${where}`),
         conn.query(`
           SELECT department, case_number, case_title, court_date, hearing_time,
-                 calendar_matter, judge, ruling, row_hash
+                 calendar_matter, judge, judge_canonical, judge_subtype,
+                 ruling, row_hash
           FROM data WHERE ${where}
           ORDER BY ${sortCol} ${sortDir}, case_number
           LIMIT ${PAGE_SIZE} OFFSET ${offset}
@@ -2003,8 +2042,14 @@ function renderTable(data) {
     const o = lookupOutcome(splitRuling(r.ruling, r.department).ruling);
     const oSub = o.subtype ? `<div class="mtype-sub">${esc(o.subtype)}</div>` : '';
     const examiner = isExaminer(r);
-    const judgeCell = r.judge
-      ? `${esc(r.judge)}${examiner ? '<span class="examiner-badge" title="Examiner (not a judge) — Probate matters are reviewed by court examiners.">📋</span>' : ''}`
+    // Judge cell: render judge_canonical (e.g. "Judge Pro Tem") with the
+    // specific JPT name as a sub-line — same visual pattern as motion type
+    // / outcome with their subtypes. Falls back to the raw judge field if
+    // judge_canonical is somehow missing (defensive — view always provides it).
+    const judgeMain = r.judge_canonical || r.judge || '';
+    const jSub = r.judge_subtype ? `<div class="mtype-sub">${esc(r.judge_subtype)}</div>` : '';
+    const judgeCell = judgeMain
+      ? `${esc(judgeMain)}${examiner ? '<span class="examiner-badge" title="Examiner (not a judge) — Probate matters are reviewed by court examiners.">📋</span>' : ''}${jSub}`
       : '';
     return `<tr data-idx="${i}">
       <td class="col-dept">${esc(r.department)}</td>
@@ -2219,7 +2264,7 @@ const PANEL_PRESETS = {
       // chart to its requested length.
       const limit = (+panel.cfg.topN || 12) + 50;
       const r = (await conn.query(
-        `SELECT COALESCE(judge, '(unspecified)') j, COUNT(*) n FROM data
+        `SELECT COALESCE(judge_canonical, '(unspecified)') j, COUNT(*) n FROM data
          WHERE ${where} GROUP BY j ORDER BY n DESC LIMIT ${limit}`)).toArray();
       const keep = makeExcludeMatcher(panel.cfg.exclude);
       const filtered = r.filter(x => keep(x.j)).slice(0, +panel.cfg.topN || 12);
@@ -2724,13 +2769,16 @@ $('export-btn').addEventListener('click', async () => {
   $('export-btn').disabled = true; $('export-btn').textContent = '…';
   const all = (await conn.query(`
     SELECT department, case_number, case_title, court_date, hearing_time,
-           calendar_matter, judge, ruling
+           calendar_matter, judge, judge_subtype, ruling
     FROM data WHERE ${buildWhere()}
     ORDER BY ${sortCol} ${sortDir}, case_number
   `)).toArray();
+  // judge stays as the raw "Judge Pro Tem: <name>" string for back-compat
+  // with anyone scripting against earlier exports; judge_subtype rides
+  // alongside as the extracted name only (empty for sitting judges).
   const cols = ['department','case_number','case_title','court_date','hearing_time',
                 'calendar_matter','motion_type','motion_subtype','outcome','outcome_subtype',
-                'judge','ruling','admin_notes','courtcall'];
+                'judge','judge_subtype','ruling','admin_notes','courtcall'];
   const lines = [cols.join(',')];
   for (const r of all) {
     if (!outcomeFilterMatches(r)) continue;
@@ -2743,7 +2791,8 @@ $('export-btn').addEventListener('click', async () => {
       court_date: r.court_date, hearing_time: r.hearing_time,
       calendar_matter: r.calendar_matter, motion_type: m.type, motion_subtype: m.subtype || '',
       outcome: o.outcome, outcome_subtype: o.subtype || '',
-      judge: r.judge, ruling: sp.ruling, admin_notes: sp.admin, courtcall: sp.courtcall,
+      judge: r.judge, judge_subtype: r.judge_subtype || '',
+      ruling: sp.ruling, admin_notes: sp.admin, courtcall: sp.courtcall,
     };
     lines.push(cols.map(c => csvCell(rec[c])).join(','));
   }
@@ -2822,9 +2871,12 @@ async function uniqueValuesFor(col) {
     }
     pairs = [...counts.entries()].map(([v, n]) => ({ value: v, count: n }));
   } else {
-    // Direct SQL column.
+    // Direct SQL column. For `judge` we serve canonical values (JPT
+    // umbrella collapsed) so the column-header filter offers a single
+    // "Judge Pro Tem" row rather than dozens of low-count individuals.
+    const sqlCol = col === 'judge' ? 'judge_canonical' : col;
     const rs = (await conn.query(
-      `SELECT COALESCE(${col}, '') v, COUNT(*) n FROM data
+      `SELECT COALESCE(${sqlCol}, '') v, COUNT(*) n FROM data
        GROUP BY v ORDER BY n DESC, v`)).toArray();
     pairs = rs.map(r => ({ value: r.v ?? '', count: Number(r.n) }));
   }
@@ -3119,7 +3171,9 @@ function openModal(r) {
   meta.innerHTML = '';
   const pills = [
     r.department ? `Dept ${r.department}` : null,
-    r.case_number, r.court_date, r.hearing_time, r.judge,
+    r.case_number, r.court_date, r.hearing_time,
+    r.judge_canonical || r.judge,
+    r.judge_subtype ? `· ${r.judge_subtype}` : null,
     m.type, m.subtype && `· ${m.subtype}`,
     o.outcome && o.outcome !== 'Other' && o.outcome !== 'Unknown' ? `→ ${o.outcome}` : null,
     o.subtype ? `· ${o.subtype}` : null,

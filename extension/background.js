@@ -19,6 +19,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, respond) => {
     'resume-bulk':   () => resumeBulk(msg.payload),
     'bulk-status':   () => readJob(msg.payload?.tabId),
     'bulk-status-all': () => readAllJobs(),
+    'inflight-dates':  () => listInFlightDates(msg.payload?.department),
   };
   const handler = handlers[msg.action];
   if (!handler) return false;
@@ -27,7 +28,9 @@ chrome.runtime.onMessage.addListener((msg, _sender, respond) => {
 });
 
 // Drop a tab's job state when the tab itself goes away — otherwise we'd
-// accumulate stale per-tab entries in storage forever.
+// accumulate stale per-tab entries in storage forever. Also release any
+// in-flight date claims this tab held so sibling tabs aren't permanently
+// locked out of those dates.
 chrome.tabs.onRemoved.addListener(async (tabId) => {
   await chrome.alarms.clear(bulkAlarmName(tabId));
   const all = await readAllJobs();
@@ -35,7 +38,139 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
     delete all[tabId];
     await chrome.storage.local.set({ _bulkJobs: all });
   }
+  await releaseAllForTab(tabId);
 });
+
+// ── Cross-tab in-flight date claims ───────────────────────────────────────────
+// Two SFTC tabs running bulk scrapes against the same department would
+// otherwise both decide the same date is "unscanned" (the duplicate guard
+// only sees commits that have already landed on GitHub) and pay the SFTC
+// round-trip twice — or worse, both buffer the same date and produce two
+// raw files for it. We keep a per-department `_inFlightClaims` map of
+// date → { tabId, claimedAt } so each date is owned by at most one tab
+// at a time.
+//
+// Schema: { [dept]: { [date]: { tabId, claimedAt } } }
+//
+// Stale entries (older than INFLIGHT_TTL_MS) are treated as released — a
+// tab that crashed mid-scrape shouldn't strand its dates forever. The TTL
+// is generous because a single bulk run with frequent CAPTCHAs can keep
+// a date claimed for many minutes.
+
+const INFLIGHT_TTL_MS = 30 * 60 * 1000;
+
+// Single-promise mutex serialises all claim get-modify-set sequences in
+// the service worker. Without it, two parallel bulkStep calls could both
+// read the same "unclaimed" map and both commit a claim, breaking the
+// invariant.
+let _claimMutex = Promise.resolve();
+function withClaimLock(fn) {
+  const next = _claimMutex.then(fn, fn);
+  _claimMutex = next.catch(() => {});
+  return next;
+}
+
+function _now() { return Date.now(); }
+
+async function _readClaims() {
+  const { _inFlightClaims = {} } = await chrome.storage.local.get('_inFlightClaims');
+  return (_inFlightClaims && typeof _inFlightClaims === 'object') ? _inFlightClaims : {};
+}
+
+async function _writeClaims(claims) {
+  await chrome.storage.local.set({ _inFlightClaims: claims });
+}
+
+function _isStale(entry) {
+  return !entry || !entry.claimedAt || (_now() - entry.claimedAt) > INFLIGHT_TTL_MS;
+}
+
+// Try to claim a date for `tabId` in `department`. Returns true on success,
+// false if some other tab currently owns it.
+async function claimDate(department, date, tabId) {
+  if (!department || !date || tabId == null) return true;
+  return withClaimLock(async () => {
+    const claims = await _readClaims();
+    const deptMap = claims[department] || {};
+    const existing = deptMap[date];
+    if (existing && existing.tabId !== tabId && !_isStale(existing)) return false;
+    deptMap[date] = { tabId, claimedAt: _now() };
+    claims[department] = deptMap;
+    await _writeClaims(claims);
+    return true;
+  });
+}
+
+async function releaseDate(department, date, tabId) {
+  if (!department || !date || tabId == null) return;
+  return withClaimLock(async () => {
+    const claims = await _readClaims();
+    const deptMap = claims[department];
+    if (!deptMap) return;
+    const entry = deptMap[date];
+    if (!entry || entry.tabId !== tabId) return;
+    delete deptMap[date];
+    if (Object.keys(deptMap).length === 0) delete claims[department];
+    await _writeClaims(claims);
+  });
+}
+
+async function releaseAllForTab(tabId) {
+  if (tabId == null) return;
+  return withClaimLock(async () => {
+    const claims = await _readClaims();
+    let changed = false;
+    for (const dept of Object.keys(claims)) {
+      const map = claims[dept];
+      for (const date of Object.keys(map)) {
+        if (map[date].tabId === tabId || _isStale(map[date])) {
+          delete map[date];
+          changed = true;
+        }
+      }
+      if (Object.keys(map).length === 0) delete claims[dept];
+    }
+    if (changed) await _writeClaims(claims);
+  });
+}
+
+// Returns the set of dates currently claimed by tabs OTHER than `excludeTabId`
+// in `department`. Used by startBulk to pre-filter dates so two tabs never
+// race to scrape the same date.
+async function getClaimsByOtherTabs(department, excludeTabId) {
+  if (!department) return new Set();
+  const claims = await _readClaims();
+  const deptMap = claims[department] || {};
+  const out = new Set();
+  for (const date of Object.keys(deptMap)) {
+    const entry = deptMap[date];
+    if (entry.tabId !== excludeTabId && !_isStale(entry)) out.add(date);
+  }
+  return out;
+}
+
+// Surface the current claim map (post-staleness-filter) so the popup can
+// show which dates a sibling tab is working on — useful when the user is
+// curious why "Skip already scanned" produced a smaller list than expected.
+async function listInFlightDates(department) {
+  const claims = await _readClaims();
+  if (department) {
+    const deptMap = claims[department] || {};
+    const out = {};
+    for (const [date, entry] of Object.entries(deptMap)) {
+      if (!_isStale(entry)) out[date] = entry;
+    }
+    return out;
+  }
+  const out = {};
+  for (const [dept, map] of Object.entries(claims)) {
+    out[dept] = {};
+    for (const [date, entry] of Object.entries(map)) {
+      if (!_isStale(entry)) out[dept][date] = entry;
+    }
+  }
+  return out;
+}
 
 // ── Update checking ───────────────────────────────────────────────────────────
 
@@ -248,26 +383,9 @@ async function commitBatchToGitHub({ token, owner, repo, branch, items }) {
     'X-GitHub-Api-Version': '2022-11-28',
   };
 
-  // 2. Resolve the head commit + base tree of `branch`.
-  const refRes = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/git/ref/heads/${encodeURIComponent(branch)}`,
-    { headers });
-  if (!refRes.ok) {
-    const body = await refRes.json().catch(() => ({}));
-    throw new Error(body.message || `git ref fetch failed: ${refRes.status}`);
-  }
-  const headSha = (await refRes.json()).object.sha;
-  const headCommitRes = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/git/commits/${headSha}`,
-    { headers });
-  if (!headCommitRes.ok) {
-    const body = await headCommitRes.json().catch(() => ({}));
-    throw new Error(body.message || `git commit fetch failed: ${headCommitRes.status}`);
-  }
-  const baseTreeSha = (await headCommitRes.json()).tree.sha;
-
-  // 3. Upload one blob per file (Contents API content is b64; blobs accept
-  //    b64 directly so we feed the same payload).
+  // Upload each blob exactly once — the b64 content doesn't change between
+  // attempts, so we can reuse blob SHAs even if we have to rebuild the tree
+  // on top of a newer head SHA.
   const treeEntries = [];
   for (const p of prepared) {
     const blobRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/blobs`, {
@@ -284,50 +402,87 @@ async function commitBatchToGitHub({ token, owner, repo, branch, items }) {
     });
   }
 
-  // 4. Build a tree on top of the current head, then a commit pointing at it.
-  const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees`, {
-    method: 'POST', headers,
-    body: JSON.stringify({ base_tree: baseTreeSha, tree: treeEntries }),
-  });
-  if (!treeRes.ok) {
-    const body = await treeRes.json().catch(() => ({}));
-    throw new Error(body.message || `git tree create failed: ${treeRes.status}`);
-  }
-  const treeSha = (await treeRes.json()).sha;
-
   // Commit message summarises the batch — first 5 paths spelled out, rest
   // collapsed. This is what shows up in the GitHub history, so make it
   // self-explanatory.
   const totalRulings = prepared.reduce((n, p) => n + (p.rulings?.length || 0), 0);
-  const dates = prepared.map(p => p.date);
-  const minDate = dates.reduce((a, b) => a < b ? a : b);
-  const maxDate = dates.reduce((a, b) => a > b ? a : b);
+  const datesArr = prepared.map(p => p.date);
+  const minDate = datesArr.reduce((a, b) => a < b ? a : b);
+  const maxDate = datesArr.reduce((a, b) => a > b ? a : b);
   const depts = [...new Set(prepared.map(p => p.department))].sort();
   const subject = `Bulk-add ${prepared.length} day(s), ${totalRulings} ruling(s) — ${minDate}..${maxDate} (Dept ${depts.join(', ')})`;
-  const body = prepared.map(p => `  • ${p.message}`).join('\n');
-  const commitMsg = `${subject}\n\n${body}`;
+  const bodyText = prepared.map(p => `  • ${p.message}`).join('\n');
+  const commitMsg = `${subject}\n\n${bodyText}`;
 
-  const commitRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/commits`, {
-    method: 'POST', headers,
-    body: JSON.stringify({ message: commitMsg, tree: treeSha, parents: [headSha] }),
-  });
-  if (!commitRes.ok) {
-    const body = await commitRes.json().catch(() => ({}));
-    throw new Error(body.message || `git commit create failed: ${commitRes.status}`);
-  }
-  const newCommitSha = (await commitRes.json()).sha;
+  // The ref-update step fails with 422 whenever another commit landed on
+  // `branch` between our head fetch and our ref PATCH. With multiple SFTC
+  // tabs (or the GitHub Actions ingest bot) committing concurrently this
+  // is routine — without retry the entire 25-item batch was silently
+  // converted to "errors" and the user had to re-scrape the whole window.
+  // Refetch head, rebuild the tree on top of the new base, and try again.
+  const MAX_REF_ATTEMPTS = 5;
+  let newCommitSha = null;
+  let lastError = null;
+  for (let attempt = 1; attempt <= MAX_REF_ATTEMPTS; attempt++) {
+    // 2. Resolve the head commit + base tree of `branch`.
+    const refRes = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/git/ref/heads/${encodeURIComponent(branch)}`,
+      { headers });
+    if (!refRes.ok) {
+      const body = await refRes.json().catch(() => ({}));
+      throw new Error(body.message || `git ref fetch failed: ${refRes.status}`);
+    }
+    const headSha = (await refRes.json()).object.sha;
+    const headCommitRes = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/git/commits/${headSha}`,
+      { headers });
+    if (!headCommitRes.ok) {
+      const body = await headCommitRes.json().catch(() => ({}));
+      throw new Error(body.message || `git commit fetch failed: ${headCommitRes.status}`);
+    }
+    const baseTreeSha = (await headCommitRes.json()).tree.sha;
 
-  // 5. Fast-forward the branch ref. If a parallel commit landed in the
-  //    interim the API returns 422; the caller can re-run the batch.
-  const updateRes = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/git/refs/heads/${encodeURIComponent(branch)}`,
-    {
-      method: 'PATCH', headers,
-      body: JSON.stringify({ sha: newCommitSha, force: false }),
+    // 3. Build a tree on top of the current head, then a commit pointing at it.
+    const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ base_tree: baseTreeSha, tree: treeEntries }),
     });
-  if (!updateRes.ok) {
-    const body = await updateRes.json().catch(() => ({}));
-    throw new Error(body.message || `git ref update failed: ${updateRes.status}`);
+    if (!treeRes.ok) {
+      const body = await treeRes.json().catch(() => ({}));
+      throw new Error(body.message || `git tree create failed: ${treeRes.status}`);
+    }
+    const treeSha = (await treeRes.json()).sha;
+
+    const commitRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/commits`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ message: commitMsg, tree: treeSha, parents: [headSha] }),
+    });
+    if (!commitRes.ok) {
+      const body = await commitRes.json().catch(() => ({}));
+      throw new Error(body.message || `git commit create failed: ${commitRes.status}`);
+    }
+    const candidateSha = (await commitRes.json()).sha;
+
+    // 4. Fast-forward the branch ref. 422 means a parallel commit landed
+    //    after our head fetch — retry from step 2 against the new head.
+    const updateRes = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/git/refs/heads/${encodeURIComponent(branch)}`,
+      {
+        method: 'PATCH', headers,
+        body: JSON.stringify({ sha: candidateSha, force: false }),
+      });
+    if (updateRes.ok) {
+      newCommitSha = candidateSha;
+      break;
+    }
+    const errBody = await updateRes.json().catch(() => ({}));
+    lastError = errBody.message || `git ref update failed: ${updateRes.status}`;
+    // Only retry on 422 (ref conflict) — other errors are surfaced.
+    if (updateRes.status !== 422 || attempt === MAX_REF_ATTEMPTS) {
+      throw new Error(lastError);
+    }
+    // Brief backoff with jitter so two retrying tabs don't lock-step.
+    await new Promise(r => setTimeout(r, 200 * attempt + Math.random() * 200));
   }
 
   // Prime caches so the next duplicate check sees these dates as covered.
@@ -436,14 +591,25 @@ async function applyJobUpdateAny(tabId, mutator) {
   return next;
 }
 
-async function startBulk({ dates, tabId, settings, waitMs }) {
+async function startBulk({ dates, tabId, settings, waitMs, department }) {
   if (tabId == null) return { error: 'No tabId on start-bulk request.' };
   await chrome.alarms.clear(bulkAlarmName(tabId));
+
+  // We DON'T pre-filter the date list against in-flight claims from other
+  // tabs here, even though that would save SFTC round-trips. The pre-filter
+  // was producing a confusing UX: a second tab launched right after the
+  // first would arrive with 0 dates and immediately report "Done: 0
+  // committed" — looking like "all dates already scanned" when in fact
+  // the sibling tab was still working through them. The per-step claim
+  // in bulkStep already rejects duplicates correctly: a sibling-claimed
+  // date is counted as "skipped" and the run advances in milliseconds,
+  // so the second tab quickly reaches dates the first tab hasn't touched.
   const job = {
     runId: Date.now(),
     running: true, done: false, fatalError: null,
     dates, index: 0, currentDate: null,
     tabId, settings, waitMs: waitMs || 5000,
+    department: department || null,
     committed: 0, skipped: 0, errors: 0,
     pendingBuffer: [],
     waitingForTab: false,
@@ -462,8 +628,11 @@ async function stopBulk({ tabId } = {}) {
   if (current) {
     await writeJob(tabId, { ...current, running: false, pausedForSession: false, pauseReason: null });
     // Flush whatever's been scraped before the user pulled the brake — same
-    // contract as completion / pause: every stop produces a commit.
+    // contract as completion / pause: every stop produces a commit. The
+    // flush itself releases the in-flight claims for the buffered dates.
+    // Anything scraped-but-not-yet-buffered is dropped here too.
     flushBulkBuffer(tabId, 'stop').catch(() => {});
+    releaseAllForTab(tabId).catch(() => {});
   }
   return { ok: true };
 }
@@ -500,36 +669,84 @@ async function resumeBulk({ tabId }) {
 //
 // `reason` is one of: 'threshold' | 'done' | 'pause' | 'stop' | 'fatal'.
 // Threshold flushes happen mid-run; the rest happen exactly once per stop
-// transition. We swallow flush failures into a counter rather than
-// surfacing them as fatalError — the caller can re-run the same date range
-// and duplicate detection makes the second run a no-op for whatever
-// did make it.
+// transition.
+//
+// If the batch tree-commit fails (the 25-at-a-time path), we DON'T just
+// throw the work away — we fall back to per-file PUTs so the data we
+// already paid the SFTC round-trip for actually lands on GitHub. The
+// per-file path is slower but reliable: each PUT is its own atomic API
+// call with its own ref-update, so a failure on one file doesn't sink
+// the others.
 async function flushBulkBuffer(tabId, reason) {
   const job = await readJob(tabId);
   if (!job || !job.pendingBuffer?.length) return;
   const items = job.pendingBuffer;
+  const dept = job.department;
   // Clear the buffer up front so a re-entrant flush (e.g. stop racing with
   // a threshold flush) doesn't double-commit.
   await applyJobUpdateAny(tabId, j => ({ ...j, pendingBuffer: [] }));
 
+  const { token, repo, branch } = job.settings;
+  const [owner, repoName] = repo.split('/');
+
+  let batchOk = false;
+  let batchErr = null;
   try {
-    const { token, repo, branch } = job.settings;
-    const [owner, repoName] = repo.split('/');
     await commitBatchToGitHub({
       token, owner, repo: repoName, branch,
       items: items.map(({ date, data }) => ({ ...data, _date: date })),
     });
+    batchOk = true;
   } catch (err) {
-    // Roll the failed items back into errors so the user sees them and
-    // can re-run. Don't put them back in the buffer — re-flushing the
-    // same payload that just 422'd will keep failing.
+    batchErr = err;
+  }
+
+  if (!batchOk) {
+    // Batch commit failed. Fall back to per-file PUTs so we don't lose
+    // 25 scrapes' worth of SFTC round-trips. Each PUT is independent,
+    // so a single bad payload (corrupt JSON, weird filename collision)
+    // doesn't take down the rest.
+    let salvagedOk = 0;
+    let salvagedErr = 0;
+    let lastErr = batchErr?.message || 'unknown batch error';
+    for (const { date, data } of items) {
+      try {
+        const r = await commitToGitHub({
+          token, owner, repo: repoName, branch,
+          data: { ...data, _date: date },
+        });
+        if (r?.ok || r?.duplicate) salvagedOk++;
+        else salvagedErr++;
+      } catch (e) {
+        salvagedErr++;
+        lastErr = e.message;
+      }
+    }
     await applyJobUpdateAny(tabId, j => {
       const u = { ...j };
-      u.committed = Math.max(0, (u.committed || 0) - items.length);
-      u.errors = (u.errors || 0) + items.length;
-      u.lastFlushError = `Batch commit failed (${reason}): ${err.message}`;
+      // Re-baseline the optimistic increment from bulkHandleResult, then
+      // add what actually landed on GitHub.
+      u.committed = Math.max(0, (u.committed || 0) - items.length) + salvagedOk;
+      u.errors = (u.errors || 0) + salvagedErr;
+      if (salvagedErr > 0) {
+        u.lastFlushError = `Batch ${reason} failed; salvaged ${salvagedOk}/${items.length} via per-file PUT, ${salvagedErr} lost: ${lastErr}`;
+      } else if (salvagedOk > 0) {
+        u.lastFlushError = `Batch ${reason} failed; recovered all ${salvagedOk} via per-file PUT.`;
+      } else {
+        u.lastFlushError = `Batch ${reason} failed: ${lastErr}`;
+      }
       return u;
     });
+  }
+
+  // Release the in-flight claim on every date in this flush, regardless of
+  // outcome. Either the date is now on GitHub (claim no longer meaningful,
+  // duplicate guard takes over) or it failed (sibling tabs / re-runs are
+  // welcome to retry it).
+  if (dept) {
+    for (const { date } of items) {
+      releaseDate(dept, date, tabId).catch(() => {});
+    }
   }
 }
 
@@ -540,11 +757,37 @@ async function bulkStep(tabId) {
   if (job.index >= job.dates.length) {
     await writeJob(tabId, { ...job, running: false, done: true });
     await flushBulkBuffer(tabId, 'done');
+    releaseAllForTab(tabId).catch(() => {});
     return;
   }
 
   const date = job.dates[job.index];
   await writeJob(tabId, { ...job, currentDate: date });
+
+  // Claim the date for this tab. If a sibling tab is already on it (started
+  // a tick earlier, or holds it from a previous run that never released),
+  // skip and advance — counting it as a skip rather than burning a SFTC
+  // round-trip and producing a duplicate raw file.
+  if (job.department) {
+    const got = await claimDate(job.department, date, job.tabId);
+    if (!got) {
+      const next = await applyJobUpdate(tabId, job.runId, j => {
+        const u = { ...j };
+        u.skipped++;
+        u.index++;
+        if (u.index >= u.dates.length) { u.running = false; u.done = true; }
+        return u;
+      });
+      if (next?.done) {
+        await flushBulkBuffer(tabId, 'done');
+        releaseAllForTab(tabId).catch(() => {});
+        return;
+      }
+      // Schedule the next step immediately — no SFTC round-trip happened.
+      if (next?.running) chrome.alarms.create(bulkAlarmName(tabId), { when: Date.now() + 50 });
+      return;
+    }
+  }
 
   if (!await injectContentScript(job)) return;
 
@@ -599,6 +842,7 @@ async function injectContentScript(job) {
     // effort — we lose the in-progress run but at least keep the dates that
     // already succeeded.
     flushBulkBuffer(job.tabId, 'fatal').catch(() => {});
+    releaseAllForTab(job.tabId).catch(() => {});
     return false;
   }
 }
@@ -619,13 +863,20 @@ async function bulkHandleResult(job, date, data) {
   } else if (data && !data.error && !data.pending) {
     // Buffer the scrape; commit happens at flush time. We optimistically
     // count it as "committed" — if the tree commit fails, flushBulkBuffer
-    // rolls the count back into "errors". That keeps the running display
-    // useful (fast feedback per date) without blocking on the network.
+    // falls back to per-file PUTs and reconciles the count to whatever
+    // actually landed on GitHub. That keeps the running display useful
+    // (fast feedback per date) without blocking on the network.
     outcome = 'committed';
   }
 
+  // If we just learned the department from a successful scrape and the job
+  // didn't have one yet, persist it on the job so subsequent bulkSteps can
+  // claim against the right dept map.
+  const learnedDept = (outcome === 'committed' && data?.department) ? String(data.department) : null;
+
   const next = await applyJobUpdate(job.tabId, job.runId, j => {
     const u = { ...j, waitingForTab: false };
+    if (learnedDept && !u.department) u.department = learnedDept;
     if (outcome === 'session') {
       // Auto-pause: stop the run, leave `index` unchanged so Resume
       // re-tries the same date, and reload the SFTC tab so the user
@@ -646,6 +897,17 @@ async function bulkHandleResult(job, date, data) {
     }
     return u;
   });
+
+  // Release the in-flight claim for non-buffered outcomes. Committed dates
+  // stay claimed until flushBulkBuffer commits them (or rolls them back).
+  // Session pauses release the claim too — the user may take a while to
+  // solve the CAPTCHA, and we don't want to lock other tabs out of that
+  // date in the meantime; the resumeBulk path will re-claim on the next
+  // bulkStep against the same date.
+  const dept = next?.department || job.department || data?.department || null;
+  if (dept && outcome !== 'committed') {
+    releaseDate(dept, date, job.tabId).catch(() => {});
+  }
 
   if (outcome === 'session') {
     // Flush the buffer before the user touches the tab — keeps everything
@@ -669,6 +931,7 @@ async function bulkHandleResult(job, date, data) {
 
   if (next?.done) {
     await flushBulkBuffer(job.tabId, 'done');
+    releaseAllForTab(job.tabId).catch(() => {});
     return;
   }
 
