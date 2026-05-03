@@ -1206,13 +1206,12 @@ function isExaminer(row) {
 //      non-discovery business calendared in 301 — CEQA, writs — is
 //      accepted as a known false positive in exchange for catching
 //      every genuine discovery motion without case-by-case classification.
-//   2. Dept 304 with `calendar_kind = 'discovery'` (set at ingest time
-//      from the raw/dept304/discovery/ sub-folder).
-//   3. Ruling text starts with "On Asbestos Discovery Calendar" —
-//      catches dept 304 rows whose calendar_kind isn't yet populated.
-//   4. Auto-classified motion type matches a discovery-flavoured
+//   2. Auto-classified motion type matches a discovery-flavoured
 //      taxonomy entry — catches discovery motions calendared in any
-//      other department.
+//      other department. Dept 304 used to also have a discovery
+//      sub-calendar branch here, but the user confirmed that
+//      sub-calendar isn't in use, so the only thing left for 304 is
+//      the motion-type heuristic that applies everywhere.
 const DISCOVERY_MOTION_TYPES = new Set([
   'Compel Discovery',
   'Quash Subpoena',
@@ -1222,8 +1221,6 @@ const DISCOVERY_MOTION_TYPES = new Set([
 function isDiscovery(row) {
   if (!row) return false;
   if (String(row.department) === '301') return true;
-  if (row.calendar_kind === 'discovery') return true;
-  if (/On\s+Asbestos\s+Discovery\s+Calendar/i.test(row.ruling || '')) return true;
   const m = lookupMotion(row.department, row.calendar_matter);
   return DISCOVERY_MOTION_TYPES.has(m.type);
 }
@@ -1374,16 +1371,10 @@ async function rebuildDataView() {
         NULL::VARCHAR AS judge_canonical,
         NULL::VARCHAR AS judge_subtype,
         NULL::VARCHAR AS ruling,
-        NULL::VARCHAR AS row_hash,
-        NULL::VARCHAR AS calendar_kind
+        NULL::VARCHAR AS row_hash
       WHERE FALSE`);
     return;
   }
-  // calendar_kind is populated for Dept 304 rows (Asbestos Law & Motion
-  // vs Asbestos Discovery sub-calendar) and null for everything else.
-  // Older per-dept parquets predate the column; we COALESCE through the
-  // column-existence guard so the union SELECT works on a mixed cohort
-  // where some tables have the column and some don't.
   const unions = [...loadedDepts.keys()]
     .map(d => `SELECT
         department, case_number, case_title, court_date, hearing_time,
@@ -1397,8 +1388,7 @@ async function rebuildDataView() {
           WHEN judge LIKE 'Judge Pro Tem:%' THEN TRIM(SUBSTRING(judge FROM 16))
           ELSE NULL
         END AS judge_subtype,
-        ruling, row_hash,
-        TRY_CAST(calendar_kind AS VARCHAR) AS calendar_kind
+        ruling, row_hash
       FROM ${tableNameFor(d)}`)
     .join(' UNION ALL ');
   await conn.query(`CREATE OR REPLACE VIEW data AS ${unions}`);
@@ -2020,7 +2010,7 @@ async function runQuery(page = 0) {
         conn.query(`
           SELECT department, case_number, case_title, court_date, hearing_time,
                  calendar_matter, judge, judge_canonical, judge_subtype,
-                 ruling, row_hash, calendar_kind
+                 ruling, row_hash
           FROM data WHERE ${where}
           ORDER BY ${sortCol} ${sortDir}, case_number
         `),
@@ -2041,7 +2031,7 @@ async function runQuery(page = 0) {
         conn.query(`
           SELECT department, case_number, case_title, court_date, hearing_time,
                  calendar_matter, judge, judge_canonical, judge_subtype,
-                 ruling, row_hash, calendar_kind
+                 ruling, row_hash
           FROM data WHERE ${where}
           ORDER BY ${sortCol} ${sortDir}, case_number
           LIMIT ${PAGE_SIZE} OFFSET ${offset}
@@ -2099,7 +2089,7 @@ function renderTable(data) {
     // the Examiner 📋 in the Judge cell. Hidden by default (column is
     // opt-in via the 🧰 Columns menu).
     const discBadge = discovery
-      ? '<span class="examiner-badge" title="Discovery motion — auto-tagged from dept (301), calendar_kind (Asbestos Discovery sub-calendar in 304), or motion-type classification.">🔍</span>'
+      ? '<span class="examiner-badge" title="Discovery motion — auto-tagged from dept (301) or motion-type classification.">🔍</span>'
       : '';
     return `<tr data-idx="${i}">
       <td class="col-dept">${esc(r.department)}</td>

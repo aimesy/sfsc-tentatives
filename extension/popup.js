@@ -83,12 +83,6 @@ function parseDate(str) {
 // Cache the department determined from the current tab so multiple bulk
 // flows in one popup session don't each pay a scrape round-trip.
 let _detectedDept = null;
-// For Dept 304 only: the Asbestos sub-calendar ('discovery' |
-// 'law-and-motion' | null). Coverage tracking and the bulk-scan path
-// have to know which sub-folder of raw/dept304/ to read; without this
-// the extension would treat both sub-calendars as the same scan target
-// and mark a date as "done" the moment either kind landed a commit.
-let _detectedKind = null;
 
 // Tab → last successfully-detected dept, persisted across popup opens and
 // service-worker restarts. After a stop/CAPTCHA cycle the SFTC tab can
@@ -127,7 +121,6 @@ async function detectDepartment() {
       );
       if (results?.department) {
         _detectedDept = String(results.department);
-        if (results.calendar_kind) _detectedKind = results.calendar_kind;
         // Persist so a future popup open against this tab — even after
         // the SFTC page enters a degraded state — can recover the dept.
         _saveCachedDeptForTab(tabId, _detectedDept).catch(() => {});
@@ -153,20 +146,13 @@ async function fetchScannedDates(s) {
   // Cached on _detectedDept so the bulk-start handler can read it without a
   // second scrape round-trip.
   const dept = await detectDepartment();
-  // Dept 304 has two sub-calendars (Asbestos Law & Motion, Asbestos
-  // Discovery) sorted into separate sub-folders. Coverage has to be
-  // computed from the right sub-folder — otherwise scraping Discovery
-  // would skip every date that already had a Law-and-Motion commit, and
-  // vice versa. Other depts ignore this.
-  const subfolder = dept === '304' ? (_detectedKind || '') : '';
-  const rawDir = subfolder ? `raw/dept${dept}/${subfolder}` : `raw/dept${dept}`;
 
   // Union three sources, in order of staleness:
   //   • coverage/dept<N>.json — parquet court_dates ∪ raw filenames; only
   //     refreshed when the ingest workflow runs, so it lags behind by
   //     ~throttle window + workflow runtime. Required for the historical
   //     Excel-imports (2014-2024) which have no raw files.
-  //   • raw/dept<N>/[<kind>/] listing — live within seconds of any commit.
+  //   • raw/dept<N>/ listing — live within seconds of any commit.
   //   • _localCommitted log   — survives popup reopen and SW restart, so a
   //     scan stopped mid-flight (or finished but pre-ingest) doesn't replay
   //     its committed dates as "still unscanned".
@@ -174,7 +160,7 @@ async function fetchScannedDates(s) {
   const headers = { Authorization: `Bearer ${s.token}`, 'X-GitHub-Api-Version': '2022-11-28' };
   const [covRes, dirRes, storage] = await Promise.allSettled([
     fetch(`https://api.github.com/repos/${owner}/${repo}/contents/coverage/dept${dept}.json?ref=${branch}`, { headers }),
-    fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${rawDir}?ref=${branch}`, { headers }),
+    fetch(`https://api.github.com/repos/${owner}/${repo}/contents/raw/dept${dept}?ref=${branch}`, { headers }),
     chrome.storage.local.get('_localCommitted'),
   ]);
 
@@ -464,19 +450,48 @@ async function loadInflightDates(deptHint) {
   });
 }
 
+// "Smart default" date used when the bound text input is empty: pick the
+// most recent date already in the archive for this dept, advanced one
+// weekday if that date is today (since today is presumably about to be
+// scanned). Falls back to today when no coverage data is loaded yet.
+// The user reported that defaulting to today put them in the wrong
+// part of the year — for a contributor filling old gaps the calendar
+// should open near the data, not near the wall clock.
+function smartDefaultDate() {
+  const today = localISO(new Date());
+  if (!_calCovered || !_calCovered.size) return today;
+  let last = '';
+  for (const d of _calCovered) if (d > last) last = d;
+  if (!last) return today;
+  if (last >= today) return nextBusinessDay(last);
+  return last;
+}
+
 function openCustomCalendar(text, picker, btn) {
-  const iso = parseDate(text.value) || localISO(new Date());
-  const d = new Date(iso + 'T12:00:00');
+  // Provisional anchor: use the bound text input's value if it's set, or
+  // today as a fallback. Once coverage finishes loading, swap to the
+  // smart default if the text input is still empty so the calendar
+  // opens near the actual data rather than near the wall clock.
+  const provisional = parseDate(text.value) || localISO(new Date());
+  const pd = new Date(provisional + 'T12:00:00');
   _calOpen = {
     text, picker, btn,
-    monthDate: new Date(d.getFullYear(), d.getMonth(), 1),
+    monthDate: new Date(pd.getFullYear(), pd.getMonth(), 1),
   };
   // Position immediately so the loading state renders in the right place.
   positionCalendar();
   $('cal-pop').classList.add('open');
   $('cal-pop').innerHTML =
     '<div class="cal-status-line cal-status-loading">Loading scan status…</div>';
-  refreshCalendarStatus().then(() => { if (_calOpen) renderCalendar(); });
+  refreshCalendarStatus().then(() => {
+    if (!_calOpen) return;
+    if (!parseDate(text.value)) {
+      const iso = smartDefaultDate();
+      const d = new Date(iso + 'T12:00:00');
+      _calOpen.monthDate = new Date(d.getFullYear(), d.getMonth(), 1);
+    }
+    renderCalendar();
+  });
 }
 
 function positionCalendar() {
@@ -907,10 +922,27 @@ function renderAllScans(jobs) {
       stateLabel = 'idle';
       stateColor = '#888';
     }
+    // Date-range line: show what the OTHER tab is responsible for
+    // ("scanning N → M") plus where it currently is. Without the range
+    // a single tab's status looks like an isolated point and the user
+    // can't tell whether it's about to overlap with the dates they're
+    // about to start. The range is the actual date span of the run, in
+    // chronological order regardless of forward/backward direction.
+    const dates  = job.dates || [];
+    let rangeLine = '';
+    if (dates.length) {
+      const first = dates[0];
+      const last  = dates[dates.length - 1];
+      const lo = first <= last ? first : last;
+      const hi = first <= last ? last  : first;
+      const dirArrow = first <= last ? '→' : '←';
+      rangeLine = `<div style="font-size:0.68rem;color:#666">range ${esc(lo)} ${dirArrow} ${esc(hi)}</div>`;
+    }
     const cur = job.currentDate ? esc(job.currentDate) : '…';
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.2rem 0;border-bottom:1px dashed #e8eef8;gap:0.4rem">
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.25rem 0;border-bottom:1px dashed #e8eef8;gap:0.4rem">
       <div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-        <strong>${dept}</strong> · ${idx}/${total} · ${cur}
+        <strong>${dept}</strong> · ${idx}/${total} · now ${cur}
+        ${rangeLine}
         <div style="font-size:0.68rem;color:#666">${counts}</div>
       </div>
       <span style="color:${stateColor};font-weight:600;font-size:0.7rem">${stateLabel}</span>

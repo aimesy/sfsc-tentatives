@@ -107,7 +107,7 @@ def extract_judge(ruling_text):
     return JUDGE_CODE_MAP.get(code)
 
 COLUMNS = ["department", "case_number", "case_title", "court_date", "hearing_time",
-           "calendar_matter", "judge", "ruling", "row_hash", "calendar_kind"]
+           "calendar_matter", "judge", "ruling", "row_hash"]
 
 # Suffixes that mark a calendar_matter as part of a split ruling. Each
 # regex matches at the END of the calendar_matter so we strip them and
@@ -118,18 +118,44 @@ COLUMNS = ["department", "case_number", "case_title", "court_date", "hearing_tim
 # entry)" markers); without stripping those, two halves of one ruling
 # never get grouped together because their `_cm_norm` values differ.
 _PART_SUFFIX_RES = [
-    # "(Part 2 of 2)" / "(Pt. 1/3)" — numeric.
-    re.compile(r'\s*\(?\s*(?:part|pt)\.?\s+\d+\s+(?:of|/)\s+\d+\s*\)?\s*\.?\s*$',
+    # "(Part 2 of 2)" / "(Pt. 1/3)" — numeric, may carry trailing cruft
+    # like "(Part 2 of 2 for purposes of entry of tentative ruling only)".
+    # Stop at the closing paren OR end-of-string so the broader admin
+    # pattern below doesn't have to relitigate this.
+    re.compile(r'\s*\(?\s*(?:part|pt)\.?\s+\d+\s+(?:of|/)\s+\d+\b[^)]*\)?\s*\.?\s*$',
                re.IGNORECASE),
     # "(Part two of two)" / "(part one of two)" — spelled-out numbers
     # (one through six covers everything we've seen in the corpus).
     re.compile(r'\s*\(?\s*(?:part|pt)\.?\s+(?:one|two|three|four|five|six)\s+'
-               r'(?:of|/)\s+(?:one|two|three|four|five|six)\s*\)?\s*\.?\s*$',
+               r'(?:of|/)\s+(?:one|two|three|four|five|six)\b[^)]*\)?\s*\.?\s*$',
                re.IGNORECASE),
-    # SFTC's "(ADDED TO CALENDAR FOR TENTATIVE RULING ENTRY PURPOSES ONLY.)"
-    # tag tacked on the second half's calendar_matter.
-    re.compile(r'\s*\(?\s*added\s+to\s+calendar\s+for\s+tentative\s+ruling'
-               r'\s+entry\s+purposes\s+only\s*\.?\s*\)?\s*\.?\s*$',
+    # ANY trailing parenthetical that mentions "tentative ruling" — the
+    # SFTC backend emits a long tail of admin annotations on the second
+    # half's calendar_matter, all of which boil down to "this row is the
+    # entry/posting half of a multi-part ruling". Variants seen in the
+    # wild include:
+    #   (ADDED TO CALENDAR FOR TENTATIVE RULING ENTRY PURPOSES ONLY)
+    #   (Added For Posting Of Tentative Ruling)
+    #   (Added For Posting Of Tentative Ruling Only)
+    #   (Added To Calendar For Issuance Of Tentative Ruling Only)
+    #   (Added To Calendar For Issuance Of Tentative Ruling Purposes Only)
+    #   (Added To Calendar For Tentative Ruling)
+    #   (Added For Posting Of Tentative Ruling.)
+    #   (For Purposes Of Entry Of Tentative Ruling)
+    # Matching on the literal phrase "tentative ruling" inside parens
+    # catches every variant without requiring per-form regex maintenance.
+    re.compile(r'\s*\([^)]*\btentative\s+ruling\b[^)]*\)\s*\.?\s*$',
+               re.IGNORECASE),
+    # Same idea without surrounding parens (rarer but does happen):
+    #   "...; for purposes of entry of tentative ruling"
+    #   "... added to calendar for tentative ruling entry purposes only"
+    re.compile(r'\s*[;,]?\s*(?:added\s+(?:to\s+calendar|for\s+posting|for\s+issuance)|for\s+purposes\s+of\s+(?:entry|posting))[^()]*\btentative\s+ruling\b[^()]*$',
+               re.IGNORECASE),
+    # "(Added For Posting)" / "(Added To Calendar For Posting)" —
+    # admin annotations that omit the "tentative ruling" phrase but
+    # carry the same meaning. Must mention "added" + "posting/issuance/entry"
+    # to avoid overshadowing legitimate motion titles like "Added Defendant".
+    re.compile(r'\s*\(\s*added\s+(?:to\s+calendar\s+)?(?:for\s+)?(?:posting|issuance|entry)[^)]*\)\s*\.?\s*$',
                re.IGNORECASE),
     # "(continued from previous entry)" / "(see previous entry)" /
     # "(continues, see next entry)" / "(tentative ruling continues …)"
@@ -289,29 +315,6 @@ def load_xlsx_2020_plus(path, department="302"):
     return rows
 
 
-def _calendar_kind_from_path(path):
-    """Infer the Asbestos sub-calendar from a raw file's path.
-
-    Dept 304 files now live under raw/dept304/<kind>/ where <kind> is
-    'discovery' or 'law-and-motion'. Files in the top-level raw/dept304/
-    folder predate the split — they're all asbestos-law-and-motion (we
-    audited every one before migrating) so we treat the absent sub-folder
-    as 'law-and-motion'. Other depts have no sub-calendars and return
-    None unconditionally.
-    """
-    parts = Path(path).parts
-    # find "deptNNN" and inspect what follows
-    for i, p in enumerate(parts):
-        if p.startswith("dept"):
-            after = parts[i+1] if i + 1 < len(parts) else ""
-            if not after.endswith(".json") and after:
-                return after  # 'discovery' or 'law-and-motion'
-            if p == "dept304":
-                return "law-and-motion"  # legacy flat-layout fallback
-            break
-    return None
-
-
 def load_json(path, department=None):
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
@@ -323,19 +326,11 @@ def load_json(path, department=None):
         records = data
         if department is None:
             department = "302"
-        wrapper_kind = None
     else:
         records    = data.get("rulings", [])
         # Wrapper department takes precedence; CLI --dept is a fallback for
         # malformed scrapes that omit the field.
         department = str(data.get("department") or department or "302")
-        wrapper_kind = data.get("calendar_kind")
-
-    # Sub-calendar tag: prefer the wrapper's explicit field (newer
-    # extension scrapes set it), fall back to inferring from the raw
-    # file's path so the existing flat-layout dept 304 files still get
-    # tagged correctly without a one-time backfill pass.
-    calendar_kind = wrapper_kind or _calendar_kind_from_path(path)
 
     rows = []
     for rec in records:
@@ -355,7 +350,6 @@ def load_json(path, department=None):
             "calendar_matter": rec.get("Calendar Matter", "").strip() or None,
             "judge":           normalize_judge_name(judge),
             "ruling":          ruling_text,
-            "calendar_kind":   calendar_kind,
         })
     return rows
 
@@ -508,27 +502,17 @@ def migrate_existing(df: pd.DataFrame) -> pd.DataFrame:
     if "judge" in df.columns:
         df["judge"] = df["judge"].apply(normalize_judge_name)
 
-    # Backfill missing columns BEFORE consolidate_splits runs — that
-    # function re-projects through `df[COLUMNS]`, which would explode if
-    # a newly-added schema column (e.g. calendar_kind) wasn't already
-    # present on the existing parquet.
+    # Backfill any missing columns so the column-order projection at the
+    # bottom doesn't blow up on a parquet that predates a recently-added
+    # schema column.
     for col in COLUMNS:
         if col not in df.columns:
             df[col] = None
-
-    # Calendar-kind backfill for Dept 304 rows imported before the column
-    # existed. The Asbestos Discovery sub-calendar's rulings always begin
-    # "On Asbestos Discovery Calendar..."; everything else in 304 is
-    # Asbestos Law and Motion. Path-based inference handles future
-    # ingests; this text-based pass closes the gap on already-indexed rows.
-    if "department" in df.columns and "calendar_kind" in df.columns:
-        m304 = (df["department"] == "304") & df["calendar_kind"].isna()
-        if m304.any():
-            disc_re = re.compile(r"On\s+Asbestos\s+Discovery\s+Calendar", re.IGNORECASE)
-            disc_mask = df.loc[m304, "ruling"].fillna("").str.contains(disc_re)
-            df.loc[m304 & df["ruling"].fillna("").str.contains(disc_re), "calendar_kind"] = "discovery"
-            df.loc[(df["department"] == "304") & df["calendar_kind"].isna(),
-                   "calendar_kind"] = "law-and-motion"
+    # Dept 304 used to ship a `calendar_kind` column distinguishing the
+    # Asbestos Law-and-Motion sub-calendar from an Asbestos Discovery
+    # sub-calendar. The discovery sub-calendar isn't actually in use, so
+    # the column has been dropped from COLUMNS — older parquets that
+    # carry it through `df[COLUMNS]` will have it silently projected away.
 
     # consolidate_splits already recomputes the hash and dedupes; we just need
     # to ensure the canonical column order/presence on its way out.
@@ -566,14 +550,12 @@ def save_sqlite(df: pd.DataFrame):
             calendar_matter TEXT,
             judge           TEXT,
             ruling          TEXT,
-            row_hash        TEXT UNIQUE,
-            calendar_kind   TEXT
+            row_hash        TEXT UNIQUE
         );
         CREATE INDEX IF NOT EXISTS idx_department    ON tentatives(department);
         CREATE INDEX IF NOT EXISTS idx_case_number   ON tentatives(case_number);
         CREATE INDEX IF NOT EXISTS idx_court_date    ON tentatives(court_date);
         CREATE INDEX IF NOT EXISTS idx_judge         ON tentatives(judge);
-        CREATE INDEX IF NOT EXISTS idx_calendar_kind ON tentatives(calendar_kind);
     """)
     df.to_sql("tentatives", conn, if_exists="append", index=False,
               method="multi", chunksize=500)

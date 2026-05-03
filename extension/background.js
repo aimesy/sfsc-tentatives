@@ -213,25 +213,16 @@ async function downloadUpdate() {
 
 const _dirCache = new Map();
 
-// `subfolder` is optional. Used by Dept 304 to look up the right Asbestos
-// sub-calendar's directory (raw/dept304/discovery or
-// raw/dept304/law-and-motion); empty string lists the top-level dept dir.
-// Cache key includes the sub-folder so the two 304 sub-calendars maintain
-// independent listings.
-async function getDeptDir(token, owner, repo, branch, department, subfolder = '') {
-  const cacheKey = subfolder ? `${department}/${subfolder}` : department;
-  const cached = _dirCache.get(cacheKey);
+async function getDeptDir(token, owner, repo, branch, department) {
+  const cached = _dirCache.get(department);
   if (cached && Date.now() - cached.time < 60_000) return cached.files;
-  const dirPath = subfolder
-    ? `raw/dept${department}/${subfolder}`
-    : `raw/dept${department}`;
   const res = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/contents/${dirPath}?ref=${branch}`,
+    `https://api.github.com/repos/${owner}/${repo}/contents/raw/dept${department}?ref=${branch}`,
     { headers: { Authorization: `Bearer ${token}`, 'X-GitHub-Api-Version': '2022-11-28' } }
   );
   const json = res.ok ? await res.json().catch(() => []) : [];
   const files = Array.isArray(json) ? json : [];
-  _dirCache.set(cacheKey, { files, time: Date.now() });
+  _dirCache.set(department, { files, time: Date.now() });
   return files;
 }
 
@@ -286,21 +277,8 @@ function courtDate(rulings) {
 // suggested commit message — or { duplicate: true, path } when the date is
 // already covered. Used by both the single-file commit (commitToGitHub) and
 // the batched tree commit (commitBatchToGitHub).
-// Dept 304 hosts two sub-calendars (Asbestos Law & Motion + Asbestos
-// Discovery) on different days; the scraper tags each scrape's
-// `calendar_kind`, and we route the resulting JSON into a sub-folder of
-// raw/dept304/ named for that sub-calendar. Two files for the same
-// court date — one per sub-calendar — never collide because they live
-// in different folders. Non-304 departments are unaffected.
-function deptSubfolder(department, calendarKind) {
-  if (department !== '304') return '';
-  if (calendarKind === 'discovery')      return 'discovery';
-  if (calendarKind === 'law-and-motion') return 'law-and-motion';
-  return ''; // unrecognised kind — fall back to the legacy flat layout.
-}
-
 async function preparePayload({ token, owner, repo, branch, data }) {
-  const { department, scraped_at, calendar_kind } = data;
+  const { department, scraped_at } = data;
   let { rulings } = data;
   const date = data._date || courtDate(rulings);
   if (!date) throw new Error('No court date — pass _date in payload when rulings is empty.');
@@ -329,18 +307,9 @@ async function preparePayload({ token, owner, repo, branch, data }) {
   }
 
   const time = new Date(scraped_at).toISOString().slice(11, 19).replace(/:/g, '');
-  // For Dept 304 we route the file into a sub-folder named after the
-  // sub-calendar (asbestos discovery vs asbestos law-and-motion). The
-  // duplicate guard then naturally only fires on prior scrapes of the
-  // SAME sub-calendar — two files for the same date but different
-  // sub-calendars live in different folders and don't collide.
-  const subfolder = deptSubfolder(department, calendar_kind);
-  const dir = subfolder
-    ? `raw/dept${department}/${subfolder}`
-    : `raw/dept${department}`;
-  const path = `${dir}/${date}-${time}.json`;
+  const path = `raw/dept${department}/${date}-${time}.json`;
 
-  const files = await getDeptDir(token, owner, repo, branch, department, subfolder);
+  const files = await getDeptDir(token, owner, repo, branch, department);
   if (files.some(f => f.name.startsWith(`${date}-`))) return { duplicate: true, path, date, department };
 
   const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
@@ -1142,7 +1111,6 @@ async function commitAndAdvance() {
     after: currentDate, until: today,
     token: settings.token, owner, repo, branch,
     department: data.department || '302',
-    calendarKind: data.calendar_kind || null,
   });
   if (!next) {
     toast(`${commitMsg}. No more business days — you're caught up.`, 'success');
@@ -1164,17 +1132,11 @@ async function commitAndAdvance() {
 //     workflow runtime; covers historical Excel-imports with no raw files)
 //   • raw/dept<N>/ listing  — live within seconds of any commit
 //   • _localCommitted log   — instant, survives popup reopen and SW restart
-async function nextUnscannedBusinessDay({ after, until, token, owner, repo, branch, department, calendarKind }) {
+async function nextUnscannedBusinessDay({ after, until, token, owner, repo, branch, department }) {
   const covered = new Set();
-  // For Dept 304 the dir listing must target the right Asbestos sub-folder,
-  // otherwise scraping Asbestos Discovery on date X would walk forward past
-  // all the dates on which we already had Asbestos Law-and-Motion commits
-  // (which live in a different sub-folder and are irrelevant to discovery
-  // coverage), and vice versa.
-  const subfolder = deptSubfolder(department, calendarKind);
   const [covRes, dirRes, localRes] = await Promise.allSettled([
     getCoverage(token, owner, repo, branch, department),
-    getDeptDir(token, owner, repo, branch, department, subfolder),
+    getDeptDir(token, owner, repo, branch, department),
     readLocalCommitted(department),
   ]);
   if (covRes.status === 'fulfilled') covRes.value.forEach(d => covered.add(d));

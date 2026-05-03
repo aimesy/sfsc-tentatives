@@ -20,7 +20,7 @@ DEPT_NAMES = {
     '204': 'Department 204 — Probate',
     '301': 'Department 301 — Discovery',
     '302': 'Department 302 — Civil Law and Motion',
-    '304': 'Department 304 — Asbestos Law and Motion/Discovery',
+    '304': 'Department 304 — Asbestos Law and Motion',
     '501': 'Department 501 — Real Property Court',
 }
 
@@ -44,7 +44,7 @@ A searchable archive of every **tentative ruling** posted by the San Francisco S
 - Department 204 (Probate)
 - Department 301 (Discovery)
 - Department 302 (Civil Law and Motion)
-- Department 304 (Asbestos Law and Motion/Discovery)
+- Department 304 (Asbestos Law and Motion)
 - Department 501 (Real Property)
 
 **[Open the searchable database →](https://aimesy.github.io/sfsc-tentatives/)**
@@ -104,7 +104,7 @@ Open the SFSC tentative rulings page (<https://webapps.sftc.org/tr/tr.dll>) in y
 ## Glossary
 
 - **Tentative ruling** — the court's preliminary written ruling on a motion, posted the day before the hearing. Becomes final unless a party "contests" it under the local rules.
-- **Department** — a courtroom and the judge assigned to it. Department 204 hears probate matters; Department 301 hears discovery motions; Department 302 hears civil law-and-motion calendars; Department 304 hears asbestos law-and-motion matters and asbestos discovery motions; Department 501 hears real-property matters.
+- **Department** — a courtroom and the judge assigned to it. Department 204 hears probate matters; Department 301 hears discovery motions; Department 302 hears civil law-and-motion calendars; Department 304 hears asbestos law-and-motion matters; Department 501 hears real-property matters.
 - **Motion type** — the kind of motion (demurrer, summary judgment, motion to compel, anti-SLAPP, etc.). Auto-classified from the calendar caption; you can correct misclassifications by filing a bug report from the ruling's detail view.
 - **Outcome** — whether the motion was granted, denied, continued, taken off calendar, etc. Auto-classified from the ruling text; same correction path as motion type.
 
@@ -217,17 +217,12 @@ def scraped_dates_for_dept(dept: str) -> set[str]:
     """Dates we have raw scrape evidence for, derived from filenames in
     raw/dept<N>/. A date with a raw file is *not* a gap even if no rulings
     landed in the parquet for it (e.g. the page returned zero tentatives,
-    or returned tentatives whose hearings are on a different date).
-
-    Walks recursively because Dept 304 splits its raw files into
-    raw/dept304/discovery/ and raw/dept304/law-and-motion/ sub-folders
-    (the two Asbestos sub-calendars). Non-304 depts use the flat layout
-    so the recursion is a no-op for them."""
+    or returned tentatives whose hearings are on a different date)."""
     raw_dir = HERE / 'raw' / f'dept{dept}'
     if not raw_dir.is_dir():
         return set()
     out = set()
-    for p in raw_dir.rglob('*.json'):
+    for p in raw_dir.glob('*.json'):
         # Filenames are <YYYY-MM-DD>-<HHMMSS>.json
         stem = p.stem
         if len(stem) >= 10 and stem[4] == '-' and stem[7] == '-':
@@ -301,22 +296,11 @@ def dept_section(dept: str, df_dept: pd.DataFrame) -> str:
     }
     avail_note = avail_notes.get(dept, '')
 
-    # Dept 304 hosts two sub-calendars (Asbestos Law & Motion and
-    # Asbestos Discovery). The split is recorded per row in the
-    # `calendar_kind` column — surface the breakdown so a reader sees
-    # how the 304 corpus divides without having to query the parquet.
-    sub_breakdown = ''
-    if 'calendar_kind' in df_dept.columns:
-        kinds = df_dept['calendar_kind'].fillna('(unspecified)').value_counts()
-        if len(kinds) > 1:
-            lines = ['', '### Sub-calendar breakdown', '']
-            for kind, n in kinds.items():
-                label = {
-                    'discovery':       'Asbestos Discovery',
-                    'law-and-motion':  'Asbestos Law and Motion',
-                }.get(kind, kind)
-                lines.append(f'- **{label}:** {n:,} ruling{"s" if n != 1 else ""}')
-            sub_breakdown = '\n'.join(lines) + '\n'
+    # Dept 304 was originally treated as two sub-calendars (Asbestos
+    # Law & Motion and an Asbestos Discovery calendar). The discovery
+    # calendar isn't actually in use, so the breakdown was dropped —
+    # the column survives in the parquet for back-compat but every
+    # current row is law-and-motion.
 
     body = f"""\
 
@@ -328,7 +312,6 @@ def dept_section(dept: str, df_dept: pd.DataFrame) -> str:
 - **Days scanned:** {n_days_scanned:,} (including days the court posted no rulings)
 - **Earliest harvested:** {earliest_harvest}{' (same as first hearing day)' if earliest_harvest == earliest_data else ''}
 - **Latest harvested:** {latest_harvest}{' (same as last hearing day)' if latest_harvest == latest_data else ''}
-{sub_breakdown}
 
 ### Gaps ({n_gaps})
 

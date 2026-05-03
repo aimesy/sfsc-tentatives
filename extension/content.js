@@ -142,33 +142,6 @@ function detectCaptchaChallenge() {
 // Returns null when none of these fire — the caller (popup.js's
 // detectDepartment) then falls back to a tab-specific cached value
 // rather than misfiling scrapes under '302'.
-// Dept 304 hosts two sub-calendars — Asbestos Law & Motion and Asbestos
-// Discovery — heard in the same courtroom by the same judge but on
-// different days. Both kinds of ruling are "department 304" but the
-// extension needs to track scanned dates separately (otherwise scraping
-// one sub-calendar would mark a date as done for the other), and the
-// data browser tags rulings on the discovery sub-calendar with a
-// 🔍 Discovery badge.
-//
-// Returns 'discovery' | 'law-and-motion' | null (null = not a 304 page,
-// or a 304 page whose heading didn't pin down which sub-calendar).
-function detectAsbestosKind() {
-  // The user-confirmed page-header phrasings are
-  //   "Asbestos Discovery, Department 304"
-  //   "Asbestos Law & Motion, Department 304"
-  // We look at every heading and the first heading that contains "Asbestos"
-  // wins; whether it also has "Discovery" or "Law & Motion" decides the kind.
-  const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  for (const el of headings) {
-    const t = el.textContent || '';
-    if (!/\bAsbestos\b/i.test(t)) continue;
-    if (/\bDiscovery\b/i.test(t))                                    return 'discovery';
-    if (/\bLaw\s*(?:&|and|&amp;)\s*Motion\b/i.test(t))               return 'law-and-motion';
-    return null; // ambiguous Asbestos heading; let the caller fall back.
-  }
-  return null;
-}
-
 function detectPageDepartment() {
   const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
   for (const el of headings) {
@@ -178,12 +151,12 @@ function detectPageDepartment() {
   for (const el of headings) {
     const t = el.textContent || '';
     if (/\bProbate\b/i.test(t)) return '204';
-    // Asbestos must come BEFORE Discovery: SFTC has both an "Asbestos Law
-    // and Motion" calendar and an "Asbestos Discovery" calendar in Dept
-    // 304, and a naive Discovery match would route the asbestos-discovery
-    // page into Dept 301 instead. Both asbestos sub-calendars are heard
-    // in 304; we tag the discovery sub-calendar via isDiscovery() in the
-    // browser, not by routing it to a different department.
+    // Asbestos before Discovery: only the Asbestos Law and Motion
+    // calendar is in active use in Dept 304 today, but the SFTC site
+    // has historically also exposed an "Asbestos Discovery" calendar
+    // — if it's ever brought back, the heading would still contain
+    // "Asbestos" first, so this routing keeps the scrape aimed at 304
+    // rather than mis-classifying it as the generic Discovery dept (301).
     if (/\bAsbestos\b/i.test(t)) return '304';
     if (/\bDiscovery\b/i.test(t)) return '301';
     if (/\bReal\s+Property\b/i.test(t)) return '501';
@@ -257,10 +230,6 @@ function scrape() {
   const reportedTotal = totalMatch ? parseInt(totalMatch[1]) : null;
 
   const department = detectPageDepartment();
-  // Sub-calendar tag for Dept 304 only. The wrapper carries this through to
-  // the JSON the extension commits; ingest.py records it as a parquet column
-  // and the data browser renders the 🔍 Discovery badge from it.
-  const calendarKind = department === '304' ? detectAsbestosKind() : null;
 
   const rulings = [];
   let current = {};
@@ -306,7 +275,6 @@ function scrape() {
   if (reportedTotal === 0 && rulings.length > 0) {
     return {
       department,
-      calendar_kind:  calendarKind,
       scraped_at:     new Date().toISOString(),
       source_url:     window.location.href,
       reported_total: 0,
@@ -316,7 +284,6 @@ function scrape() {
 
   return {
     department,
-    calendar_kind:  calendarKind,
     scraped_at:     new Date().toISOString(),
     source_url:     window.location.href,
     reported_total: reportedTotal,
