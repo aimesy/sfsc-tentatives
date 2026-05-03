@@ -177,10 +177,26 @@ _PART_NUM_RE = re.compile(
     re.IGNORECASE,
 )
 _PART_WORD_RE = re.compile(
-    r'\(?\s*(?:part|pt)\.?\s+(one|two|three|four|five|six)\s+(?:of|/)\s+(?:one|two|three|four|five|six)\s*\)?',
+    r'\(?\s*(?:part|pt)\.?\s+(one|two|three|four|five|six)\s+(?:of|/)\s+(one|two|three|four|five|six)\s*\)?',
     re.IGNORECASE,
 )
 _WORD_TO_NUM = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+
+
+def extract_part_total(text):
+    """Total number of parts (the M in "Part N of M"). Used by the
+    consolidator to decide whether all parts have arrived for a given
+    case+date — a strong signal that the rows belong together even when
+    their captions diverge."""
+    if not text:
+        return None
+    m = _PART_NUM_RE.search(text)
+    if m:
+        return int(m.group(2))
+    m = _PART_WORD_RE.search(text)
+    if m:
+        return _WORD_TO_NUM.get(m.group(2).lower())
+    return None
 
 
 def normalize_motion_for_split(cm):
@@ -383,78 +399,190 @@ def _add_hash(df):
     return df[COLUMNS]
 
 
+_DEDUPE_NORM_RE = re.compile(r'[^\w\s]')
+
+def _normalize_for_dedupe(s):
+    """Strip whitespace + punctuation variation so two near-identical
+    paragraphs (one with a stray period, one without) collapse into a
+    single canonical form for substring comparison. SFTC sometimes
+    re-emits a Part 1 inside a Part 2 with minor formatting drift —
+    the byte-exact dedupe missed those, leaving the user with two
+    near-copies of the same ruling text concatenated."""
+    if not s:
+        return ""
+    s = _WS_RE.sub(' ', s.lower())
+    s = _DEDUPE_NORM_RE.sub('', s)
+    return s.strip()
+
+
+def dedupe_paragraphs(text):
+    """Drop paragraphs that are near-duplicates of an earlier paragraph
+    in the same ruling. SFTC sometimes emits a Part 1 whose text already
+    contains the substantive ruling, then a Part 2 that repeats the same
+    text with a minor formatting tweak (a trailing period dropped, a
+    space collapsed). Past consolidations concatenated both, leaving
+    rulings whose two halves are byte-different but content-identical.
+    The split-time `_dedupe_near_duplicates` catches this between
+    separate rulings, but a row already merged in the parquet is past
+    that gate — so we run a paragraph-level pass on every ruling text
+    too. Idempotent: a row with no internal duplication comes back
+    unchanged."""
+    if not text:
+        return text
+    paras = text.split("\n\n")
+    if len(paras) < 2:
+        return text
+    seen_norms = []
+    kept_paras = []
+    for p in paras:
+        if not p.strip():
+            continue
+        n = _normalize_for_dedupe(p)
+        if not n:
+            continue
+        # Skip if this paragraph's normalised form is contained in any
+        # already-kept paragraph (or vice versa). Symmetric containment
+        # — a longer late paragraph that contains an earlier one drops
+        # the earlier one too. Two-pass: once forward to flag, once
+        # backward to compose the result.
+        if any(n in s or s in n for s in seen_norms):
+            continue
+        seen_norms.append(n)
+        kept_paras.append(p)
+    return "\n\n".join(kept_paras) if kept_paras else text
+
+
+def _dedupe_near_duplicates(seq):
+    """Drop strings that are near-duplicates (after whitespace and
+    punctuation normalisation) of any longer string in `seq`. Replaces
+    the byte-exact containment check, which left behind paragraph
+    pairs that differed only in a trailing period — see bug #9."""
+    candidates = sorted({s for s in seq if s and s.strip()}, key=len, reverse=True)
+    kept = []
+    kept_norms = []
+    for s in candidates:
+        n = _normalize_for_dedupe(s)
+        if not n:
+            continue
+        # Skip if its normalised form is contained in any already-kept
+        # entry's normalised form. The longer entry wins.
+        if any(n in kn for kn in kept_norms):
+            continue
+        kept.append(s)
+        kept_norms.append(n)
+    return kept
+
+
 def consolidate_splits(df: pd.DataFrame) -> pd.DataFrame:
     """Concatenate split rulings.
 
     The SFTC site sometimes truncates a long ruling and emits the rest as a
     second record marked "(Part 2 of 2)" (or with the suffix on
-    calendar_matter). We treat two rows as parts of the same ruling when they
-    share (case_number, court_date) and their calendar_matter is identical
-    after the part-suffix is stripped. Within each group we sort by part
-    number (taken from ruling text or calendar_matter) and join with two
-    newlines. The kept calendar_matter is the de-suffixed form.
+    calendar_matter). Two rows are parts of the same ruling when they
+    share (case_number, court_date) AND either:
+
+      • their calendar_matter is identical after part-suffix stripping
+        (the canonical case — both halves share the original caption); or
+      • at least one row in the (case_number, court_date) group carries
+        an explicit "Part N of M" marker (in either the ruling text or
+        the calendar_matter). The marker is unambiguous: there should
+        be exactly M parts on this case+date for this motion, so we
+        merge the whole (case, date) group regardless of caption
+        variation. This catches the common SFTC pattern where the
+        Part 2 row's caption is "DEFENDANT X, Y, Z, ... <motion>. Part
+        2 of 2" while Part 1's caption is just "<motion>" — the part
+        suffix stripping isn't enough to align them, but the explicit
+        "(Part N of M)" marker is enough on its own.
+
+    Within each group we sort by part number (taken from ruling text
+    or calendar_matter) and join with two newlines, with whitespace +
+    punctuation-aware dedupe to stop near-duplicate paragraphs from
+    landing in the merged output.
     """
     if df.empty:
         return df
     df = df.copy()
     df["_cm_norm"] = df["calendar_matter"].fillna("").apply(normalize_motion_for_split)
-    df["_part"] = df["ruling"].fillna("").apply(extract_part_num)
-    df["_part"] = df["_part"].fillna(df["calendar_matter"].fillna("").apply(extract_part_num))
+    df["_part"]  = df["ruling"].fillna("").apply(extract_part_num)
+    df["_part"]  = df["_part"].fillna(df["calendar_matter"].fillna("").apply(extract_part_num))
+    df["_total"] = df["ruling"].fillna("").apply(extract_part_total)
+    df["_total"] = df["_total"].fillna(df["calendar_matter"].fillna("").apply(extract_part_total))
 
     # Stable order before grouping so single-part rows keep their original placement.
     df = df.sort_values(["case_number", "court_date", "_cm_norm", "_part"],
                         na_position="last", kind="stable").reset_index(drop=True)
+
+    # (case_number, court_date) groups whose rows carry an explicit
+    # "Part N of M" marker get the broader (case, date) grouping. We
+    # implement the override by zeroing _cm_norm on every such row —
+    # then the existing 3-key groupby naturally collapses the whole
+    # (case, date) bucket into one group, and pandas does the heavy
+    # lifting in C without a Python-level per-row loop.
+    pair_part_any = (df.assign(_has_part=df["_part"].notna())
+                       .groupby(["case_number", "court_date"], dropna=False)["_has_part"]
+                       .transform("any"))
+    df.loc[pair_part_any.fillna(False), "_cm_norm"] = ""
 
     keys = ["case_number", "court_date", "_cm_norm"]
     sizes = df.groupby(keys, dropna=False).size()
     multi_keys = set(sizes[sizes > 1].index)
 
     if not multi_keys:
-        return df.drop(columns=["_cm_norm", "_part"])
+        return df.drop(columns=["_cm_norm", "_part", "_total"], errors="ignore")
 
-    def dedupe_by_containment(seq):
-        """Drop strings that are substrings of any longer string in `seq`.
-        Lets us re-ingest a date whose parquet entry is already consolidated:
-        the new individual parts are substrings of the existing merged form
-        and get dropped instead of re-concatenated on top of it."""
-        unique = sorted({s for s in seq if s}, key=len, reverse=True)
-        kept = []
-        for r in unique:
-            if not any(r in k and r != k for k in kept):
-                kept.append(r)
-        return kept
+    groups_map = df.groupby(keys, dropna=False).groups
 
+    # Single-row groups stay as-is; multi-row groups get consolidated.
     keep_indices = []
     merged_rows = []
     consolidated = 0
-    for key, idx in df.groupby(keys, dropna=False).groups.items():
-        idx = list(idx)
-        if key not in multi_keys:
+    for key, idx in groups_map.items():
+        if len(idx) <= 1:
             keep_indices.extend(idx)
             continue
         sub = df.loc[idx]
         raw_rulings = [r for r in sub["ruling"].fillna("").tolist() if r.strip()]
-        rulings = dedupe_by_containment(raw_rulings)
+        rulings = _dedupe_near_duplicates(raw_rulings)
         if len(rulings) <= 1:
-            # Already-merged or all-substring case — keep one row whose ruling
-            # is the longest (the post-consolidation form, if present).
+            # Already-merged or all-near-duplicate case — keep one row
+            # whose ruling is the longest (the post-consolidation form,
+            # if present).
             longest_idx = max(idx, key=lambda i:
                               len(df.at[i, "ruling"]) if isinstance(df.at[i, "ruling"], str) else 0)
             keep_indices.append(longest_idx)
             consolidated += len(idx) - 1
             continue
-        merged_text = "\n\n".join(rulings)
-        first = sub.iloc[0].to_dict()
+        merged_text = dedupe_paragraphs("\n\n".join(rulings))
+        # When the group was merged via the part-marker override, the
+        # captions can differ enough that picking sub.iloc[0] would
+        # leave a "Part 2 of 2" caption on the merged row. Prefer the
+        # SHORTEST caption (after part-suffix stripping) — that's
+        # almost always the bare motion title without the defendant
+        # list / annotations.
+        candidate_idx = sorted(idx, key=lambda i: (
+            len(_PART_SUFFIX_RE.sub("", df.at[i, "calendar_matter"] or "").strip())
+                if isinstance(df.at[i, "calendar_matter"], str) else 999_999,
+            i,
+        ))
+        first = df.loc[candidate_idx[0]].to_dict()
         first["ruling"] = merged_text
         cm = first.get("calendar_matter")
         cm = cm if isinstance(cm, str) else ""
-        first["calendar_matter"] = _PART_SUFFIX_RE.sub("", cm).strip() or None
+        first["calendar_matter"] = normalize_motion_for_split(cm).strip().title() or None
+        # `normalize_motion_for_split` lowercases for comparison; rebuild a
+        # display-cased form so the merged row's caption isn't all-lowercase.
+        # Falls back to the raw stripped form if title-casing destroys
+        # acronyms (rare — SFTC captions are mostly title-case already).
+        if isinstance(first["calendar_matter"], str) and first["calendar_matter"]:
+            display_cm = _PART_SUFFIX_RE.sub("", df.at[candidate_idx[0], "calendar_matter"] or "").strip()
+            first["calendar_matter"] = display_cm or None
         merged_rows.append(first)
         consolidated += len(idx) - 1
 
-    base = df.loc[keep_indices].drop(columns=["_cm_norm", "_part"])
+    base = df.loc[keep_indices].drop(columns=["_cm_norm", "_part", "_total"], errors="ignore")
     if merged_rows:
-        merged_df = pd.DataFrame(merged_rows).drop(columns=["_cm_norm", "_part"], errors="ignore")
+        merged_df = pd.DataFrame(merged_rows).drop(
+            columns=["_cm_norm", "_part", "_total"], errors="ignore")
         out = pd.concat([base, merged_df], ignore_index=True)
     else:
         out = base
@@ -501,6 +629,15 @@ def migrate_existing(df: pd.DataFrame) -> pd.DataFrame:
     # the dropdown / charts.
     if "judge" in df.columns:
         df["judge"] = df["judge"].apply(normalize_judge_name)
+
+    # Paragraph-level dedup pass over every existing ruling. Catches the
+    # back-catalogue case where a previous merge concatenated two
+    # near-identical paragraphs into one row (the byte-exact dedupe of
+    # the day didn't see them as substrings of each other). Idempotent
+    # on rows without intra-string duplication, so safe to run on every
+    # --all-raw pass.
+    if "ruling" in df.columns:
+        df["ruling"] = df["ruling"].apply(dedupe_paragraphs)
 
     # Backfill any missing columns so the column-order projection at the
     # bottom doesn't blow up on a parquet that predates a recently-added

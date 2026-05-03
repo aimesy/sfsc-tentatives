@@ -852,7 +852,7 @@
     <div class="courtcall" id="modal-cc"></div>
     <div class="modal-footer">
       <span class="ruling-id" id="modal-ruling-id" title="Unique ruling ID (SHA-1 of case # + date + ruling text)"></span>
-      <a class="btn report-btn" id="modal-report" target="_blank" rel="noopener">🐞 Report bug</a>
+      <a class="btn report-btn" id="modal-report" target="_blank" rel="noopener">🐞 Report Issue</a>
     </div>
   </div>
 </div>
@@ -1012,9 +1012,25 @@ const CIVIL_LAW_MOTION_RULES = [
      || /\b(?:order\s+)?establish(?:ing)?\s+admissions?\b/i.test(t),
     'Deem RFAs Admitted'],
   [t => /\bcompel\b/i.test(t), 'Compel Discovery', compelSubtype],
-  [t => /\bmotion to quash\b.*\bsubpoena\b|\bquash subpoena\b/i.test(t), 'Quash Subpoena'],
-  [t => /\bmotion to quash\b/i.test(t), 'Quash Service / Jurisdiction'],
-  [t => /\bprotective order\b/i.test(t), 'Protective Order'],
+  // Quash matchers loosened to also catch the gerund form ("Order
+  // Quashing Subpoena…") — the audit found ~60 captions in Misc that
+  // used "quashing" instead of "quash" and the original rule didn't
+  // see them.
+  [t => /\b(?:motion (?:and notice )?(?:to|for)\s+(?:order\s+)?(?:to\s+)?)?(?:quash|quashing)\b[^.]*\bsubpoena/i.test(t)
+     || /\bquash\s+subpoena\b/i.test(t)
+     || /\bquashing\s+subpoena/i.test(t)
+     || /\bquashing\s+(?:notice\s+)?(?:of\s+)?deposition\b/i.test(t),
+    'Quash Subpoena'],
+  [t => /\bmotion to quash\b/i.test(t)
+     || /\border\s+quashing\b/i.test(t),
+    'Quash Service / Jurisdiction'],
+  // Protective-order family also covers the de/redesignation motions
+  // common in confidentiality fights — same statutory home (CCP §
+  // 2031.060) and same disposition shape.
+  [t => /\bprotective order\b/i.test(t)
+     || /\b(?:de-?designation|re-?designation|confirm\s+designation)\s+of\b/i.test(t)
+     || /\bdesignat(?:e|ion|ed)\s+(?:of\s+)?(?:documents?|materials?|information)\s+as\s+(?:["']?confidential|highly\s+confidential)/i.test(t),
+    'Protective Order'],
   // Disqualify counsel — separate motion from withdraw / substitute.
   // Excludes "disqualify judge / juror" (CCP § 170.6 challenges and the
   // like) so we don't sweep judicial-disqualification motions in here.
@@ -1041,8 +1057,25 @@ const CIVIL_LAW_MOTION_RULES = [
   [t => /\border to show cause\b|\bosc\b/i.test(t), 'Order to Show Cause'],
   [t => /\bpetition\b.*\bconfirm\b.*\barb(?:itration)?\b|\bconfirm arb(?:itration)? award\b/i.test(t),
     'Petition to Confirm Arbitration Award'],
+  // Vacate / correct an arbitration award is a distinct CCP §§ 1285 –
+  // 1286.8 proceeding from confirming or compelling arbitration —
+  // different relief, different vocabulary in the rulings — so it
+  // gets its own bucket rather than falling through to "Arbitration
+  // (other)".
+  [t => /\bvacate\b[\s\S]{0,50}\barbitration\s+award\b/i.test(t)
+     || /\bpetition\s+to\s+vacate\b[\s\S]{0,80}\barbitration\b/i.test(t)
+     || /\bcorrect\b[\s\S]{0,30}\barbitration\s+award\b/i.test(t)
+     || /\bvacate\s+(?:the\s+)?arbitration\s+award\b/i.test(t),
+    'Vacate Arbitration Award'],
   [t => /\barbitration\b/i.test(t), 'Arbitration (other)'],
-  [t => /\bgood faith settlement\b/i.test(t), 'Good Faith Settlement'],
+  // Good Faith Settlement also matches the longer "good faith
+  // determination of settlement" phrasing (CCP § 877.6). Audit found
+  // ~10 captions using that exact form that the prior tight regex missed.
+  [t => /\bgood faith settlement\b/i.test(t)
+     || /\bgood faith\s+(?:determination|finding)\s+of\s+settlement\b/i.test(t)
+     || /\bdetermination\s+of\s+good\s+faith\s+settlement\b/i.test(t)
+     || /\bccp\s*§?\s*877\.6\b/i.test(t),
+    'Good Faith Settlement'],
   [t => /\bfinal approval\b/i.test(t) && !/\bclass\b|\bsettlement\b/i.test(t), 'Final Approval Hearing'],
   [t => /\bapprove(?:.*settlement)?\b|\bsettlement.*approve\b|\bclass action settlement\b|\bclass settlement\b|\bproposition\s*65\b|\bprop\.?\s*65\b|\bpreliminary approval\b|\bfinal approval\b/i.test(t),
     'Approve Settlement'],
@@ -1081,7 +1114,22 @@ const CIVIL_LAW_MOTION_RULES = [
   [t => /\bcompliance hearing\b/i.test(t), 'Compliance Hearing'],
   [t => /\bwrit of mandate\b|\bpetition for writ\b/i.test(t), 'Writ of Mandate'],
   [t => /\bwrit of possession\b/i.test(t), 'Writ of Possession'],
-  [t => /\benforce settlement\b|\bmotion to enforce\b/i.test(t), 'Enforce Settlement'],
+  // Enforce Settlement: loosen to also match "enforcing terms of
+  // settlement" / "motion for an order enforcing".
+  [t => /\benforce\s+(?:the\s+)?settlement\b/i.test(t)
+     || /\bmotion to enforce\b/i.test(t)
+     || /\benforcing\s+(?:the\s+)?terms\s+of\s+(?:the\s+)?settlement\b/i.test(t)
+     || /\border\s+enforcing\s+(?:the\s+)?settlement\b/i.test(t)
+     || /\bccp\s*§?\s*664\.6\b/i.test(t),
+    'Enforce Settlement'],
+  // Augment Expert Disclosure (CCP § 2034.610) — recurring civil L&M
+  // motion that previously fell through to Miscellaneous. Audit found
+  // ~66 instances. The hallmark phrase is "augment expert disclosure"
+  // / "augment expert witness".
+  [t => /\baugment(?:\/amend)?\s+(?:expert\s+)?(?:disclosure|witness|witness\s+disclosure|witness\s+information|disclosures)/i.test(t)
+     || /\bleave\s+to\s+augment\b/i.test(t)
+     || /\baugment\s+expert\b/i.test(t),
+    'Augment Expert Disclosure'],
   [t => /\bentry of (?:consent )?judgment\b/i.test(t), 'Entry of Judgment'],
   [t => /\bpetition\b.*\btransfer\b.*\bpayment\b|\bstructured settlement\b/i.test(t),
     'Structured Settlement Transfer'],
@@ -1190,6 +1238,7 @@ const MOTION_CATEGORY = {
   'Right to Attach':                                   'Post-Judgment',
   'Order to Show Cause':                               'Procedural',
   'Petition to Confirm Arbitration Award':             'Arbitration',
+  'Vacate Arbitration Award':                          'Arbitration',
   'Arbitration (other)':                               'Arbitration',
   'Good Faith Settlement':                             'Settlement',
   'Final Approval Hearing':                            'Settlement',
@@ -1218,6 +1267,7 @@ const MOTION_CATEGORY = {
   'Writ of Mandate':                                   'Writ',
   'Writ of Possession':                                'Real Estate',
   'Enforce Settlement':                                'Settlement',
+  'Augment Expert Disclosure':                         'Discovery',
   'Entry of Judgment':                                 'Post-Judgment',
   'Structured Settlement Transfer':                    'Settlement',
   // Probate (Dept 204)
@@ -1256,11 +1306,34 @@ function compelSubtype(t) {
   return 'Other';
 }
 
+// Strip joinder framing so "Joinder in Motion to Bifurcate" classifies
+// as Sever / Bifurcate (the underlying motion's type), not as a
+// generic Miscellaneous. A joinder is procedurally a request to be
+// added to someone else's motion — for taxonomy purposes its type is
+// the underlying motion's type. Returns the un-joindered version of
+// the caption (or the original when it's not a joinder).
+const _JOINDER_RES = [
+  /^\s*(?:notice\s+(?:of\s+)?)?joinder\s+(?:in|to)\s+/i,
+  /^\s*(?:notice\s+(?:of\s+)?|statement\s+(?:of\s+)?(?:non[\s-]?opposition\s+(?:and\s+)?)?)?joinder\s+(?:in|to)\s+/i,
+  /\(joinder\)\s*$/i,
+  /\(joinder\)/i,
+];
+function stripJoinderFraming(cm) {
+  if (!cm) return cm;
+  let out = cm;
+  for (const r of _JOINDER_RES) out = out.replace(r, '').trim();
+  return out;
+}
+
 function classifyMotion(cm, dept) {
   if (!cm) return { type: 'Miscellaneous', subtype: null };
+  // Pre-strip joinder decoration so the underlying motion's vocabulary
+  // drives the rule match. A bare "Joinder" with no underlying motion
+  // — rare — falls through to Miscellaneous as before.
+  const probe = stripJoinderFraming(cm) || cm;
   for (const rule of rulesForDept(dept)) {
-    if (rule[0](cm)) {
-      const sub = rule[2] ? rule[2](cm) : null;
+    if (rule[0](probe)) {
+      const sub = rule[2] ? rule[2](probe) : null;
       return { type: rule[1], subtype: sub };
     }
   }
@@ -2774,6 +2847,22 @@ async function runQuery(page = 0) {
 }
 
 // ─── Render ──────────────────────────────────────────────────────────────────
+
+// SFTC's public case-info portal accepts a CaseNum query param and
+// redirects to the docket for that case. Wraps every rendered case
+// number in an external link so a contributor can jump straight from
+// the data browser to the court's records. event.stopPropagation()
+// keeps the row's own click handler (open the detail modal) from
+// firing when the user clicks the link itself.
+function caseNumberLink(caseNum) {
+  if (!caseNum) return '';
+  const safeText = esc(caseNum);
+  const url = `https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=${encodeURIComponent(caseNum)}`;
+  return `<a href="${url}" target="_blank" rel="noopener noreferrer" `
+       + `onclick="event.stopPropagation()" `
+       + `title="Open case ${safeText} on the SFTC public docket">${safeText}</a>`;
+}
+
 function outcomeClass(outcome) {
   if (!outcome) return 'outcome-other';
   if (outcome.startsWith('Granted'))  return 'outcome-granted';
@@ -2825,7 +2914,7 @@ function renderTable(data) {
       <td class="col-dept">${esc(r.department)}</td>
       <td class="col-date">${r.court_date ?? ''}</td>
       <td class="col-time">${r.hearing_time ?? ''}</td>
-      <td class="col-case">${esc(r.case_number)}</td>
+      <td class="col-case">${caseNumberLink(r.case_number)}</td>
       <td class="col-title">${esc(r.case_title)}</td>
       <td class="col-mcat"><span class="mcat-pill ${catClass}">${esc(cat)}</span></td>
       <td class="col-mtype"><span class="mtype-pill">${esc(m.type)}</span>${sub}</td>
@@ -4074,6 +4163,23 @@ function openModal(r) {
     o.subtype ? `· ${o.subtype}` : null,
   ].filter(Boolean);
   for (const p of pills) {
+    // Linkify the case-number pill so clicking it opens the SFTC
+    // docket. Pills are textContent-rendered above, so the
+    // recognition has to happen here — match exactly r.case_number
+    // (the value as we built the pills array; safe to compare since
+    // case numbers are short alphanumeric strings without surprises).
+    if (r.case_number && p === r.case_number) {
+      const a = document.createElement('a');
+      a.className = 'pill';
+      a.href = `https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=${encodeURIComponent(r.case_number)}`;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.title = `Open case ${r.case_number} on the SFTC public docket`;
+      a.textContent = p;
+      a.style.textDecoration = 'underline';
+      meta.appendChild(a);
+      continue;
+    }
     const span = document.createElement('span');
     span.className = 'pill'; span.textContent = p;
     meta.appendChild(span);
@@ -4093,7 +4199,7 @@ function openModal(r) {
 // Each ruling carries a SHA-1 row_hash from ingest.py — that's our stable
 // unique identifier (case #, date, and full ruling text feed the hash, so
 // re-ingest of the same source yields the same ID). The footer shows it
-// alongside a "Report bug" link that pre-fills a GitHub issue with enough
+// alongside a "Report Issue" link that pre-fills a GitHub issue with enough
 // context to find the offending row in the parquet without the reporter
 // having to copy/paste anything.
 const BUG_REPO = 'aimesy/sfsc-tentatives';
@@ -4104,7 +4210,7 @@ function populateBugReport(r, m, o, sp) {
   idEl.textContent = id ? `Ruling ID: ${id.slice(0, 12)}` : 'Ruling ID: (unknown)';
   idEl.title = id ? `Full ID: ${id}` : 'No row_hash for this ruling';
 
-  const title = `Bug report — ${r.case_number || 'unknown case'} (${r.court_date || 'unknown date'})`;
+  const title = `Issue — ${r.case_number || 'unknown case'} (${r.court_date || 'unknown date'})`;
   const body =
     `**Ruling ID:** \`${id || '(unknown)'}\`\n` +
     `**Department:** ${r.department || ''}\n` +
