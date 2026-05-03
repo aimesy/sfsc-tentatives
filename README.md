@@ -4,6 +4,19 @@ A searchable archive of every **tentative ruling** posted by the San Francisco S
 
 **[Open the searchable database →](https://aimesy.github.io/sfsc-tentatives/)**
 
+## What this is, and who it's for
+
+San Francisco Superior Court posts a **tentative ruling** for many civil and real-property motions the day before the hearing. The court's own website only lets you look up rulings by date and case number, one at a time, and only keeps recent ones online. This project keeps a permanent, searchable copy.
+
+If you practice in San Francisco — or follow a particular judge, motion type, or kind of dispute — you can use this archive to:
+
+- **See how a specific judge tends to rule** on a given motion (e.g. demurrers, anti-SLAPP, motions to compel).
+- **Pull every ruling on a topic** (sanctions, attorney fees, summary judgment, anti-SLAPP, etc.) across years.
+- **Look up an old ruling** that's no longer on the court's site.
+- **Export results to a spreadsheet** for further analysis or to share with colleagues.
+
+You don't need to install anything to browse the data — the link above opens it in your web browser. The browser extension described below is only for *contributors* who want to help keep the archive current.
+
 ## How to use the searchable database
 
 Open <https://aimesy.github.io/sfsc-tentatives/>. The first time you visit, a **📥 Database Downloads** menu opens in the upper right; pick the department(s) you want to look at. Your selection is remembered, so the next visit auto-loads them.
@@ -110,6 +123,42 @@ python update-readme.py
 ## Departments
 
 <details>
+<summary>**Department 204 — Probate** &nbsp;·&nbsp; 10,543 rulings &nbsp;·&nbsp; Latest: 2026-02-19 &nbsp;·&nbsp; 27 gaps</summary>
+
+10,543 tentative rulings. Latest: 2026-02-19.
+
+### Gaps (27)
+
+- 2024-02-29
+- 2024-03-13
+- 2024-03-27
+- 2024-04-03
+- 2024-05-07 → 2024-05-08
+- 2024-07-03 → 2025-01-03
+- 2025-01-17 → 2025-01-22
+- 2025-01-29
+- 2025-02-06
+- 2025-03-19
+- 2025-03-24
+- 2025-03-27
+- 2025-04-01
+- 2025-04-04 → 2025-04-07
+- 2025-04-10
+- 2025-04-24
+- 2025-05-02
+- 2025-07-10
+- 2025-07-30
+- 2025-08-01 → 2025-08-05
+- 2025-08-21
+- 2025-09-05
+- 2025-09-15 → 2025-09-17
+- 2025-10-06
+- 2025-11-04
+- 2025-12-15 → 2025-12-17
+- 2026-01-27
+
+</details>
+<details>
 <summary>**Department 302 — Civil Law & Motion** &nbsp;·&nbsp; 60,473 rulings &nbsp;·&nbsp; Latest: 2026-05-04 &nbsp;·&nbsp; 0 gaps</summary>
 
 60,473 tentative rulings. Latest: 2026-05-04.
@@ -120,12 +169,15 @@ _None — all weekdays in range are accounted for._
 
 </details>
 <details>
-<summary>**Department 501 — Real Property Court** &nbsp;·&nbsp; 10,223 rulings &nbsp;·&nbsp; Latest: 2026-05-04 &nbsp;·&nbsp; 1 gap</summary>
+<summary>**Department 501 — Real Property Court** &nbsp;·&nbsp; 11,131 rulings &nbsp;·&nbsp; Latest: 2026-05-04 &nbsp;·&nbsp; 4 gaps</summary>
 
-10,223 tentative rulings. Latest: 2026-05-04.
+11,131 tentative rulings. Latest: 2026-05-04.
 
-### Gaps (1)
+### Gaps (4)
 
-- 2022-06-30 → 2023-01-03
+- 2022-08-08
+- 2022-08-29 → 2022-08-30
+- 2022-09-07
+- 2022-09-09 → 2023-01-03
 
 </details>
