@@ -3,15 +3,15 @@
     {
       "department": "204",
       "name": "Department 204 \u2014 Probate",
-      "rulings": 23286,
-      "size_bytes": 2270221,
+      "rulings": 24727,
+      "size_bytes": 2364022,
       "latest": "2026-05-04"
     },
     {
       "department": "301",
       "name": "Department 301 \u2014 Discovery",
       "rulings": 2857,
-      "size_bytes": 787879,
+      "size_bytes": 787865,
       "latest": "2026-05-04"
     },
     {
