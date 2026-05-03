@@ -2,6 +2,11 @@
 
 const $ = id => document.getElementById(id);
 let scrapedData = null;
+// Each popup is scoped to the tab that was active when it opened. Bulk jobs
+// are now keyed by tabId in background.js so multiple SFTC tabs can run
+// independent scrapes side-by-side; we capture the tabId once on init and
+// pass it on every start-bulk / stop-bulk / resume-bulk / status request.
+let currentTabId = null;
 
 // Firefox extensions live under moz-extension://; Chrome under chrome-extension://.
 const IS_FIREFOX = chrome.runtime.getURL('').startsWith('moz-extension://');
@@ -317,6 +322,7 @@ async function init() {
   setStatus('Checking page…', 'loading');
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  currentTabId = tab?.id ?? null;
 
   if (!tab.url?.includes('webapps.sftc.org/tr/')) {
     setStatus('Navigate to the SFSC Tentative Rulings page first.', 'warn');
@@ -467,11 +473,18 @@ function updateBulkStatus(job) {
   }
 }
 
-// Keep popup in sync with background job even while open
+// Keep popup in sync with background job even while open. Each popup only
+// renders its own tab's slice of the per-tab _bulkJobs map; a job change in
+// some other tab is not surfaced here (that other tab's popup, if open, has
+// its own listener with its own tabId).
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'local' && changes._bulkJob) {
-    updateBulkStatus(changes._bulkJob.newValue);
-  }
+  if (area !== 'local' || !changes._bulkJobs || currentTabId == null) return;
+  const before = changes._bulkJobs.oldValue?.[currentTabId];
+  const after  = changes._bulkJobs.newValue?.[currentTabId];
+  // Only re-render when the slice for THIS tab actually changed; avoids
+  // pointless redraws when a sibling tab's job mutates.
+  if (JSON.stringify(before) === JSON.stringify(after)) return;
+  updateBulkStatus(after);
 });
 
 // ── Bulk Scrape ───────────────────────────────────────────────────────────────
@@ -489,7 +502,7 @@ $('bulk-btn').addEventListener('click', async () => {
   if (err) { setStatus(err, 'error'); return; }
 
   const waitMs = parseInt($('bulk-wait').value) || 5_000;
-  const dates  = weekdaysBetween(from, to);
+  let dates  = weekdaysBetween(from, to);
   if (!dates.length) { setStatus('No weekdays in that range.', 'warn'); return; }
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -498,13 +511,33 @@ $('bulk-btn').addEventListener('click', async () => {
     return;
   }
 
+  // Optional pre-filter: drop weekdays already covered (by parquet, raw/, or
+  // the local commit log) so a re-run of an overlapping range doesn't pay
+  // the SFTC round-trip just to hit the duplicate guard.
+  let skippedCount = 0;
+  if ($('skip-scanned').checked) {
+    setStatus('Filtering out already-scanned dates…', 'loading');
+    const scanned = await fetchScannedDates(s);
+    if (scanned?.length) {
+      const set = new Set(scanned);
+      const before = dates.length;
+      dates = dates.filter(d => !set.has(d));
+      skippedCount = before - dates.length;
+    }
+    if (!dates.length) {
+      setStatus(`All ${skippedCount} weekday(s) in that range are already scanned.`, 'success');
+      return;
+    }
+  }
+
   const settings = { token: s.token, repo: s.repo, branch: s.branch || 'master' };
 
   $('bulk-btn').disabled = true;
   $('bulk-stop').style.display = 'block';
   $('bulk-resume').style.display = 'none';
   $('send-btn').disabled = true;
-  setStatus(`Starting background scrape of ${dates.length} dates…`, 'loading');
+  const skipNote = skippedCount ? ` (skipping ${skippedCount} already scanned)` : '';
+  setStatus(`Starting background scrape of ${dates.length} dates${skipNote}…`, 'loading');
 
   chrome.runtime.sendMessage(
     { action: 'start-bulk', payload: { dates, tabId: tab.id, settings, waitMs } },
@@ -520,7 +553,7 @@ $('bulk-btn').addEventListener('click', async () => {
 });
 
 $('bulk-stop').addEventListener('click', () => {
-  chrome.runtime.sendMessage({ action: 'stop-bulk' });
+  chrome.runtime.sendMessage({ action: 'stop-bulk', payload: { tabId: currentTabId } });
 });
 
 $('bulk-resume').addEventListener('click', async () => {
@@ -529,11 +562,15 @@ $('bulk-resume').addEventListener('click', async () => {
     setStatus('Navigate to the SFSC page first.', 'warn');
     return;
   }
+  // Resume is bound to the tab that owns the paused job. The popup was
+  // initially opened against `currentTabId`; if the active tab has since
+  // changed, prefer the original (paused) tab so the resume routes correctly.
+  const resumeTabId = currentTabId ?? tab.id;
   $('bulk-resume').style.display = 'none';
   $('bulk-stop').style.display = 'block';
   setStatus('Resuming next batch…', 'loading');
   chrome.runtime.sendMessage(
-    { action: 'resume-bulk', payload: { tabId: tab.id } },
+    { action: 'resume-bulk', payload: { tabId: resumeTabId } },
     res => {
       if (res?.error) {
         setStatus('Error resuming: ' + res.error, 'error');
@@ -576,6 +613,25 @@ $('auto-scan-btn').addEventListener('click', autoScanUnscanned);
 $('jump-first').addEventListener('click', jumpToFirstGap);
 $('jump-last').addEventListener('click',  jumpToResume);
 
+// ── Tooltips toggle ──────────────────────────────────────────────────────────
+// Each interactable element carries a data-tip attribute; CSS in popup.html
+// renders the tooltip on hover but ONLY when body.tips-on is set. The toggle
+// state persists across popup opens via chrome.storage.local.
+function applyTipsState(on) {
+  document.body.classList.toggle('tips-on', !!on);
+  const btn = $('tips-toggle');
+  if (btn) {
+    btn.classList.toggle('on', !!on);
+    btn.textContent = on ? '✓ Tips' : '? Tips';
+  }
+}
+chrome.storage.local.get('_tipsOn').then(({ _tipsOn }) => applyTipsState(!!_tipsOn));
+$('tips-toggle').addEventListener('click', async () => {
+  const next = !document.body.classList.contains('tips-on');
+  applyTipsState(next);
+  chrome.storage.local.set({ _tipsOn: next });
+});
+
 // ── Diagnose ──────────────────────────────────────────────────────────────────
 
 $('diag-btn').addEventListener('click', async () => {
@@ -605,10 +661,23 @@ loadSettings().then(s => {
   if (!s.token) $('settings').style.display = 'block';
 });
 
-// Restore any in-progress background bulk job
-chrome.runtime.sendMessage({ action: 'bulk-status' }, job => {
-  if (job?.running) updateBulkStatus(job);
-});
+// Restore any in-progress background bulk job for THIS tab. Other tabs may
+// have their own jobs running independently; those are surfaced only in
+// their own popups.
+async function restoreOwnTabJob() {
+  if (currentTabId == null) {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    currentTabId = tab?.id ?? null;
+  }
+  if (currentTabId == null) return;
+  chrome.runtime.sendMessage(
+    { action: 'bulk-status', payload: { tabId: currentTabId } },
+    job => {
+      if (job && (job.running || job.pausedForSession)) updateBulkStatus(job);
+    }
+  );
+}
+restoreOwnTabJob();
 
 checkAndDownloadUpdate();
 init();

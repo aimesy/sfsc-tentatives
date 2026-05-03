@@ -15,9 +15,79 @@
       background: #1a3a5c;
       color: white;
       padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
     }
+    .header-text { flex: 1; min-width: 0; }
     header h1 { font-size: 0.95rem; font-weight: 600; margin: 0; }
     header p  { font-size: 0.75rem; opacity: 0.7; margin: 0.15rem 0 0; }
+    #tips-toggle {
+      width: auto;
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.18rem 0.5rem;
+      border-radius: 4px;
+      margin: 0;
+      cursor: pointer;
+      line-height: 1.1;
+    }
+    #tips-toggle:hover { background: rgba(255,255,255,0.22); }
+    #tips-toggle.on    { background: #ffce5b; color: #5b4400; border-color: #ffce5b; }
+
+    /* Custom tooltips — visible only when body has .tips-on. We use ::before
+       for the bubble and ::after for the arrow so a single data-tip attribute
+       on any interactable element renders a styled tooltip on hover, without
+       the 1-2 second delay native title= attributes have. */
+    body.tips-on [data-tip] { position: relative; }
+    body.tips-on [data-tip]:hover::before {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a3a5c;
+      color: white;
+      padding: 5px 9px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 400;
+      line-height: 1.35;
+      white-space: pre-wrap;
+      max-width: 240px;
+      width: max-content;
+      text-align: center;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.18);
+      z-index: 9999;
+      pointer-events: none;
+    }
+    body.tips-on [data-tip]:hover::after {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: #1a3a5c;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    /* For tips on elements anchored to the popup top edge, flip the bubble
+       below the element to keep it inside the popup viewport. */
+    body.tips-on [data-tip-pos="below"]:hover::before {
+      bottom: auto;
+      top: calc(100% + 6px);
+    }
+    body.tips-on [data-tip-pos="below"]:hover::after {
+      bottom: auto;
+      top: 100%;
+      border-top-color: transparent;
+      border-bottom-color: #1a3a5c;
+    }
 
     main { padding: 0.85rem 1rem; }
 
@@ -218,77 +288,84 @@
 </head>
 <body>
   <header>
-    <h1>SFSC Tentative Rulings</h1>
-    <p>SF Superior Court scraper</p>
+    <div class="header-text">
+      <h1>SFSC Tentative Rulings</h1>
+      <p>SF Superior Court scraper</p>
+    </div>
+    <button id="tips-toggle" data-tip-pos="below" data-tip="Toggle tooltips: hover any button or field to see what it does.">? Tips</button>
   </header>
 
   <main>
     <div id="update-banner">
       <span>Update available</span>
-      <button id="update-download">Download</button>
-      <button id="update-dismiss">✕</button>
+      <button id="update-download" data-tip="Download the latest sfsc-extension.zip from GitHub.">Download</button>
+      <button id="update-dismiss"  data-tip="Hide this update banner for now.">✕</button>
     </div>
 
     <div class="status" id="status">
       <span>Checking page…</span>
     </div>
 
-    <button id="send-btn" disabled>Send to GitHub</button>
+    <button id="send-btn" data-tip="Commit the rulings shown on the current SFSC page to GitHub. Disabled until a search has been run on the page." disabled>Send to GitHub</button>
     <div id="hotkey-hint" style="font-size:0.72rem;color:#666;margin:-0.25rem 0 0.5rem;padding:0 0.1rem">
       <span id="hotkey-text">⚡ <kbd id="hotkey-key" style="background:#eef3fb;border:1px solid #ccd6e6;border-radius:3px;padding:0 4px;font-family:inherit;font-size:0.7rem">Alt+Shift+S</kbd> commit &amp; load next day</span>
       &nbsp;·&nbsp;
-      <a href="#" id="hotkey-config" style="color:#5a8fc8;text-decoration:none">change</a>
+      <a href="#" id="hotkey-config" style="color:#5a8fc8;text-decoration:none" data-tip="Open the browser's keyboard-shortcuts page to rebind this hotkey.">change</a>
     </div>
-    <button id="diag-btn" style="background:#f5f5f5;color:#444;font-size:0.75rem;font-weight:400;padding:0.25rem">Diagnose page</button>
+    <button id="diag-btn" data-tip="Show debug info about the SFSC page (which date input was found, form action URL, submit button text). Useful if SFSC changes their HTML." style="background:#f5f5f5;color:#444;font-size:0.75rem;font-weight:400;padding:0.25rem">Diagnose page</button>
 
     <div id="bulk-section">
-      <button id="auto-scan-btn" disabled>Scan Unscanned Pages</button>
+      <button id="auto-scan-btn" data-tip="Find every business day from the first archived date through today that's missing, then scrape them in the background." disabled>Scan Unscanned Pages</button>
       <div class="bulk-row">
         <div>
           <label>From</label>
           <div class="date-wrap">
-            <input type="text" id="bulk-from" placeholder="YYYY-MM-DD" maxlength="10">
-            <button class="cal-btn" id="cal-from" title="Open calendar">📅</button>
+            <input type="text" id="bulk-from" placeholder="YYYY-MM-DD" maxlength="10" data-tip="Start of the date range to scrape (inclusive). YYYY-MM-DD or MM/DD/YYYY.">
+            <button class="cal-btn" id="cal-from" title="Open calendar" data-tip="Pick a date with the calendar widget.">📅</button>
             <input type="date" id="bulk-from-picker" class="hidden-picker" tabindex="-1">
           </div>
         </div>
         <div>
           <label>To <span style="font-weight:400;color:#aaa">(blank = today)</span></label>
           <div class="date-wrap">
-            <input type="text" id="bulk-to" placeholder="YYYY-MM-DD or blank">
-            <button class="cal-btn" id="cal-to" title="Open calendar">📅</button>
+            <input type="text" id="bulk-to" placeholder="YYYY-MM-DD or blank" data-tip="End of the date range to scrape (inclusive). Leave blank for today.">
+            <button class="cal-btn" id="cal-to" title="Open calendar" data-tip="Pick a date with the calendar widget.">📅</button>
             <input type="date" id="bulk-to-picker" class="hidden-picker" tabindex="-1">
           </div>
         </div>
       </div>
       <div style="display:flex;gap:0.4rem;margin-bottom:0.5rem">
-        <button id="jump-first" style="flex:1;background:#f0f5ff;color:#1a3a5c;font-size:0.72rem;font-weight:500;padding:0.25rem;margin:0" title="Jump to earliest unscanned weekday">⏮ First gap</button>
-        <button id="jump-last"  style="flex:1;background:#f0f5ff;color:#1a3a5c;font-size:0.72rem;font-weight:500;padding:0.25rem;margin:0" title="Resume from day after last commit">⏭ Resume</button>
+        <button id="jump-first" style="flex:1;background:#f0f5ff;color:#1a3a5c;font-size:0.72rem;font-weight:500;padding:0.25rem;margin:0" title="Jump to earliest unscanned weekday" data-tip="Set From to the earliest weekday in the archive that's missing rulings.">⏮ First gap</button>
+        <button id="jump-last"  style="flex:1;background:#f0f5ff;color:#1a3a5c;font-size:0.72rem;font-weight:500;padding:0.25rem;margin:0" title="Resume from day after last commit" data-tip="Set From to the business day after the most recently archived date.">⏭ Resume</button>
       </div>
       <div class="bulk-row" style="margin-bottom:0.4rem">
         <div style="flex:1">
           <label>Search timeout (ms)</label>
-          <input type="number" id="bulk-wait" value="5000" min="100" step="100" placeholder="ms">
+          <input type="number" id="bulk-wait" value="5000" min="100" step="100" placeholder="ms" data-tip="How long to wait for SFSC to load each search result before giving up. Increase if you see timeouts on slow connections.">
         </div>
       </div>
-      <button id="bulk-btn" disabled>Bulk Scrape Range</button>
-      <button id="bulk-stop">Stop</button>
-      <button id="bulk-resume" style="display:none;background:#2a7a4a;color:white;font-size:0.82rem">Resume after CAPTCHA</button>
+      <label id="skip-scanned-row" data-tip="When ticked, Bulk Scrape Range silently drops any weekdays already in the archive and only requests the missing ones." style="display:flex;align-items:center;gap:0.35rem;margin-bottom:0.5rem;font-size:0.74rem;color:#1a3a5c;cursor:pointer">
+        <input type="checkbox" id="skip-scanned" style="margin:0">
+        Skip dates already scanned in this range
+      </label>
+      <button id="bulk-btn" data-tip="Step through every business day in the From–To range, scraping rulings and committing them to GitHub. Skips weekends and California court holidays. Runs in the background — you can close this popup." disabled>Bulk Scrape Range</button>
+      <button id="bulk-stop" data-tip="Stop the running bulk scrape. In-flight commits still finish.">Stop</button>
+      <button id="bulk-resume" data-tip="Resume the paused scrape after solving the SFSC CAPTCHA." style="display:none;background:#2a7a4a;color:white;font-size:0.82rem">Resume after CAPTCHA</button>
     </div>
 
-    <button id="settings-btn">⚙ Settings</button>
+    <button id="settings-btn" data-tip="Show or hide the settings panel (GitHub token, target repo, target branch).">⚙ Settings</button>
 
     <div id="settings">
       <label>GitHub Token (PAT with Contents: write)</label>
-      <input type="password" id="token" placeholder="github_pat_…">
+      <input type="password" id="token" placeholder="github_pat_…" data-tip="Personal Access Token authorising the extension to commit to GitHub. Generate at github.com → Settings → Developer settings → Personal access tokens. Needs Contents: write on the target repo.">
       <p class="hint">github.com → Settings → Developer settings → Personal access tokens</p>
 
       <label>Repository (owner/repo)</label>
-      <input type="text" class="setting-field" id="repo" placeholder="aimesy/sfsc-tentatives">
+      <input type="text" class="setting-field" id="repo" placeholder="aimesy/sfsc-tentatives" data-tip="Target GitHub repository in owner/repo form. Defaults to the canonical archive.">
       <div class="field-saved" id="repo-saved"></div>
 
       <label>Branch</label>
-      <input type="text" class="setting-field" id="branch" placeholder="master">
+      <input type="text" class="setting-field" id="branch" placeholder="master" data-tip="Branch to commit to. Most contributors leave this on master.">
       <div class="field-saved" id="branch-saved"></div>
     </div>
   </main>
