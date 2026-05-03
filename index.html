@@ -1578,11 +1578,48 @@ const JS_DERIVED_SORT_COLS = new Set([
   'outcome',          // classifyOutcome(splitRuling(...).ruling)
 ]);
 
+// "main → sub" composite delimiter used in filter values + the nested
+// filter-popup labels. The arrow is U+2192; uncommon enough in real
+// motion-type / outcome / judge text that it's safe as a separator.
+const SUB_SEPARATOR = ' → ';
+function combineMainSub(main, sub) {
+  return sub ? `${main}${SUB_SEPARATOR}${sub}` : main;
+}
+function splitMainSub(value) {
+  const i = value.indexOf(SUB_SEPARATOR);
+  return i < 0
+    ? { main: value, sub: '' }
+    : { main: value.slice(0, i), sub: value.slice(i + SUB_SEPARATOR.length) };
+}
+
+// Compound sort key: returns [main, sub] so a sort by motion_type
+// also sorts alphabetically by motion_subtype within each type
+// (likewise for outcome / motion_category). Pure raw columns get a
+// trivial 1-tuple. Compared element-wise by cmpSortKey below.
 function jsSortKey(row, col) {
-  if (col === 'motion_category') return rowCategory(row) || '';
-  if (col === 'motion_type')     return lookupMotion(row.department, row.calendar_matter).type || '';
-  if (col === 'outcome')         return lookupOutcome(splitRuling(row.ruling, row.department).ruling).outcome || '';
-  return row[col] ?? '';
+  if (col === 'motion_category') {
+    return [rowCategory(row) || '', ''];
+  }
+  if (col === 'motion_type') {
+    const m = lookupMotion(row.department, row.calendar_matter);
+    return [m.type || '', m.subtype || ''];
+  }
+  if (col === 'outcome') {
+    const o = lookupOutcome(splitRuling(row.ruling, row.department).ruling);
+    return [o.outcome || '', o.subtype || ''];
+  }
+  return [row[col] ?? '', ''];
+}
+
+function cmpSortKey(a, b) {
+  const aa = Array.isArray(a) ? a : [a, ''];
+  const bb = Array.isArray(b) ? b : [b, ''];
+  for (let i = 0; i < Math.max(aa.length, bb.length); i++) {
+    const x = aa[i] ?? '', y = bb[i] ?? '';
+    if (x < y) return -1;
+    if (x > y) return  1;
+  }
+  return 0;
 }
 
 // ─── Column visibility ──────────────────────────────────────────────────────
@@ -2443,6 +2480,13 @@ function buildWhere() {
 // can't be expressed in plain SQL (they're derived from ruling text); those
 // flow through the same JS post-filter pass that the "+ Filter" outcome rows
 // already use (see outcomeFilterMatches / columnFilterMatches).
+// Columns where the user can select EITHER a parent value (matches all
+// children) OR a "main → sub" composite (matches that specific sub
+// only). Same set as the columns whose uniqueValuesFor returns nested
+// rows. The SQL builder + JS post-filter both consult this to decide
+// whether a filter set value is a parent or a composite.
+const HIERARCHICAL_FILTER_COLS = new Set(['motion_type', 'outcome', 'judge']);
+
 function columnFiltersToSql() {
   const out = [];
   for (const col of Object.keys(columnFilters)) {
@@ -2453,10 +2497,26 @@ function columnFiltersToSql() {
     if (col === 'outcome' || col === 'motion_category' || col === 'officer_type') continue;
     if (col === 'motion_type') {
       // Resolve selected types → calendar_matters via MTYPE_CACHE.
+      // Hierarchical: a parent value matches every (type) entry; a
+      // "type → sub" composite matches only entries whose subtype
+      // also matches.
       const cms = new Set();
+      const parents = new Set();
+      const subPairs = [];  // [type, sub]
+      for (const v of set) {
+        if (v.includes(SUB_SEPARATOR)) {
+          const { main, sub } = splitMainSub(v);
+          subPairs.push([main, sub]);
+        } else {
+          parents.add(v);
+        }
+      }
       for (const inner of MTYPE_CACHE.values()) {
         for (const [cm, cls] of inner) {
-          if (set.has(cls.type)) cms.add(cm);
+          if (parents.has(cls.type)) { cms.add(cm); continue; }
+          for (const [t, s] of subPairs) {
+            if (cls.type === t && (cls.subtype || '') === s) { cms.add(cm); break; }
+          }
         }
       }
       if (!cms.size) { out.push('FALSE'); continue; }
@@ -2464,12 +2524,39 @@ function columnFiltersToSql() {
       out.push(`COALESCE(calendar_matter, '') IN (${list})`);
       continue;
     }
-    // Judge values come from uniqueValuesFor('judge'), which uses
-    // judge_canonical — so the filter must apply to that derived column,
-    // not the raw `judge` field (otherwise selecting "Judge Pro Tem" in
-    // the column-header filter would only match rows whose raw judge
-    // string is exactly "Judge Pro Tem", missing every "Judge Pro Tem: X").
-    const sqlCol = col === 'judge' ? 'judge_canonical' : col;
+    if (col === 'judge') {
+      // Hierarchical: parent value matches every row whose
+      // judge_canonical equals it; "main → sub" composite restricts
+      // to rows with that specific judge_subtype too. The only judge
+      // canonical with subtypes today is "Judge Pro Tem", so the
+      // composite branch only fires for JPT names.
+      const parents = new Set();
+      const subPairs = [];
+      let hasBlank = false;
+      for (const v of set) {
+        if (v === '' || v == null) { hasBlank = true; continue; }
+        if (v.includes(SUB_SEPARATOR)) {
+          const { main, sub } = splitMainSub(v);
+          subPairs.push([main, sub]);
+        } else {
+          parents.add(v);
+        }
+      }
+      const clauses = [];
+      if (parents.size) {
+        const lits = [...parents].map(v => `'${escapeSql(v)}'`).join(',');
+        clauses.push(`judge_canonical IN (${lits})`);
+      }
+      for (const [main, sub] of subPairs) {
+        clauses.push(`(judge_canonical = '${escapeSql(main)}' AND COALESCE(judge_subtype,'') = '${escapeSql(sub)}')`);
+      }
+      if (hasBlank) clauses.push(`(judge_canonical IS NULL OR judge_canonical = '')`);
+      if (!clauses.length) { out.push('FALSE'); continue; }
+      out.push(clauses.length === 1 ? clauses[0] : `(${clauses.join(' OR ')})`);
+      continue;
+    }
+    // Direct SQL columns (department, hearing_time, etc.).
+    const sqlCol = col;
     const vals = [...set];
     const hasBlank = vals.some(v => v === '' || v == null);
     const literals = vals.filter(v => v !== '' && v != null)
@@ -2482,15 +2569,20 @@ function columnFiltersToSql() {
   return out;
 }
 
-// True if the row's derived values pass the column filters on `outcome`
-// and `motion_category` (both classifier-driven and so off-limits to
-// plain SQL — same JS post-pass treatment).
+// JS post-pass for filters whose value isn't directly representable in
+// SQL (outcome / motion_category / officer_type are all derived from
+// text classifiers). Outcome additionally supports the hierarchical
+// "main → sub" composite — picking "Granted / Sustained → Sustained
+// with leave to amend" filters to that specific subtype rather than
+// the whole Granted-bucket.
 function columnFilterMatches(row) {
   const oset = columnFilters['outcome'];
   if (oset instanceof Set && oset.size) {
     const sp = splitRuling(row.ruling, row.department);
-    const o  = lookupOutcome(sp.ruling).outcome || '';
-    if (!oset.has(o)) return false;
+    const lo = lookupOutcome(sp.ruling);
+    const main = lo.outcome || '';
+    const composite = lo.subtype ? combineMainSub(main, lo.subtype) : null;
+    if (!oset.has(main) && !(composite && oset.has(composite))) return false;
   }
   const cset = columnFilters['motion_category'];
   if (cset instanceof Set && cset.size) {
@@ -2603,6 +2695,16 @@ async function runQuery(page = 0) {
   // user-selected sortCol is JS-derived (we'll re-sort below).
   const sqlSortCol = sortIsJsDerived ? 'court_date' : sortCol;
   const sqlSortDir = sortIsJsDerived ? 'DESC'       : sortDir;
+  // Compound ORDER BY for columns that have a meaningful subfield —
+  // sorting Judicial Officer should also alphabetise the JPT names
+  // within the "Judge Pro Tem" umbrella rather than collating them
+  // arbitrarily. Date keeps a (date, hearing_time) compound so
+  // chronologically ordered rows also list the morning-calendar
+  // entries before the afternoon ones.
+  const sqlOrderBy =
+      sqlSortCol === 'judge'      ? `judge_canonical ${sqlSortDir}, COALESCE(judge_subtype,'') ${sqlSortDir}`
+    : sqlSortCol === 'court_date' ? `court_date ${sqlSortDir}, hearing_time ${sqlSortDir}`
+    :                                `${sqlSortCol} ${sqlSortDir}`;
   $('qspinner').classList.add('on');
   saveState();
   try {
@@ -2618,7 +2720,7 @@ async function runQuery(page = 0) {
                  calendar_matter, judge, judge_canonical, judge_subtype,
                  ruling, row_hash
           FROM data WHERE ${where}
-          ORDER BY ${sqlSortCol} ${sqlSortDir}, case_number
+          ORDER BY ${sqlOrderBy}, case_number
         `),
       ]);
       let allRows = allR.toArray()
@@ -2627,9 +2729,11 @@ async function runQuery(page = 0) {
       if (sortIsJsDerived) {
         const sign = sortDir === 'ASC' ? 1 : -1;
         allRows = allRows.slice().sort((a, b) => {
-          const ka = jsSortKey(a, sortCol), kb = jsSortKey(b, sortCol);
-          if (ka < kb) return -1 * sign;
-          if (ka > kb) return  1 * sign;
+          // Compound key — cmpSortKey handles arrays element-wise so a
+          // sort by motion_type also orders by motion_subtype within
+          // each type, sort by outcome orders by outcome_subtype, etc.
+          const c = cmpSortKey(jsSortKey(a, sortCol), jsSortKey(b, sortCol));
+          if (c !== 0) return c * sign;
           // Tie-break on case_number for stability (same as the SQL path).
           const ca = a.case_number || '', cb = b.case_number || '';
           return ca < cb ? -1 : ca > cb ? 1 : 0;
@@ -2650,7 +2754,7 @@ async function runQuery(page = 0) {
                  calendar_matter, judge, judge_canonical, judge_subtype,
                  ruling, row_hash
           FROM data WHERE ${where}
-          ORDER BY ${sqlSortCol} ${sqlSortDir}, case_number
+          ORDER BY ${sqlOrderBy}, case_number
           LIMIT ${PAGE_SIZE} OFFSET ${offset}
         `),
       ]);
@@ -3518,23 +3622,47 @@ function invalidateColumnFilterCache() { _colUniqueCache.clear(); }
 async function uniqueValuesFor(col) {
   if (_colUniqueCache.has(col)) return _colUniqueCache.get(col);
   let pairs;
-  if (col === 'motion_type' || col === 'motion_category') {
-    // Both derived from calendar_matter via the motion-type classifier.
-    // Aggregate by classification, re-weighting by actual ruling counts
-    // (MTYPE_CACHE keys are unique department × calendar_matter pairs,
-    // not row counts).
+  if (col === 'motion_category') {
+    // Coarse buckets — no nested children. Re-weight by actual ruling
+    // counts (MTYPE_CACHE keys are unique department × calendar_matter
+    // pairs, not row counts).
     const cmCounts = (await conn.query(
       `SELECT department, calendar_matter, COUNT(*) n FROM data
        GROUP BY department, calendar_matter`)).toArray();
     const counts = new Map();
     for (const r of cmCounts) {
       const cls = lookupMotion(r.department, r.calendar_matter);
-      const key = col === 'motion_type'
-        ? cls.type
-        : (String(r.department) === '301' ? 'Discovery' : motionCategory(cls.type));
+      const key = String(r.department) === '301' ? 'Discovery' : motionCategory(cls.type);
       counts.set(key, (counts.get(key) || 0) + Number(r.n));
     }
     pairs = [...counts.entries()].map(([v, n]) => ({ value: v, count: n }));
+  } else if (col === 'motion_type') {
+    // Two-level: each motion type, with its motion subtypes nested
+    // immediately beneath. The user can check a parent (matches every
+    // subtype under it) or a specific child ("Compel Discovery →
+    // Production"). Children get `child: true` + a `parent` pointer
+    // so the popup renderer indents them under the right parent.
+    const cmCounts = (await conn.query(
+      `SELECT department, calendar_matter, COUNT(*) n FROM data
+       GROUP BY department, calendar_matter`)).toArray();
+    const byType = new Map();  // type → { count, subs: Map<sub,count> }
+    for (const r of cmCounts) {
+      const cls = lookupMotion(r.department, r.calendar_matter);
+      const t = cls.type, s = cls.subtype || '';
+      let bucket = byType.get(t);
+      if (!bucket) { bucket = { count: 0, subs: new Map() }; byType.set(t, bucket); }
+      bucket.count += Number(r.n);
+      if (s) bucket.subs.set(s, (bucket.subs.get(s) || 0) + Number(r.n));
+    }
+    pairs = [];
+    const sortedTypes = [...byType.entries()].sort((a, b) => b[1].count - a[1].count);
+    for (const [t, info] of sortedTypes) {
+      pairs.push({ value: t, count: info.count });
+      const subs = [...info.subs.entries()].sort((a, b) => b[1] - a[1]);
+      for (const [s, c] of subs) {
+        pairs.push({ value: combineMainSub(t, s), count: c, parent: t, sub: s, child: true });
+      }
+    }
   } else if (col === 'officer_type') {
     // Three buckets — Judge of the Superior Court / Judge pro tempore /
     // Examiner — derived from dept (probate → examiner), the JPT regex,
@@ -3550,22 +3678,59 @@ async function uniqueValuesFor(col) {
     }
     pairs = [...counts.entries()].map(([v, n]) => ({ value: v, count: n }));
   } else if (col === 'outcome') {
-    // Derived: classify the substantive ruling text per row. Bucketing is
-    // O(n) — fine for the ~70K-row corpus.
+    // Two-level: outcome (Granted / Sustained, Denied, etc.) with its
+    // outcome subtypes (Sustained with leave to amend, Sustained
+    // without leave, Granted in part, etc.) nested beneath. Bucketing
+    // is O(n) — fine for the ~70K-row corpus, run once per page-load.
     const rs = (await conn.query(
       `SELECT department, ruling FROM data WHERE ruling IS NOT NULL`)).toArray();
-    const counts = new Map();
+    const byOutcome = new Map();  // outcome → { count, subs: Map<sub,count> }
     for (const r of rs) {
       const sp = splitRuling(r.ruling, r.department);
-      const o  = lookupOutcome(sp.ruling).outcome || '';
-      counts.set(o, (counts.get(o) || 0) + 1);
+      const lo = lookupOutcome(sp.ruling);
+      const o = lo.outcome || '', s = lo.subtype || '';
+      let bucket = byOutcome.get(o);
+      if (!bucket) { bucket = { count: 0, subs: new Map() }; byOutcome.set(o, bucket); }
+      bucket.count += 1;
+      if (s) bucket.subs.set(s, (bucket.subs.get(s) || 0) + 1);
     }
-    pairs = [...counts.entries()].map(([v, n]) => ({ value: v, count: n }));
+    pairs = [];
+    const sortedOutcomes = [...byOutcome.entries()].sort((a, b) => b[1].count - a[1].count);
+    for (const [o, info] of sortedOutcomes) {
+      pairs.push({ value: o, count: info.count });
+      const subs = [...info.subs.entries()].sort((a, b) => b[1] - a[1]);
+      for (const [s, c] of subs) {
+        pairs.push({ value: combineMainSub(o, s), count: c, parent: o, sub: s, child: true });
+      }
+    }
+  } else if (col === 'judge') {
+    // Two-level: every judge_canonical, with judge_subtype names nested
+    // under it where present. In practice the only canonical that has
+    // children is "Judge Pro Tem" — judge_subtype is null for everyone
+    // else — so this collapses to a flat list with the JPTs grouped
+    // beneath the Judge Pro Tem umbrella.
+    const rs = (await conn.query(
+      `SELECT COALESCE(judge_canonical, '') c, COALESCE(judge_subtype, '') s, COUNT(*) n
+         FROM data GROUP BY c, s ORDER BY c`)).toArray();
+    const byJudge = new Map();
+    for (const r of rs) {
+      let bucket = byJudge.get(r.c);
+      if (!bucket) { bucket = { count: 0, subs: new Map() }; byJudge.set(r.c, bucket); }
+      bucket.count += Number(r.n);
+      if (r.s) bucket.subs.set(r.s, (bucket.subs.get(r.s) || 0) + Number(r.n));
+    }
+    pairs = [];
+    const sortedJudges = [...byJudge.entries()].sort((a, b) => b[1].count - a[1].count);
+    for (const [j, info] of sortedJudges) {
+      pairs.push({ value: j, count: info.count });
+      const subs = [...info.subs.entries()].sort((a, b) => b[1] - a[1]);
+      for (const [s, c] of subs) {
+        pairs.push({ value: combineMainSub(j, s), count: c, parent: j, sub: s, child: true });
+      }
+    }
   } else {
-    // Direct SQL column. For `judge` we serve canonical values (JPT
-    // umbrella collapsed) so the column-header filter offers a single
-    // "Judge Pro Tem" row rather than dozens of low-count individuals.
-    const sqlCol = col === 'judge' ? 'judge_canonical' : col;
+    // Direct SQL column.
+    const sqlCol = col;
     const rs = (await conn.query(
       `SELECT COALESCE(${sqlCol}, '') v, COUNT(*) n FROM data
        GROUP BY v ORDER BY n DESC, v`)).toArray();
@@ -3648,6 +3813,30 @@ async function openColFilter(col, btn) {
       listEl.innerHTML = '<div class="cf-empty">No matching values.</div>';
       return;
     }
+    // Sort modes shouldn't break the parent → child grouping for
+    // hierarchical columns (motion_type / outcome / judge). When NOT
+    // searching, re-order so each child row sits immediately under its
+    // parent regardless of its own count, and parents sort by the
+    // requested mode. When searching, the user has narrowed the list
+    // explicitly — render whatever matched in flat order.
+    if (!search && view.some(p => p.child)) {
+      const parents = view.filter(p => !p.child);
+      const childrenByParent = new Map();
+      for (const p of view) {
+        if (!p.child) continue;
+        const arr = childrenByParent.get(p.parent) || [];
+        arr.push(p); childrenByParent.set(p.parent, arr);
+      }
+      // Children always sort by count within their parent (the natural
+      // expectation — most-common first); parents follow the popup's
+      // active sort mode.
+      for (const arr of childrenByParent.values()) arr.sort((a, b) => b.count - a.count);
+      view = [];
+      for (const par of parents) {
+        view.push(par);
+        for (const c of (childrenByParent.get(par.value) || [])) view.push(c);
+      }
+    }
     // (Select all) row controls every visible (post-search) row.
     const allChecked = view.every(p => selected.has(p.value));
     let html =
@@ -3656,11 +3845,19 @@ async function openColFilter(col, btn) {
         `<span class="cf-label">(Select all${search ? ' visible' : ''})</span>` +
       `</label>`;
     for (const p of view) {
-      const display = p.value === '' ? '(blank)' : p.value;
+      // Children render with a left indent + a small caret prefix and
+      // show only the sub-portion of the value (the parent name is
+      // already visible above) so the list stays compact.
+      const isChild = !!p.child;
+      const display = p.value === '' ? '(blank)'
+                    : isChild ? p.sub
+                    : p.value;
+      const indentStyle = isChild ? ' style="padding-left:1.6rem"' : '';
+      const prefix      = isChild ? '<span style="color:#888;margin-right:0.2rem">↳</span>' : '';
       html +=
-        `<label class="cf-row" data-value="${esc(p.value)}">` +
+        `<label class="cf-row" data-value="${esc(p.value)}"${indentStyle}>` +
           `<input type="checkbox"${selected.has(p.value) ? ' checked' : ''}>` +
-          `<span class="cf-label" title="${esc(display)}">${esc(display)}</span>` +
+          `<span class="cf-label" title="${esc(p.value)}">${prefix}${esc(display)}</span>` +
           `<span class="cf-count">${p.count.toLocaleString()}</span>` +
         `</label>`;
     }
