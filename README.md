@@ -72,9 +72,9 @@ python update-readme.py
 ## Departments
 
 <details>
-<summary>**Department 302 — Civil Law & Motion** &nbsp;·&nbsp; 60,719 rulings &nbsp;·&nbsp; Latest: 2026-05-04 &nbsp;·&nbsp; 0 gaps</summary>
+<summary>**Department 302 — Civil Law & Motion** &nbsp;·&nbsp; 60,765 rulings &nbsp;·&nbsp; Latest: 2026-05-04 &nbsp;·&nbsp; 0 gaps</summary>
 
-60,719 tentative rulings. Latest: 2026-05-04.
+60,765 tentative rulings. Latest: 2026-05-04.
 
 ### Gaps (0)
 
@@ -82,12 +82,12 @@ _None — all weekdays in range are accounted for._
 
 </details>
 <details>
-<summary>**Department 501 — Real Property Court** &nbsp;·&nbsp; 8,918 rulings &nbsp;·&nbsp; Latest: 2026-05-04 &nbsp;·&nbsp; 0 gaps</summary>
+<summary>**Department 501 — Real Property Court** &nbsp;·&nbsp; 9,954 rulings &nbsp;·&nbsp; Latest: 2026-05-04 &nbsp;·&nbsp; 1 gap</summary>
 
-8,918 tentative rulings. Latest: 2026-05-04.
+9,954 tentative rulings. Latest: 2026-05-04.
 
-### Gaps (0)
+### Gaps (1)
 
-_None — all weekdays in range are accounted for._
+- 2022-05-18 → 2023-01-03
 
 </details>
