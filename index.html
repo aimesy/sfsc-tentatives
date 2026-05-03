@@ -36,6 +36,69 @@
     .hbtn:hover    { background: rgba(255,255,255,0.22); }
     .hbtn.active   { background: rgba(255,255,255,0.28); border-color: rgba(255,255,255,0.5); }
     .hbtn:disabled { opacity: 0.5; cursor: default; }
+    #tips-toggle.active { background: #ffce5b; color: #5b4400; border-color: #ffce5b; }
+
+    /* Custom tooltips — visible only when body has .tips-on. Each interactable
+       element gets data-tip="..." and CSS renders a styled bubble on hover.
+       data-tip-pos="below" flips the bubble to appear under the element (used
+       on header buttons so the bubble stays in viewport). */
+    body.tips-on [data-tip] { position: relative; }
+    body.tips-on [data-tip]:hover::before {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a3a5c;
+      color: white;
+      padding: 6px 10px;
+      border-radius: 5px;
+      font-size: 0.72rem;
+      font-weight: 400;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      max-width: 280px;
+      width: max-content;
+      text-align: left;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.22);
+      z-index: 999999;
+      pointer-events: none;
+    }
+    body.tips-on [data-tip]:hover::after {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: #1a3a5c;
+      pointer-events: none;
+      z-index: 999999;
+    }
+    body.tips-on [data-tip-pos="below"]:hover::before {
+      bottom: auto;
+      top: calc(100% + 6px);
+    }
+    body.tips-on [data-tip-pos="below"]:hover::after {
+      bottom: auto;
+      top: 100%;
+      border-top-color: transparent;
+      border-bottom-color: #1a3a5c;
+    }
+    body.tips-on [data-tip-pos="right"]:hover::before {
+      bottom: auto;
+      top: 50%;
+      left: calc(100% + 8px);
+      transform: translateY(-50%);
+    }
+    body.tips-on [data-tip-pos="right"]:hover::after {
+      bottom: auto;
+      top: 50%;
+      left: 100%;
+      transform: translateY(-50%);
+      border-top-color: transparent;
+      border-right-color: #1a3a5c;
+    }
 
     /* ── Database Downloads dropdown ── */
     .dl-wrap { position: relative; display: inline-block; }
@@ -302,8 +365,96 @@
     }
     th.sortable { cursor: pointer; user-select: none; }
     th.sortable:hover { background: #e8edf4; }
-    th.sort-asc::after  { content: ' ▲'; font-size: 0.7em; }
-    th.sort-desc::after { content: ' ▼'; font-size: 0.7em; }
+    th.sort-asc  .col-label::after { content: ' ▲'; font-size: 0.7em; color: #1a3a5c; }
+    th.sort-desc .col-label::after { content: ' ▼'; font-size: 0.7em; color: #1a3a5c; }
+
+    /* Excel-style per-column filter button (small ▾ next to the label).
+       Highlighted blue when the column has an active filter. */
+    th .col-head {
+      display: inline-flex; align-items: center; gap: 0.25rem;
+    }
+    th .col-filter-btn {
+      width: 18px; height: 18px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: transparent; border: 1px solid transparent;
+      border-radius: 3px; cursor: pointer;
+      color: #888; font-size: 0.75rem; line-height: 1; padding: 0;
+    }
+    th .col-filter-btn:hover { background: #e3eaf5; color: #1a3a5c; border-color: #c2ccd9; }
+    th .col-filter-btn.active {
+      background: #2e6da4; color: white; border-color: #2e6da4;
+    }
+    /* The popup itself — a single floating panel reused across columns. */
+    .col-filter-pop {
+      display: none; position: absolute; z-index: 500;
+      background: white; border: 1px solid #c2ccd9; border-radius: 5px;
+      box-shadow: 0 6px 22px rgba(0,0,0,0.18);
+      width: 280px; max-width: 92vw;
+      padding: 0.55rem;
+      font-size: 0.78rem; color: #222;
+    }
+    .col-filter-pop.open { display: block; }
+    .col-filter-pop .cf-sort {
+      display: flex; gap: 0.3rem; margin-bottom: 0.4rem;
+    }
+    .col-filter-pop .cf-sort button {
+      flex: 1; padding: 0.25rem; font-size: 0.74rem;
+      background: #f0f3f8; border: 1px solid #c2ccd9;
+      border-radius: 3px; cursor: pointer; color: #1a3a5c;
+      width: auto; margin: 0; font-weight: 500;
+    }
+    .col-filter-pop .cf-sort button:hover { background: #e3eaf5; }
+    .col-filter-pop .cf-search {
+      width: 100%; padding: 0.3rem 0.45rem;
+      border: 1px solid #c2ccd9; border-radius: 3px;
+      font-size: 0.78rem; box-sizing: border-box;
+      margin-bottom: 0.4rem;
+    }
+    .col-filter-pop .cf-search:focus { outline: none; border-color: #5a8fc8; }
+    .col-filter-pop .cf-list {
+      max-height: 280px; overflow-y: auto;
+      border: 1px solid #e1e6ee; border-radius: 3px;
+      padding: 0.25rem;
+      background: #fafbfd;
+    }
+    .col-filter-pop .cf-row {
+      display: flex; align-items: center; gap: 0.4rem;
+      padding: 0.18rem 0.3rem;
+      font-size: 0.76rem; cursor: pointer;
+      border-radius: 2px;
+    }
+    .col-filter-pop .cf-row:hover { background: #eef3fb; }
+    .col-filter-pop .cf-row input { margin: 0; flex-shrink: 0; }
+    .col-filter-pop .cf-row .cf-label {
+      flex: 1; min-width: 0;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .col-filter-pop .cf-row .cf-count {
+      color: #888; font-size: 0.7rem; flex-shrink: 0;
+    }
+    .col-filter-pop .cf-row.cf-all {
+      font-weight: 600; border-bottom: 1px solid #e1e6ee;
+      margin-bottom: 0.2rem; padding-bottom: 0.3rem;
+    }
+    .col-filter-pop .cf-empty {
+      padding: 0.5rem; text-align: center; color: #888;
+      font-style: italic; font-size: 0.74rem;
+    }
+    .col-filter-pop .cf-actions {
+      display: flex; gap: 0.3rem; margin-top: 0.5rem;
+    }
+    .col-filter-pop .cf-actions button {
+      flex: 1; padding: 0.32rem;
+      border: 1px solid #c2ccd9; border-radius: 3px;
+      cursor: pointer; font-size: 0.76rem; font-weight: 500;
+      width: auto; margin: 0;
+    }
+    .col-filter-pop .cf-apply  { background: #1a3a5c; color: white; border-color: #1a3a5c; }
+    .col-filter-pop .cf-apply:hover  { background: #214d78; }
+    .col-filter-pop .cf-clear  { background: #fff7f7; color: #7a2020; border-color: #f5c6c6; }
+    .col-filter-pop .cf-clear:hover  { background: #fdecea; }
+    .col-filter-pop .cf-cancel { background: #f0f3f8; color: #1a3a5c; }
+    .col-filter-pop .cf-cancel:hover { background: #e3eaf5; }
     tbody tr { cursor: pointer; }
     tbody tr:hover { background: #f7faff; }
     .col-dept    { width: 50px; white-space: nowrap; }
@@ -447,49 +598,50 @@
   </div>
   <div class="header-right">
     <span class="dl-wrap">
-      <button class="hbtn" id="dl-btn" title="Download per-department data">📥 Database Downloads ▾</button>
+      <button class="hbtn" id="dl-btn" title="Download per-department data" data-tip-pos="below" data-tip="Pick which departments' data to load. Each department is a separate file fetched from GitHub. Your selection is remembered for next time.">📥 Database Downloads ▾</button>
       <div class="dl-menu" id="dl-menu" role="menu" aria-label="Database Downloads"></div>
     </span>
-    <button class="hbtn" id="charts-btn" title="Show charts">📊 Charts</button>
-    <button class="hbtn" id="advanced-btn" title="Add custom filter">+ Filter</button>
-    <button class="hbtn" id="export-btn">⬇ CSV</button>
+    <button class="hbtn" id="charts-btn" title="Show charts" data-tip-pos="below" data-tip="Show or hide the charts panel. Charts respect every filter you've set.">📊 Charts</button>
+    <button class="hbtn" id="advanced-btn" title="Add custom filter" data-tip-pos="below" data-tip="Open the advanced-filter builder to combine conditions across any column (motion type, judge, outcome, ruling text, dates, etc.).">+ Filter</button>
+    <button class="hbtn" id="export-btn" data-tip-pos="below" data-tip="Download the current filtered view as a CSV file. Opens in Excel or Google Sheets.">⬇ CSV</button>
+    <button class="hbtn" id="tips-toggle" data-tip-pos="below" data-tip="Toggle tooltips: hover any button or field to see what it does.">? Tips</button>
   </div>
 </header>
 
 <div id="error-bar"></div>
 
 <div class="toolbar" id="toolbar" style="display:none">
-  <span class="chip">
+  <span class="chip" data-tip="Free-text search: matches case number, party names, the ruling text, and the motion caption.">
     <label for="search">Search</label>
     <input type="search" id="search" placeholder="case #, title, ruling…">
   </span>
-  <span class="chip">
+  <span class="chip" data-tip="Earliest hearing date to include.">
     <label for="date-from">From</label>
     <input type="date" id="date-from">
   </span>
-  <span class="chip">
+  <span class="chip" data-tip="Latest hearing date to include.">
     <label for="date-to">To</label>
     <input type="date" id="date-to">
   </span>
-  <span class="chip">
+  <span class="chip" data-tip="Restrict to one department (e.g. 302 = Civil Law &amp; Motion).">
     <label for="dept">Dept</label>
     <select id="dept"><option value="">All</option></select>
   </span>
-  <span class="chip">
+  <span class="chip" data-tip="Restrict to one judge. Number in parentheses is the count of rulings by that judge in the loaded data.">
     <label for="judge">Judge</label>
     <select id="judge"><option value="">All</option></select>
   </span>
-  <span class="chip">
+  <span class="chip" data-tip="Restrict to one auto-classified motion type (Demurrer, Summary Judgment, Compel Discovery, etc.).">
     <label for="mtype">Motion type</label>
     <select id="mtype"><option value="">All</option></select>
   </span>
-  <span class="chip" id="msub-chip" style="display:none">
+  <span class="chip" id="msub-chip" style="display:none" data-tip="Further narrow by subtype (e.g. for Compel Discovery: Production / Deposition / Interrogatories / etc.).">
     <label for="msub">Subtype</label>
     <select id="msub"><option value="">All</option></select>
   </span>
-  <button class="btn" id="clear-btn">✕ Clear</button>
+  <button class="btn" id="clear-btn" data-tip="Reset all filters and date range to defaults.">✕ Clear</button>
   <span class="sep"></span>
-  <label class="size">Rows
+  <label class="size" data-tip="How many rulings to show per page.">Rows
     <select id="page-size">
       <option value="50">50</option>
       <option value="100">100</option>
@@ -541,21 +693,44 @@
   <table id="grid" style="display:none">
     <thead>
       <tr>
-        <th class="col-dept    sortable" data-col="department">Dept</th>
-        <th class="col-date    sortable sort-desc" data-col="court_date">Date</th>
-        <th class="col-time">Time</th>
-        <th class="col-case    sortable" data-col="case_number">Case #</th>
-        <th class="col-title   sortable" data-col="case_title">Case Title</th>
-        <th class="col-mtype">Motion Type</th>
-        <th class="col-outcome">Outcome</th>
-        <th class="col-motion">Motion Caption</th>
-        <th class="col-judge   sortable" data-col="judge">Judge</th>
-        <th class="col-ruling">Ruling (excerpt)</th>
+        <th class="col-dept    sortable" data-col="department">
+          <span class="col-head"><span class="col-label">Dept</span><button class="col-filter-btn" data-filter-col="department" data-filter-kind="value" title="Filter by Dept">▾</button></span>
+        </th>
+        <th class="col-date    sortable sort-desc" data-col="court_date">
+          <span class="col-head"><span class="col-label">Date</span></span>
+        </th>
+        <th class="col-time">
+          <span class="col-head"><span class="col-label">Time</span><button class="col-filter-btn" data-filter-col="hearing_time" data-filter-kind="value" title="Filter by Time">▾</button></span>
+        </th>
+        <th class="col-case    sortable" data-col="case_number">
+          <span class="col-head"><span class="col-label">Case #</span></span>
+        </th>
+        <th class="col-title   sortable" data-col="case_title">
+          <span class="col-head"><span class="col-label">Case Title</span></span>
+        </th>
+        <th class="col-mtype">
+          <span class="col-head"><span class="col-label">Motion Type</span><button class="col-filter-btn" data-filter-col="motion_type" data-filter-kind="value" title="Filter by Motion Type">▾</button></span>
+        </th>
+        <th class="col-outcome">
+          <span class="col-head"><span class="col-label">Outcome</span><button class="col-filter-btn" data-filter-col="outcome" data-filter-kind="value" title="Filter by Outcome">▾</button></span>
+        </th>
+        <th class="col-motion">
+          <span class="col-head"><span class="col-label">Motion Caption</span></span>
+        </th>
+        <th class="col-judge   sortable" data-col="judge">
+          <span class="col-head"><span class="col-label">Judge</span><button class="col-filter-btn" data-filter-col="judge" data-filter-kind="value" title="Filter by Judge">▾</button></span>
+        </th>
+        <th class="col-ruling">
+          <span class="col-head"><span class="col-label">Ruling (excerpt)</span></span>
+        </th>
       </tr>
     </thead>
     <tbody id="tbody"></tbody>
   </table>
 </div>
+
+<!-- Single shared Excel-style filter popup, repositioned per column. -->
+<div class="col-filter-pop" id="col-filter-pop"></div>
 
 <div class="pager" id="pager" style="display:none">
   <button id="pg-first">«</button>
@@ -915,6 +1090,27 @@ let conn, totalRows = 0, currentPage = 0, lastCount = 0, PAGE_SIZE = 50;
 let sortCol = 'court_date', sortDir = 'DESC', rows = [];
 const $ = id => document.getElementById(id);
 
+// ─── Tooltips toggle ─────────────────────────────────────────────────────────
+// Each interactable element carries a data-tip="..." attribute; CSS in <head>
+// renders the tooltip on hover but ONLY when body.tips-on is set. The toggle
+// state persists in localStorage. Wired up before the rest of the boot path
+// so the user's preference applies to every subsequently-rendered control.
+const TIPS_LS_KEY = 'sfsc.tipsOn';
+function applyTipsState(on) {
+  document.body.classList.toggle('tips-on', !!on);
+  const btn = $('tips-toggle');
+  if (btn) {
+    btn.classList.toggle('active', !!on);
+    btn.textContent = on ? '✓ Tips' : '? Tips';
+  }
+}
+try { applyTipsState(localStorage.getItem(TIPS_LS_KEY) === '1'); } catch {}
+$('tips-toggle').addEventListener('click', () => {
+  const next = !document.body.classList.contains('tips-on');
+  applyTipsState(next);
+  try { localStorage.setItem(TIPS_LS_KEY, next ? '1' : '0'); } catch {}
+});
+
 const searchEl  = $('search'),  dateFrom  = $('date-from'), dateTo = $('date-to');
 const deptEl    = $('dept'),    judgeEl   = $('judge');
 const mtypeEl   = $('mtype'),   msubEl    = $('msub'), msubChip = $('msub-chip');
@@ -930,6 +1126,13 @@ const MTYPE_CACHE = new Map(); // dept -> Map(calendar_matter -> {type, subtype}
 // Custom filters added via "+ Add filter".
 let customFilters = []; // [{id, col, op, value}]
 let nextFilterId = 1;
+
+// Excel-style per-column "filter by selected values" state. Keyed by column
+// name; each value is a Set of strings (the values to include) or absent
+// (no filter on that column). Empty-string is treated as the literal value
+// for blank cells. Layered on top of the chip filters and "+ Filter" rows
+// — they all AND together.
+const columnFilters = Object.create(null);
 const FILTER_COLS = [
   ['case_number',     'Case Number',      ['contains', 'is', 'is not']],
   ['case_title',      'Case Title',       ['contains', 'is', 'is not']],
@@ -1079,6 +1282,9 @@ async function unloadDept(dept) {
 // auxiliary dropdowns (dept/judge/motion type) and the stats badge so they
 // reflect what's actually queryable right now.
 async function onLoadedSetChanged() {
+  // Loaded data changed → unique-value sets per column may have grown or
+  // shrunk. Drop the cache so the next column-filter open recomputes.
+  invalidateColumnFilterCache();
   await refreshAuxDropdowns();
   await refreshHeaderStats();
   toggleEmptyBanner();
@@ -1292,7 +1498,10 @@ try {
   renderDownloadsMenu();
 
   document.querySelectorAll('th.sortable').forEach(th =>
-    th.addEventListener('click', () => {
+    th.addEventListener('click', (e) => {
+      // The Excel-style filter button is nested inside the header — clicking
+      // it should open the value-picker, NOT toggle sort on the column.
+      if (e.target.closest('.col-filter-btn')) return;
       const col = th.dataset.col;
       sortDir = sortCol === col && sortDir === 'DESC' ? 'ASC' : 'DESC';
       sortCol = col;
@@ -1449,7 +1658,57 @@ function buildWhere() {
     const sql = filterToSql(f);
     if (sql) parts.push(sql);
   }
+  for (const sql of columnFiltersToSql()) {
+    parts.push(sql);
+  }
   return parts.length ? parts.join(' AND ') : 'TRUE';
+}
+
+// Translate columnFilters into SQL WHERE fragments. Outcome and outcome_subtype
+// can't be expressed in plain SQL (they're derived from ruling text); those
+// flow through the same JS post-filter pass that the "+ Filter" outcome rows
+// already use (see outcomeFilterMatches / columnFilterMatches).
+function columnFiltersToSql() {
+  const out = [];
+  for (const col of Object.keys(columnFilters)) {
+    const set = columnFilters[col];
+    if (!(set instanceof Set) || set.size === 0) continue;
+    if (col === 'outcome') continue;          // post-filtered in JS
+    if (col === 'motion_type') {
+      // Resolve selected types → calendar_matters via MTYPE_CACHE.
+      const cms = new Set();
+      for (const inner of MTYPE_CACHE.values()) {
+        for (const [cm, cls] of inner) {
+          if (set.has(cls.type)) cms.add(cm);
+        }
+      }
+      if (!cms.size) { out.push('FALSE'); continue; }
+      const list = [...cms].map(c => `'${escapeSql(c || '')}'`).join(',');
+      out.push(`COALESCE(calendar_matter, '') IN (${list})`);
+      continue;
+    }
+    // Direct SQL columns. Empty-string values are treated as "blank cells",
+    // so we wrap them in COALESCE for matching to NULL too.
+    const vals = [...set];
+    const hasBlank = vals.some(v => v === '' || v == null);
+    const literals = vals.filter(v => v !== '' && v != null)
+                         .map(v => `'${escapeSql(v)}'`);
+    const clauses = [];
+    if (literals.length) clauses.push(`${col} IN (${literals.join(',')})`);
+    if (hasBlank)        clauses.push(`(${col} IS NULL OR ${col} = '')`);
+    out.push(clauses.length === 1 ? clauses[0] : `(${clauses.join(' OR ')})`);
+  }
+  return out;
+}
+
+// True if the row's derived outcome value passes the column filter on
+// `outcome` (if any). Combined with the existing outcomeFilters() check.
+function columnFilterMatches(row) {
+  const set = columnFilters['outcome'];
+  if (!(set instanceof Set) || set.size === 0) return true;
+  const sp = splitRuling(row.ruling, row.department);
+  const o  = lookupOutcome(sp.ruling).outcome || '';
+  return set.has(o);
 }
 
 function filterToSql(f) {
@@ -1523,10 +1782,14 @@ async function runQuery(page = 0) {
   currentPage = page;
   const where = buildWhere(), offset = page * PAGE_SIZE;
   const oFilters = outcomeFilters();
+  // The Excel-style column filter on `outcome` also requires the JS post-pass.
+  const hasColOutcomeFilter = columnFilters['outcome'] instanceof Set
+                            && columnFilters['outcome'].size > 0;
+  const needsJsFilter = oFilters.length > 0 || hasColOutcomeFilter;
   $('qspinner').classList.add('on');
   saveState();
   try {
-    if (oFilters.length) {
+    if (needsJsFilter) {
       // Outcome filters live outside SQL. Pull a wider page, classify in JS,
       // then slice. Counting accurately requires scanning the full filtered
       // set — we do it once per query which is ~O(50K rules-evals).
@@ -1539,7 +1802,9 @@ async function runQuery(page = 0) {
           ORDER BY ${sortCol} ${sortDir}, case_number
         `),
       ]);
-      const allRows = allR.toArray().filter(outcomeFilterMatches);
+      const allRows = allR.toArray()
+        .filter(outcomeFilterMatches)
+        .filter(columnFilterMatches);
       lastCount = allRows.length;
       rows = allRows.slice(offset, offset + PAGE_SIZE);
       renderTable(rows);
@@ -2321,6 +2586,7 @@ $('export-btn').addEventListener('click', async () => {
   const lines = [cols.join(',')];
   for (const r of all) {
     if (!outcomeFilterMatches(r)) continue;
+    if (!columnFilterMatches(r)) continue;
     const m = lookupMotion(r.department, r.calendar_matter);
     const sp = splitRuling(r.ruling, r.department);
     const o  = lookupOutcome(sp.ruling);
@@ -2362,6 +2628,236 @@ function outcomeFilterMatches(row) {
   return true;
 }
 
+// ─── Excel-style per-column filter popup ─────────────────────────────────────
+// One popup div, repositioned per column. Opening reads the unique values
+// from the currently-loaded data, builds a checkbox list with a search box
+// and Sort A→Z / Z→A buttons. Apply writes columnFilters[col] and reruns.
+
+// Uniques are computed lazily and cached per column for the lifetime of the
+// loaded dataset. Cache is busted whenever the loaded department set changes
+// (see onLoadedSetChanged → invalidateColumnFilterCache).
+const _colUniqueCache = new Map();
+function invalidateColumnFilterCache() { _colUniqueCache.clear(); }
+
+async function uniqueValuesFor(col) {
+  if (_colUniqueCache.has(col)) return _colUniqueCache.get(col);
+  let pairs;
+  if (col === 'motion_type') {
+    // Derived: aggregate calendar_matter classifications.
+    const counts = new Map();
+    for (const inner of MTYPE_CACHE.values()) {
+      for (const cls of inner.values()) {
+        counts.set(cls.type, (counts.get(cls.type) || 0) + 1);
+      }
+    }
+    // Re-weight by actual rulings since MTYPE_CACHE keys are unique
+    // (department, calendar_matter) pairs. Pull the per-matter row count
+    // and multiply through.
+    const cmCounts = (await conn.query(
+      `SELECT department, calendar_matter, COUNT(*) n FROM data
+       GROUP BY department, calendar_matter`)).toArray();
+    counts.clear();
+    for (const r of cmCounts) {
+      const t = lookupMotion(r.department, r.calendar_matter).type;
+      counts.set(t, (counts.get(t) || 0) + Number(r.n));
+    }
+    pairs = [...counts.entries()].map(([v, n]) => ({ value: v, count: n }));
+  } else if (col === 'outcome') {
+    // Derived: classify the substantive ruling text per row. Bucketing is
+    // O(n) — fine for the ~70K-row corpus.
+    const rs = (await conn.query(
+      `SELECT department, ruling FROM data WHERE ruling IS NOT NULL`)).toArray();
+    const counts = new Map();
+    for (const r of rs) {
+      const sp = splitRuling(r.ruling, r.department);
+      const o  = lookupOutcome(sp.ruling).outcome || '';
+      counts.set(o, (counts.get(o) || 0) + 1);
+    }
+    pairs = [...counts.entries()].map(([v, n]) => ({ value: v, count: n }));
+  } else {
+    // Direct SQL column.
+    const rs = (await conn.query(
+      `SELECT COALESCE(${col}, '') v, COUNT(*) n FROM data
+       GROUP BY v ORDER BY n DESC, v`)).toArray();
+    pairs = rs.map(r => ({ value: r.v ?? '', count: Number(r.n) }));
+  }
+  _colUniqueCache.set(col, pairs);
+  return pairs;
+}
+
+const COL_FILTER_LABELS = {
+  department:   'Dept',
+  hearing_time: 'Hearing Time',
+  motion_type:  'Motion Type',
+  outcome:      'Outcome',
+  judge:        'Judge',
+};
+
+let _openColFilter = null; // current column key while popup is open
+
+async function openColFilter(col, btn) {
+  const pop = $('col-filter-pop');
+  _openColFilter = col;
+
+  // Position the popup just under the filter button. Cap to viewport so it
+  // doesn't flow off the right edge on narrow screens.
+  const rect = btn.getBoundingClientRect();
+  pop.style.left = `${Math.min(window.innerWidth - 290, Math.max(8, rect.left + window.scrollX - 8))}px`;
+  pop.style.top  = `${rect.bottom + window.scrollY + 4}px`;
+
+  const label = COL_FILTER_LABELS[col] || col;
+  pop.innerHTML =
+    `<div style="font-weight:600;color:#1a3a5c;margin-bottom:0.4rem;font-size:0.78rem">Filter — ${esc(label)}</div>` +
+    `<div class="cf-sort">` +
+      `<button class="cf-az">A → Z</button>` +
+      `<button class="cf-za">Z → A</button>` +
+      `<button class="cf-byn">By count</button>` +
+    `</div>` +
+    `<input class="cf-search" type="search" placeholder="Search values…">` +
+    `<div class="cf-list"><div class="cf-empty">Loading…</div></div>` +
+    `<div class="cf-actions">` +
+      `<button class="cf-apply">Apply</button>` +
+      `<button class="cf-clear">Clear</button>` +
+      `<button class="cf-cancel">Cancel</button>` +
+    `</div>`;
+  pop.classList.add('open');
+
+  let pairs;
+  try { pairs = await uniqueValuesFor(col); }
+  catch (err) {
+    pop.querySelector('.cf-list').innerHTML =
+      `<div class="cf-empty">Failed to load values: ${esc(err.message || String(err))}</div>`;
+    return;
+  }
+  if (_openColFilter !== col) return; // popup was closed/changed mid-fetch
+
+  // Working selection is independent of columnFilters[col] until Apply is
+  // clicked, so Cancel reverts cleanly.
+  const existing = columnFilters[col];
+  // null/undefined existing = "all visible". We start with all checked so
+  // unchecking is the natural action ("hide these").
+  const selected = existing instanceof Set ? new Set(existing)
+                                            : new Set(pairs.map(p => p.value));
+
+  let sortMode = 'count';   // 'az' | 'za' | 'count'
+  let search = '';
+
+  function renderList() {
+    const listEl = pop.querySelector('.cf-list');
+    let view = pairs.slice();
+    if (sortMode === 'az') view.sort((a, b) => String(a.value).localeCompare(String(b.value)));
+    else if (sortMode === 'za') view.sort((a, b) => String(b.value).localeCompare(String(a.value)));
+    else view.sort((a, b) => b.count - a.count);
+    if (search) {
+      const q = search.toLowerCase();
+      view = view.filter(p => String(p.value).toLowerCase().includes(q));
+    }
+    if (!view.length) {
+      listEl.innerHTML = '<div class="cf-empty">No matching values.</div>';
+      return;
+    }
+    // (Select all) row controls every visible (post-search) row.
+    const allChecked = view.every(p => selected.has(p.value));
+    let html =
+      `<label class="cf-row cf-all">` +
+        `<input type="checkbox" class="cf-all-cb"${allChecked ? ' checked' : ''}>` +
+        `<span class="cf-label">(Select all${search ? ' visible' : ''})</span>` +
+      `</label>`;
+    for (const p of view) {
+      const display = p.value === '' ? '(blank)' : p.value;
+      html +=
+        `<label class="cf-row" data-value="${esc(p.value)}">` +
+          `<input type="checkbox"${selected.has(p.value) ? ' checked' : ''}>` +
+          `<span class="cf-label" title="${esc(display)}">${esc(display)}</span>` +
+          `<span class="cf-count">${p.count.toLocaleString()}</span>` +
+        `</label>`;
+    }
+    listEl.innerHTML = html;
+
+    listEl.querySelector('.cf-all-cb').addEventListener('change', e => {
+      const on = e.target.checked;
+      for (const p of view) {
+        if (on) selected.add(p.value); else selected.delete(p.value);
+      }
+      renderList();
+    });
+    for (const row of listEl.querySelectorAll('.cf-row[data-value]')) {
+      const cb = row.querySelector('input');
+      cb.addEventListener('change', () => {
+        const v = row.dataset.value;
+        if (cb.checked) selected.add(v); else selected.delete(v);
+      });
+    }
+  }
+  renderList();
+
+  pop.querySelector('.cf-search').addEventListener('input', e => {
+    search = e.target.value; renderList();
+  });
+  pop.querySelector('.cf-az').addEventListener('click', () => { sortMode = 'az'; renderList(); });
+  pop.querySelector('.cf-za').addEventListener('click', () => { sortMode = 'za'; renderList(); });
+  pop.querySelector('.cf-byn').addEventListener('click', () => { sortMode = 'count'; renderList(); });
+
+  pop.querySelector('.cf-apply').addEventListener('click', () => {
+    // If everything is selected, drop the filter so the column header doesn't
+    // misleadingly show the "active" badge.
+    if (selected.size === pairs.length) delete columnFilters[col];
+    else if (selected.size === 0) {
+      // No values selected → user has hidden everything. Treat as a real
+      // (impossible) filter so the result count drops to zero — predictable
+      // and preserves the user's intent.
+      columnFilters[col] = new Set();
+    } else {
+      columnFilters[col] = new Set(selected);
+    }
+    closeColFilter();
+    refreshColFilterButtons();
+    runQuery(0);
+  });
+  pop.querySelector('.cf-clear').addEventListener('click', () => {
+    delete columnFilters[col];
+    closeColFilter();
+    refreshColFilterButtons();
+    runQuery(0);
+  });
+  pop.querySelector('.cf-cancel').addEventListener('click', closeColFilter);
+}
+
+function closeColFilter() {
+  $('col-filter-pop').classList.remove('open');
+  _openColFilter = null;
+}
+
+function refreshColFilterButtons() {
+  for (const btn of document.querySelectorAll('.col-filter-btn')) {
+    const col = btn.dataset.filterCol;
+    const active = columnFilters[col] instanceof Set;
+    btn.classList.toggle('active', active);
+  }
+}
+
+document.addEventListener('click', e => {
+  // Open / toggle.
+  const btn = e.target.closest('.col-filter-btn');
+  if (btn) {
+    e.stopPropagation();        // don't trigger the th sort click
+    const col = btn.dataset.filterCol;
+    if (_openColFilter === col) { closeColFilter(); return; }
+    openColFilter(col, btn);
+    return;
+  }
+  // Click outside the popup closes it.
+  if (_openColFilter && !e.target.closest('#col-filter-pop')) {
+    closeColFilter();
+  }
+});
+
+// Reset all column filters as part of the global Clear.
+function clearColumnFilters() {
+  for (const k of Object.keys(columnFilters)) delete columnFilters[k];
+  refreshColFilterButtons();
+}
+
 // ─── Clear ───────────────────────────────────────────────────────────────────
 $('clear-btn').addEventListener('click', async () => {
   searchEl.value = '';
@@ -2371,6 +2867,7 @@ $('clear-btn').addEventListener('click', async () => {
   msubEl.value = '';
   msubChip.style.display = 'none';
   customFilters = [];
+  clearColumnFilters();
   renderFilterRows();
   if (conn) {
     const s = (await conn.query(

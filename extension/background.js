@@ -15,14 +15,26 @@ chrome.runtime.onMessage.addListener((msg, _sender, respond) => {
     'check-updates': checkForUpdates,
     'download-update': downloadUpdate,
     'start-bulk':    () => startBulk(msg.payload),
-    'stop-bulk':     stopBulk,
+    'stop-bulk':     () => stopBulk(msg.payload),
     'resume-bulk':   () => resumeBulk(msg.payload),
-    'bulk-status':   () => chrome.storage.local.get(['_bulkJob']).then(r => r._bulkJob || null),
+    'bulk-status':   () => readJob(msg.payload?.tabId),
+    'bulk-status-all': () => readAllJobs(),
   };
   const handler = handlers[msg.action];
   if (!handler) return false;
   Promise.resolve().then(handler).then(respond).catch(err => respond({ error: err.message }));
   return true;
+});
+
+// Drop a tab's job state when the tab itself goes away — otherwise we'd
+// accumulate stale per-tab entries in storage forever.
+chrome.tabs.onRemoved.addListener(async (tabId) => {
+  await chrome.alarms.clear(bulkAlarmName(tabId));
+  const all = await readAllJobs();
+  if (all[tabId]) {
+    delete all[tabId];
+    await chrome.storage.local.set({ _bulkJobs: all });
+  }
 });
 
 // ── Update checking ───────────────────────────────────────────────────────────
@@ -187,10 +199,12 @@ async function commitToGitHub({ token, owner, repo, branch, data }) {
 }
 
 // ── Bulk scraping state machine ───────────────────────────────────────────────
-// State lives in chrome.storage.local._bulkJob so it survives popup close and
-// service-worker restarts.
+// State lives in chrome.storage.local._bulkJobs as a tabId-keyed map so each
+// SFTC tab can run an independent scrape. State survives popup close and
+// service-worker restarts. Each tab gets its own alarm name (sfsc-bulk-next-<tabId>)
+// so wakeups route to the right job.
 //
-// Schema: {
+// Per-tab schema: {
 //   runId,                       // monotonic ID; used to discard stale callbacks
 //   running, done, fatalError,
 //   dates[], index, currentDate,
@@ -204,39 +218,60 @@ async function commitToGitHub({ token, owner, repo, branch, data }) {
 //                                // triggered the expiry (index NOT advanced).
 // }
 
-const BULK_ALARM = 'sfsc-bulk-next';
+const BULK_ALARM_PREFIX = 'sfsc-bulk-next:';
+function bulkAlarmName(tabId) { return `${BULK_ALARM_PREFIX}${tabId}`; }
+function tabIdFromAlarm(name) {
+  if (!name?.startsWith(BULK_ALARM_PREFIX)) return null;
+  const n = parseInt(name.slice(BULK_ALARM_PREFIX.length), 10);
+  return Number.isFinite(n) ? n : null;
+}
 
 chrome.alarms.onAlarm.addListener(alarm => {
-  if (alarm.name === BULK_ALARM) bulkStep();
+  const tabId = tabIdFromAlarm(alarm.name);
+  if (tabId != null) bulkStep(tabId);
 });
 
-// When the SFTC tab finishes loading after a form-submit navigation,
+// When an SFTC tab finishes loading after a form-submit navigation,
 // resume scraping immediately rather than waiting for the next alarm.
+// Each tab is matched to its own job state.
 chrome.tabs.onUpdated.addListener(async (tabId, info) => {
   if (info.status !== 'complete') return;
-  const job = await readJob();
-  if (!job?.running || !job.waitingForTab || job.tabId !== tabId) return;
+  const job = await readJob(tabId);
+  if (!job?.running || !job.waitingForTab) return;
   bulkScrapeAfterLoad(job);
 });
 
-async function readJob() {
-  const { _bulkJob } = await chrome.storage.local.get('_bulkJob');
-  return _bulkJob;
+async function readAllJobs() {
+  const { _bulkJobs = {} } = await chrome.storage.local.get('_bulkJobs');
+  return _bulkJobs && typeof _bulkJobs === 'object' ? _bulkJobs : {};
 }
 
-// Apply `mutator` to the latest job state, but ONLY if `runId` still matches —
+async function readJob(tabId) {
+  if (tabId == null) return null;
+  const all = await readAllJobs();
+  return all[tabId] || null;
+}
+
+async function writeJob(tabId, job) {
+  const all = await readAllJobs();
+  all[tabId] = job;
+  await chrome.storage.local.set({ _bulkJobs: all });
+}
+
+// Apply `mutator` to the named tab's job, but ONLY if `runId` still matches —
 // otherwise the in-flight callback was superseded by Stop or a new Start, and
 // the update is silently discarded. Returns the new state, or null if discarded.
-async function applyJobUpdate(runId, mutator) {
-  const current = await readJob();
+async function applyJobUpdate(tabId, runId, mutator) {
+  const current = await readJob(tabId);
   if (!current?.running || current.runId !== runId) return null;
   const next = mutator({ ...current });
-  await chrome.storage.local.set({ _bulkJob: next });
+  await writeJob(tabId, next);
   return next;
 }
 
 async function startBulk({ dates, tabId, settings, waitMs }) {
-  await chrome.alarms.clear(BULK_ALARM);
+  if (tabId == null) return { error: 'No tabId on start-bulk request.' };
+  await chrome.alarms.clear(bulkAlarmName(tabId));
   const job = {
     runId: Date.now(),
     running: true, done: false, fatalError: null,
@@ -246,17 +281,16 @@ async function startBulk({ dates, tabId, settings, waitMs }) {
     waitingForTab: false,
     pausedForSession: false,
   };
-  await chrome.storage.local.set({ _bulkJob: job });
-  bulkStep();
+  await writeJob(tabId, job);
+  bulkStep(tabId);
   return { ok: true };
 }
 
-async function stopBulk() {
-  await chrome.alarms.clear(BULK_ALARM);
-  const current = await readJob();
-  if (current) await chrome.storage.local.set({
-    _bulkJob: { ...current, running: false, pausedForSession: false },
-  });
+async function stopBulk({ tabId } = {}) {
+  if (tabId == null) return { error: 'No tabId on stop-bulk request.' };
+  await chrome.alarms.clear(bulkAlarmName(tabId));
+  const current = await readJob(tabId);
+  if (current) await writeJob(tabId, { ...current, running: false, pausedForSession: false });
   return { ok: true };
 }
 
@@ -265,36 +299,37 @@ async function stopBulk() {
 // NOT advanced when sessionExpired is detected. Bumps runId so any
 // in-flight callbacks from the prior batch are discarded.
 async function resumeBulk({ tabId }) {
-  const current = await readJob();
+  if (tabId == null) return { error: 'No tabId on resume-bulk request.' };
+  const current = await readJob(tabId);
   if (!current || current.running) return { error: 'No paused job to resume.' };
   if (!current.dates || current.index >= current.dates.length) {
     return { error: 'Nothing left to scrape.' };
   }
-  await chrome.alarms.clear(BULK_ALARM);
+  await chrome.alarms.clear(bulkAlarmName(tabId));
   const next = {
     ...current,
     runId: Date.now(),
     running: true, done: false, fatalError: null,
-    tabId: tabId || current.tabId,
+    tabId,
     waitingForTab: false,
     pausedForSession: false,
   };
-  await chrome.storage.local.set({ _bulkJob: next });
-  bulkStep();
+  await writeJob(tabId, next);
+  bulkStep(tabId);
   return { ok: true };
 }
 
-async function bulkStep() {
-  const job = await readJob();
+async function bulkStep(tabId) {
+  const job = await readJob(tabId);
   if (!job?.running) return;
 
   if (job.index >= job.dates.length) {
-    await chrome.storage.local.set({ _bulkJob: { ...job, running: false, done: true } });
+    await writeJob(tabId, { ...job, running: false, done: true });
     return;
   }
 
   const date = job.dates[job.index];
-  await chrome.storage.local.set({ _bulkJob: { ...job, currentDate: date } });
+  await writeJob(tabId, { ...job, currentDate: date });
 
   if (!await injectContentScript(job)) return;
 
@@ -308,7 +343,7 @@ async function bulkStep() {
   });
 
   if (result?.navigated) {
-    await applyJobUpdate(job.runId, j => ({ ...j, currentDate: date, waitingForTab: true }));
+    await applyJobUpdate(tabId, job.runId, j => ({ ...j, currentDate: date, waitingForTab: true }));
     return;
   }
 
@@ -341,7 +376,7 @@ async function injectContentScript(job) {
     await chrome.scripting.executeScript({ target: { tabId: job.tabId }, files: ['content.js'] });
     return true;
   } catch {
-    await applyJobUpdate(job.runId, j => ({
+    await applyJobUpdate(job.tabId, job.runId, j => ({
       ...j, running: false, waitingForTab: false,
       fatalError: 'SFTC tab was closed. Reopen it and Resume.',
     }));
@@ -370,7 +405,7 @@ async function bulkHandleResult(job, date, data) {
     }
   }
 
-  const next = await applyJobUpdate(job.runId, j => {
+  const next = await applyJobUpdate(job.tabId, job.runId, j => {
     const u = { ...j, waitingForTab: false };
     if (outcome === 'session') {
       // Auto-pause: stop the run, leave `index` unchanged so Resume
@@ -397,7 +432,7 @@ async function bulkHandleResult(job, date, data) {
     return;
   }
 
-  if (next?.running) chrome.alarms.create(BULK_ALARM, { when: Date.now() + 300 });
+  if (next?.running) chrome.alarms.create(bulkAlarmName(job.tabId), { when: Date.now() + 300 });
 }
 
 // ── Hotkey: commit current page and advance to next business day ──────────────
