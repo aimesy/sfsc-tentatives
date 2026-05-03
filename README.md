@@ -129,28 +129,25 @@ python update-readme.py
 
 </details>
 <details>
-<summary><strong>Department 301 — Discovery</strong> &nbsp;·&nbsp; 3,061 rulings &nbsp;·&nbsp; 2024-02-06 → 2026-05-04 &nbsp;·&nbsp; 279 hearing days &nbsp;·&nbsp; 9 gaps</summary>
+<summary><strong>Department 301 — Discovery</strong> &nbsp;·&nbsp; 3,061 rulings &nbsp;·&nbsp; 2024-02-06 → 2026-05-04 &nbsp;·&nbsp; 279 hearing days &nbsp;·&nbsp; 6 gaps</summary>
 
 3,061 tentative rulings across 279 hearing days (2024-02-06 → 2026-05-04).
 
 ### Coverage
 
 - **Hearing days with data:** 279 of 549 weekdays in range (50.8%)
-- **Days scanned:** 838 (including days the court posted no rulings)
+- **Days scanned:** 888 (including days the court posted no rulings)
 - **Earliest harvested:** 2022-02-02
 - **Latest harvested:** 2026-05-04 (same as last hearing day)
 
-### Gaps (9)
+### Gaps (6)
 
-- 2022-07-05 → 2022-07-11
-- 2022-07-28 → 2022-07-29
-- 2022-08-04 → 2022-08-05
-- 2022-09-06 → 2022-09-21
-- 2022-11-14 → 2022-11-22
+- 2022-11-18 → 2022-11-22
 - 2022-11-28 → 2022-12-27
 - 2023-03-14 → 2023-06-02
 - 2023-06-14
-- 2023-08-14 → 2024-01-05
+- 2023-08-14 → 2023-11-27
+- 2023-12-28 → 2023-12-29
 
 </details>
 <details>
@@ -188,19 +185,19 @@ _None — all weekdays in range are accounted for._
 
 </details>
 <details>
-<summary><strong>Department 501 — Real Property Court</strong> &nbsp;·&nbsp; 16,322 rulings &nbsp;·&nbsp; 2019-04-02 → 2026-05-04 &nbsp;·&nbsp; 1,569 hearing days &nbsp;·&nbsp; 0 gaps</summary>
+<summary><strong>Department 501 — Real Property Court</strong> &nbsp;·&nbsp; 16,322 rulings &nbsp;·&nbsp; 2019-04-02 → 2026-05-04 &nbsp;·&nbsp; 1,569 hearing days &nbsp;·&nbsp; 1 gap</summary>
 
 16,322 tentative rulings across 1,569 hearing days (2019-04-02 → 2026-05-04).
 
 ### Coverage
 
 - **Hearing days with data:** 1,569 of 1,745 weekdays in range (89.9%)
-- **Days scanned:** 1,745 (including days the court posted no rulings)
-- **Earliest harvested:** 2019-04-02 (same as first hearing day)
+- **Days scanned:** 1,748 (including days the court posted no rulings)
+- **Earliest harvested:** 2019-01-02
 - **Latest harvested:** 2026-05-04 (same as last hearing day)
 
-### Gaps (0)
+### Gaps (1)
 
-_None — all weekdays in range are accounted for._
+- 2019-01-07 → 2019-03-29
 
 </details>
