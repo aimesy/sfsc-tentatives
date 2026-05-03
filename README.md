@@ -166,15 +166,16 @@ python update-readme.py
 
 </details>
 <details>
-<summary>**Department 301** &nbsp;·&nbsp; 1,270 rulings &nbsp;·&nbsp; Latest: 2026-04-02 &nbsp;·&nbsp; 6 gaps</summary>
+<summary>**Department 301** &nbsp;·&nbsp; 1,280 rulings &nbsp;·&nbsp; Latest: 2026-04-02 &nbsp;·&nbsp; 7 gaps</summary>
 
-1,270 tentative rulings. Latest: 2026-04-02.
+1,280 tentative rulings. Latest: 2026-04-02.
 
-### Gaps (6)
+### Gaps (7)
 
 - 2025-03-21 → 2025-04-23
 - 2025-05-30 → 2025-06-02
-- 2025-07-10 → 2025-09-15
+- 2025-07-10 → 2025-08-22
+- 2025-08-26 → 2025-09-15
 - 2025-10-21 → 2025-11-03
 - 2025-11-13 → 2026-02-20
 - 2026-02-24 → 2026-02-26
@@ -191,13 +192,14 @@ _None — all weekdays in range are accounted for._
 
 </details>
 <details>
-<summary>**Department 501 — Real Property Court** &nbsp;·&nbsp; 12,913 rulings &nbsp;·&nbsp; Latest: 2026-05-04 &nbsp;·&nbsp; 2 gaps</summary>
+<summary>**Department 501 — Real Property Court** &nbsp;·&nbsp; 13,084 rulings &nbsp;·&nbsp; Latest: 2026-05-04 &nbsp;·&nbsp; 3 gaps</summary>
 
-12,913 tentative rulings. Latest: 2026-05-04.
+13,084 tentative rulings. Latest: 2026-05-04.
 
-### Gaps (2)
+### Gaps (3)
 
 - 2020-06-18 → 2021-01-04
-- 2021-01-06 → 2021-03-23
+- 2021-01-06 → 2021-01-13
+- 2021-02-17 → 2021-03-23
 
 </details>
