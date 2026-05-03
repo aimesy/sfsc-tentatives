@@ -17,6 +17,7 @@ DEPT_NAMES = {
     # this map fall back to the generic "Department <N>" label, so adding a
     # new dept never breaks anything — it just shows up un-named until you
     # extend this dict.
+    '204': 'Department 204 — Probate',
     '302': 'Department 302 — Civil Law & Motion',
     '501': 'Department 501 — Real Property Court',
 }
@@ -24,7 +25,7 @@ DEPT_NAMES = {
 STATIC_TOP = """\
 # SFSC Tentative Rulings
 
-A searchable archive of every **tentative ruling** posted by the San Francisco Superior Court — Department 302 (Civil Law & Motion), Department 501 (Real Property), and any others added over time. Updated every business day.
+A searchable archive of every **tentative ruling** posted by the San Francisco Superior Court — Department 204 (Probate), Department 302 (Civil Law & Motion), Department 501 (Real Property), and any others added over time. Updated every business day.
 
 **[Open the searchable database →](https://aimesy.github.io/sfsc-tentatives/)**
 
@@ -96,7 +97,7 @@ Open the SFSC tentative rulings page (<https://webapps.sftc.org/tr/tr.dll>) in y
 ## Glossary
 
 - **Tentative ruling** — the court's preliminary written ruling on a motion, posted the day before the hearing. Becomes final unless a party "contests" it under the local rules.
-- **Department** — a courtroom and the judge assigned to it. Department 302 hears civil law-and-motion calendars; Department 501 hears real-property matters; etc.
+- **Department** — a courtroom and the judge assigned to it. Department 204 hears probate matters; Department 302 hears civil law-and-motion calendars; Department 501 hears real-property matters; etc.
 - **Motion type** — the kind of motion (demurrer, summary judgment, motion to compel, anti-SLAPP, etc.). Auto-classified from the calendar caption; you can correct misclassifications by filing a bug report from the ruling's detail view.
 - **Outcome** — whether the motion was granted, denied, continued, taken off calendar, etc. Auto-classified from the ruling text; same correction path as motion type.
 

@@ -1,10 +1,17 @@
 {
   "departments": [
     {
+      "department": "204",
+      "name": "Department 204 \u2014 Probate",
+      "rulings": 292,
+      "size_bytes": 42902,
+      "latest": "2026-04-15"
+    },
+    {
       "department": "302",
       "name": "Department 302 \u2014 Civil Law & Motion",
-      "rulings": 60765,
-      "size_bytes": 14074316,
+      "rulings": 60473,
+      "size_bytes": 14045751,
       "latest": "2026-05-04"
     },
     {

@@ -112,8 +112,17 @@ function scrape() {
   const h4 = document.querySelector('h4');
   let department = '302';
   if (h4) {
-    const m = h4.textContent.match(/Department\s+(\d+)/i);
-    if (m) department = m[1];
+    const text = h4.textContent;
+    const m = text.match(/Department\s+(\d+)/i);
+    if (m) {
+      department = m[1];
+    } else if (/\bProbate\b/i.test(text)) {
+      // SFTC's probate page heading reads "Probate" with no department number.
+      // Without this branch the script silently fell back to the "302" default
+      // and probate scrapes ended up in raw/dept302/ alongside the
+      // civil-law-and-motion calendars. Probate is heard in Dept 204.
+      department = '204';
+    }
   }
 
   const rulings = [];

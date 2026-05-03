@@ -835,11 +835,38 @@ const CIVIL_LAW_MOTION_RULES = [
     'Structured Settlement Transfer'],
 ];
 
-// Department → motion-rule list. Other depts (Probate, Family, Criminal,
-// Asbestos, etc.) use very different vocabularies; once we have data for
-// them, add a tuned ruleset here. Depts with no entry fall back to the
+// Probate (Dept 204) calendar matters use very different vocabulary from
+// civil law and motion — accountings, petitions for letters / probate of
+// will, conservatorship / guardianship matters, sales of real property.
+// Order matters: more specific rules first.
+const PROBATE_MOTION_RULES = [
+  [t => /\baccounting\s+petition\b/i.test(t),                            'Accounting Petition'],
+  [t => /\b(?:future|first|second|annual|final)\s+account(?:ing)?\b|\bfiling\s+of\s+(?:first|final)\s+account\b/i.test(t),
+                                                                          'Account / Status of Account'],
+  [t => /\bprobate\s+accounting\s+status\b/i.test(t),                    'Account / Status of Account'],
+  [t => /\bpetition\s+for\s+(?:letters\s+(?:of\s+administration|testamentary)|probate\s+of\s+(?:the\s+)?will)\b/i.test(t),
+                                                                          'Petition for Letters / Probate of Will'],
+  [t => /\bpetition\s+for\s+spousal\s+property\b/i.test(t),              'Spousal / Domestic Property Petition'],
+  [t => /\bpetition\s+for\s+instructions\b/i.test(t),                    'Petition for Instructions'],
+  [t => /\bpetition\s+to\s+(?:appoint|remove|substitute)\s+(?:successor\s+)?trustee\b|\bappointment\s+of\s+(?:co-?)?trustee\b/i.test(t),
+                                                                          'Trustee Appointment / Removal'],
+  [t => /\b(?:report\s+of\s+sale|petition\s+to\s+confirm\s+sale)\b/i.test(t),
+                                                                          'Sale of Real Property'],
+  [t => /\bconservatorship\b|\bguardianship\b/i.test(t),                 'Conservatorship / Guardianship'],
+  [t => /\bstatus\s+(?:report|hearing|on\s+(?:close|distribution))\b|\badded\s+to\s+calendar\s+for\s+status\b/i.test(t),
+                                                                          'Status / Compliance Hearing'],
+  [t => /\border\s+to\s+show\s+cause\b|\bosc\b/i.test(t),                'Order to Show Cause'],
+  [t => /\border\s+of\s+status\s+hearing\b/i.test(t),                    'Status / Compliance Hearing'],
+  [t => /\bcase\s+management\s+hearing\b/i.test(t),                      'Case Management'],
+  [t => /\bpetition\s+for\s+(?:order|approval|distribution|allowance|fees?)\b/i.test(t),
+                                                                          'Petition (other)'],
+  [t => /\bpetition\b/i.test(t),                                          'Petition (other)'],
+];
+
+// Department → motion-rule list. Departments with no entry fall back to the
 // civil-law list (better than nothing, surfaces a lot as Miscellaneous).
 const MOTION_RULES_BY_DEPT = {
+  '204': PROBATE_MOTION_RULES,
   '302': CIVIL_LAW_MOTION_RULES,
 };
 const MOTION_RULES_DEFAULT = CIVIL_LAW_MOTION_RULES;
