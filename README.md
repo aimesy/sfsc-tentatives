@@ -4,6 +4,19 @@ A searchable archive of every **tentative ruling** posted by the San Francisco S
 
 **[Open the searchable database →](https://aimesy.github.io/sfsc-tentatives/)**
 
+## What this is, and who it's for
+
+San Francisco Superior Court posts a **tentative ruling** for many civil and real-property motions the day before the hearing. The court's own website only lets you look up rulings by date and case number, one at a time, and only keeps recent ones online. This project keeps a permanent, searchable copy.
+
+If you practice in San Francisco — or follow a particular judge, motion type, or kind of dispute — you can use this archive to:
+
+- **See how a specific judge tends to rule** on a given motion (e.g. demurrers, anti-SLAPP, motions to compel).
+- **Pull every ruling on a topic** (sanctions, attorney fees, summary judgment, anti-SLAPP, etc.) across years.
+- **Look up an old ruling** that's no longer on the court's site.
+- **Export results to a spreadsheet** for further analysis or to share with colleagues.
+
+You don't need to install anything to browse the data — the link above opens it in your web browser. The browser extension described below is only for *contributors* who want to help keep the archive current.
+
 ## How to use the searchable database
 
 Open <https://aimesy.github.io/sfsc-tentatives/>. The first time you visit, a **📥 Database Downloads** menu opens in the upper right; pick the department(s) you want to look at. Your selection is remembered, so the next visit auto-loads them.
@@ -110,14 +123,13 @@ python update-readme.py
 ## Departments
 
 <details>
-<summary>**Department 204 — Probate** &nbsp;·&nbsp; 18,105 rulings &nbsp;·&nbsp; Latest: 2026-02-19 &nbsp;·&nbsp; 12 gaps</summary>
+<summary>**Department 204 — Probate** &nbsp;·&nbsp; 18,877 rulings &nbsp;·&nbsp; Latest: 2026-02-19 &nbsp;·&nbsp; 11 gaps</summary>
 
-18,105 tentative rulings. Latest: 2026-02-19.
+18,877 tentative rulings. Latest: 2026-02-19.
 
-### Gaps (12)
+### Gaps (11)
 
-- 2023-05-18 → 2023-05-23
-- 2023-05-25 → 2023-08-30
+- 2023-06-27 → 2023-08-30
 - 2023-11-09 → 2023-12-29
 - 2024-09-30
 - 2024-10-07
