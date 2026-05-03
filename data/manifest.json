@@ -10,8 +10,8 @@
     {
       "department": "301",
       "name": "Department 301 \u2014 Discovery",
-      "rulings": 2999,
-      "size_bytes": 811026,
+      "rulings": 3023,
+      "size_bytes": 814974,
       "latest": "2026-05-04"
     },
     {
@@ -25,7 +25,7 @@
       "department": "501",
       "name": "Department 501 \u2014 Real Property Court",
       "rulings": 15832,
-      "size_bytes": 2310725,
+      "size_bytes": 2310720,
       "latest": "2026-05-04"
     }
   ]

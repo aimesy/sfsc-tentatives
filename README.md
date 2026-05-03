@@ -122,18 +122,23 @@ python update-readme.py
 
 </details>
 <details>
-<summary><strong>Department 301 — Discovery</strong> &nbsp;·&nbsp; 2,999 rulings &nbsp;·&nbsp; Earliest: 2022-02-02 &nbsp;·&nbsp; Latest: 2026-05-04 &nbsp;·&nbsp; 6 gaps</summary>
+<summary><strong>Department 301 — Discovery</strong> &nbsp;·&nbsp; 3,023 rulings &nbsp;·&nbsp; Earliest: 2022-02-02 &nbsp;·&nbsp; Latest: 2026-05-04 &nbsp;·&nbsp; 11 gaps</summary>
 
-2,999 tentative rulings. Earliest: 2022-02-02. Latest: 2026-05-04.
+3,023 tentative rulings. Earliest: 2022-02-02. Latest: 2026-05-04.
 
-### Gaps (6)
+### Gaps (11)
 
 - 2022-06-29 → 2022-09-21
 - 2022-11-14 → 2022-11-22
 - 2022-11-28 → 2022-12-27
 - 2023-03-14 → 2023-06-02
 - 2023-06-14
-- 2023-08-14 → 2024-04-25
+- 2023-08-14 → 2024-03-13
+- 2024-03-15
+- 2024-03-20
+- 2024-03-25
+- 2024-03-27
+- 2024-03-29 → 2024-04-02
 
 </details>
 <details>
