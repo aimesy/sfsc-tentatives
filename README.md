@@ -142,7 +142,7 @@ python update-readme.py
 ### Coverage
 
 - **Hearing days with data:** 269 of 522 weekdays in range (51.5%)
-- **Days scanned:** 936 (including days the court posted no rulings)
+- **Days scanned:** 961 (including days the court posted no rulings)
 - **Earliest harvested:** 2022-02-02
 - **Latest harvested:** 2026-05-04 (same as last hearing day)
 
@@ -151,7 +151,7 @@ python update-readme.py
 - 2022-12-27
 - 2023-03-14 → 2023-06-02
 - 2023-06-14
-- 2023-08-14 → 2023-10-03
+- 2023-08-14 → 2023-08-28
 - 2023-10-05
 - 2023-11-13 → 2023-11-27
 - 2023-12-28 → 2023-12-29
@@ -192,23 +192,22 @@ _None — all weekdays in range are accounted for._
 
 </details>
 <details>
-<summary><strong>Department 501 — Real Property Court</strong> &nbsp;·&nbsp; 16,825 rulings &nbsp;·&nbsp; 2018-03-01 → 2026-05-04 &nbsp;·&nbsp; 1,618 hearing days &nbsp;·&nbsp; 10 gaps</summary>
+<summary><strong>Department 501 — Real Property Court</strong> &nbsp;·&nbsp; 17,009 rulings &nbsp;·&nbsp; 2018-03-01 → 2026-05-04 &nbsp;·&nbsp; 1,640 hearing days &nbsp;·&nbsp; 9 gaps</summary>
 
-16,825 tentative rulings across 1,618 hearing days (2018-03-01 → 2026-05-04).
+17,009 tentative rulings across 1,640 hearing days (2018-03-01 → 2026-05-04).
 
 ### Coverage
 
-- **Hearing days with data:** 1,618 of 2,012 weekdays in range (80.4%)
-- **Days scanned:** 1,891 (including days the court posted no rulings)
+- **Hearing days with data:** 1,640 of 2,012 weekdays in range (81.5%)
+- **Days scanned:** 1,913 (including days the court posted no rulings)
 - **Earliest harvested:** 2018-03-01 (same as first hearing day)
 - **Latest harvested:** 2026-05-04 (same as last hearing day)
 
-### Gaps (10)
+### Gaps (9)
 
 - 2018-03-23 → 2018-06-05
 - 2018-08-07 → 2018-08-09
-- 2018-09-14 → 2018-10-15
-- 2018-10-22 → 2018-11-08
+- 2018-10-23 → 2018-11-08
 - 2018-11-14 → 2018-12-03
 - 2018-12-18
 - 2018-12-26 → 2018-12-31
