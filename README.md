@@ -116,13 +116,13 @@ python update-readme.py
 ## Departments
 
 <details>
-<summary><strong>Department 204 — Probate</strong> &nbsp;·&nbsp; 67,239 rulings &nbsp;·&nbsp; 2015-01-05 → 2026-05-04 &nbsp;·&nbsp; 1,551 hearing days &nbsp;·&nbsp; 13 gaps</summary>
+<summary><strong>Department 204 — Probate</strong> &nbsp;·&nbsp; 76,023 rulings &nbsp;·&nbsp; 2015-01-05 → 2026-05-04 &nbsp;·&nbsp; 1,726 hearing days &nbsp;·&nbsp; 13 gaps</summary>
 
-67,239 tentative rulings across 1,551 hearing days (2015-01-05 → 2026-05-04).
+76,023 tentative rulings across 1,726 hearing days (2015-01-05 → 2026-05-04).
 
 ### Coverage
 
-- **Hearing days with data:** 1,551 of 2,790 weekdays in range (55.6%)
+- **Hearing days with data:** 1,726 of 2,790 weekdays in range (61.9%)
 - **Days scanned:** 2,321 (including days the court posted no rulings)
 - **Earliest harvested:** 2015-01-05 (same as first hearing day)
 - **Latest harvested:** 2026-05-04 (same as last hearing day)
@@ -146,7 +146,7 @@ python update-readme.py
 
 </details>
 <details>
-<summary><strong>Department 301 — Discovery</strong> &nbsp;·&nbsp; 4,168 rulings &nbsp;·&nbsp; 2024-03-19 → 2026-05-04 &nbsp;·&nbsp; 373 hearing days &nbsp;·&nbsp; 1 gap</summary>
+<summary><strong>Department 301 — Discovery</strong> &nbsp;·&nbsp; 4,168 rulings &nbsp;·&nbsp; 2024-03-19 → 2026-05-04 &nbsp;·&nbsp; 373 hearing days &nbsp;·&nbsp; 0 gaps</summary>
 
 4,168 tentative rulings across 373 hearing days (2024-03-19 → 2026-05-04).
 
@@ -155,14 +155,14 @@ python update-readme.py
 ### Coverage
 
 - **Hearing days with data:** 373 of 522 weekdays in range (71.5%)
-- **Days scanned:** 525 (including days the court posted no rulings)
-- **Earliest harvested:** 2017-10-02
+- **Days scanned:** 522 (including days the court posted no rulings)
+- **Earliest harvested:** 2024-03-19 (same as first hearing day)
 - **Latest harvested:** 2026-05-04 (same as last hearing day)
 
 
-### Gaps (1)
+### Gaps (0)
 
-- 2017-10-05 → 2024-03-18
+_None — all weekdays in range are accounted for._
 
 </details>
 <details>
@@ -184,19 +184,19 @@ _None — all weekdays in range are accounted for._
 
 </details>
 <details>
-<summary><strong>Department 304 — Asbestos Law and Motion/Discovery</strong> &nbsp;·&nbsp; 85 rulings &nbsp;·&nbsp; 2025-04-08 → 2025-08-19 &nbsp;·&nbsp; 15 hearing days &nbsp;·&nbsp; 23 gaps</summary>
+<summary><strong>Department 304 — Asbestos Law and Motion/Discovery</strong> &nbsp;·&nbsp; 85 rulings &nbsp;·&nbsp; 2025-04-08 → 2025-08-19 &nbsp;·&nbsp; 15 hearing days &nbsp;·&nbsp; 18 gaps</summary>
 
 85 tentative rulings across 15 hearing days (2025-04-08 → 2025-08-19).
 
 ### Coverage
 
 - **Hearing days with data:** 15 of 93 weekdays in range (16.1%)
-- **Days scanned:** 126 (including days the court posted no rulings)
+- **Days scanned:** 145 (including days the court posted no rulings)
 - **Earliest harvested:** 2025-04-08 (same as first hearing day)
 - **Latest harvested:** 2026-05-01
 
 
-### Gaps (23)
+### Gaps (18)
 
 - 2025-07-01
 - 2025-07-08
@@ -215,12 +215,7 @@ _None — all weekdays in range are accounted for._
 - 2025-09-19
 - 2025-09-23
 - 2025-09-25 → 2025-09-26
-- 2025-09-30 → 2026-03-19
-- 2026-03-23
-- 2026-03-25
-- 2026-03-27
-- 2026-04-01
-- 2026-04-03
+- 2025-09-30 → 2026-02-27
 
 </details>
 <details>

@@ -24,6 +24,18 @@ DEPT_NAMES = {
     '501': 'Department 501 — Real Property Court',
 }
 
+# Per-dept floor: ignore parquet rows and raw-scrape dates older than this
+# when computing coverage / gaps. Some departments simply didn't post
+# tentatives online before a given date (Dept 301 came up on the SFTC
+# tentatives page in mid-March 2024), so any earlier "data" is either a
+# misclassified Asbestos-era ruling or an empty marker the bulk scraper
+# laid down before the floor was enforced. Without the floor those
+# stragglers manufacture a six-year "gap" in the dept summary that's
+# misleading — there's nothing to fill.
+DEPT_DATA_FLOORS = {
+    '301': '2024-03-19',
+}
+
 STATIC_TOP = """\
 # SFSC Tentative Rulings
 
@@ -236,6 +248,14 @@ def dept_section(dept: str, df_dept: pd.DataFrame) -> str:
     # mechanics live inside as an aside.
     dates   = set(df_dept['court_date'].unique())
     scraped = scraped_dates_for_dept(dept)
+    # Apply the per-dept floor: if a department only began publishing
+    # tentatives online on a given date, anything before it is excluded
+    # from gap calculation entirely (otherwise three pre-floor empty-marker
+    # files manufacture a multi-year fake "gap").
+    floor = DEPT_DATA_FLOORS.get(dept)
+    if floor:
+        dates   = {d for d in dates   if d >= floor}
+        scraped = {d for d in scraped if d >= floor}
     checked = dates | scraped
 
     if not checked:
