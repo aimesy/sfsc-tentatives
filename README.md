@@ -116,22 +116,21 @@ python update-readme.py
 ## Departments
 
 <details>
-<summary><strong>Department 204 — Probate</strong> &nbsp;·&nbsp; 41,745 rulings &nbsp;·&nbsp; 2020-01-07 → 2026-05-04 &nbsp;·&nbsp; 1,016 hearing days &nbsp;·&nbsp; 3 gaps</summary>
+<summary><strong>Department 204 — Probate</strong> &nbsp;·&nbsp; 42,603 rulings &nbsp;·&nbsp; 2020-01-07 → 2026-05-04 &nbsp;·&nbsp; 1,037 hearing days &nbsp;·&nbsp; 2 gaps</summary>
 
-41,745 tentative rulings across 1,016 hearing days (2020-01-07 → 2026-05-04).
+42,603 tentative rulings across 1,037 hearing days (2020-01-07 → 2026-05-04).
 
 ### Coverage
 
-- **Hearing days with data:** 1,016 of 1,555 weekdays in range (65.3%)
-- **Days scanned:** 1,513 (including days the court posted no rulings)
+- **Hearing days with data:** 1,037 of 1,555 weekdays in range (66.7%)
+- **Days scanned:** 1,538 (including days the court posted no rulings)
 - **Earliest harvested:** 2020-01-06
 - **Latest harvested:** 2026-05-04 (same as last hearing day)
 
-### Gaps (3)
+### Gaps (2)
 
 - 2021-07-09
-- 2021-07-16 → 2021-09-03
-- 2021-11-01 → 2021-11-08
+- 2021-07-16 → 2021-08-09
 
 </details>
 <details>
@@ -191,19 +190,22 @@ _None — all weekdays in range are accounted for._
 
 </details>
 <details>
-<summary><strong>Department 501 — Real Property Court</strong> &nbsp;·&nbsp; 18,746 rulings &nbsp;·&nbsp; 2017-01-03 → 2026-05-04 &nbsp;·&nbsp; 1,845 hearing days &nbsp;·&nbsp; 1 gap</summary>
+<summary><strong>Department 501 — Real Property Court</strong> &nbsp;·&nbsp; 19,132 rulings &nbsp;·&nbsp; 2017-01-03 → 2026-05-04 &nbsp;·&nbsp; 1,892 hearing days &nbsp;·&nbsp; 4 gaps</summary>
 
-18,746 tentative rulings across 1,845 hearing days (2017-01-03 → 2026-05-04).
+19,132 tentative rulings across 1,892 hearing days (2017-01-03 → 2026-05-04).
 
 ### Coverage
 
-- **Hearing days with data:** 1,845 of 2,296 weekdays in range (80.4%)
-- **Days scanned:** 2,201 (including days the court posted no rulings)
+- **Hearing days with data:** 1,892 of 2,296 weekdays in range (82.4%)
+- **Days scanned:** 2,250 (including days the court posted no rulings)
 - **Earliest harvested:** 2017-01-03 (same as first hearing day)
 - **Latest harvested:** 2026-05-04 (same as last hearing day)
 
-### Gaps (1)
+### Gaps (4)
 
-- 2017-02-10 → 2017-06-29
+- 2017-02-27 → 2017-03-01
+- 2017-03-22 → 2017-05-16
+- 2017-05-23
+- 2017-05-30 → 2017-06-01
 
 </details>
