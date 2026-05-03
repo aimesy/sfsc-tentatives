@@ -385,8 +385,20 @@
     }
     th.sortable { cursor: pointer; user-select: none; }
     th.sortable:hover { background: #e8edf4; }
-    th.sort-asc  .col-label::after { content: ' ▲'; font-size: 0.7em; color: #1a3a5c; }
-    th.sort-desc .col-label::after { content: ' ▼'; font-size: 0.7em; color: #1a3a5c; }
+    /* Non-date sorts use filter-shaped triangles (▴/▾) rather than the
+       conventional ▲/▼ arrows. Up/down arrows on, say, the Judge column
+       look like they imply chronological order even though the column
+       sorts alphabetically — which the user reported as misleading. The
+       filter-triangle glyph is the same shape used by the column-header
+       ▾ button to mean "this column drives the current view", and reads
+       cleanly without suggesting a direction along a number line. */
+    th.sort-asc  .col-label::after { content: ' ▴'; font-size: 0.7em; color: #1a3a5c; }
+    th.sort-desc .col-label::after { content: ' ▾'; font-size: 0.7em; color: #1a3a5c; }
+    /* Date columns keep the chronological arrows — earlier → later does
+       map onto up → down intuitively, and that's the convention every
+       calendar UI uses. */
+    th.col-date.sort-asc  .col-label::after { content: ' ▲'; }
+    th.col-date.sort-desc .col-label::after { content: ' ▼'; }
 
     /* Excel-style per-column filter button (small ▾ next to the label).
        Highlighted blue when the column has an active filter. */
