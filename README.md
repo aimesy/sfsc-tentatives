@@ -1,6 +1,6 @@
 # SFSC Tentative Rulings
 
-A searchable archive of every **tentative ruling** posted by the San Francisco Superior Court — Department 204 (Probate), Department 302 (Civil Law & Motion), Department 501 (Real Property), and any others added over time. Updated every business day.
+A searchable archive of every **tentative ruling** posted by the San Francisco Superior Court — Department 204 (Probate), Department 302 (Civil Law & Motion), Department 501 (Real Property), and any others added over time. Updated whenever I update it. (Email me at amy@chattopadhyay.org if you have any issues.)
 
 **[Open the searchable database →](https://aimesy.github.io/sfsc-tentatives/)**
 
@@ -8,12 +8,11 @@ A searchable archive of every **tentative ruling** posted by the San Francisco S
 
 San Francisco Superior Court posts a **tentative ruling** for many civil and real-property motions the day before the hearing. The court's own website only lets you look up rulings by date and case number, one at a time, and only keeps recent ones online. This project keeps a permanent, searchable copy.
 
-If you practice in San Francisco — or follow a particular judge, motion type, or kind of dispute — you can use this archive to:
+This archive may be used to, for example:
 
-- **See how a specific judge tends to rule** on a given motion (e.g. demurrers, anti-SLAPP, motions to compel).
+- **See how a specific judge tends to rule** on a given motion (e.g. demurrers, anti-SLAPP, motions to compel). In San Francisco this is almost always just one guy!
 - **Pull every ruling on a topic** (sanctions, attorney fees, summary judgment, anti-SLAPP, etc.) across years.
-- **Look up an old ruling** that's no longer on the court's site.
-- **Export results to a spreadsheet** for further analysis or to share with colleagues.
+- **Export results to a spreadsheet**.
 
 You don't need to install anything to browse the data — the link above opens it in your web browser. The browser extension described below is only for *contributors* who want to help keep the archive current.
 
