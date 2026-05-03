@@ -1492,6 +1492,26 @@ function rowCategory(row) {
   return motionCategory(m.type);
 }
 
+// Columns that DuckDB doesn't know how to ORDER BY because they're
+// derived in JS from the calendar_matter / ruling text. When sortCol
+// names one of these, runQuery drops the SQL ORDER BY and sorts the
+// rows post-fetch in JS. Declared up here — well above the auto-load
+// init at the bottom of the module — so runQuery's first call (from
+// onLoadedSetChanged when a persisted dept loads) doesn't trip the
+// const's temporal dead zone.
+const JS_DERIVED_SORT_COLS = new Set([
+  'motion_category',  // bucketed via MOTION_CATEGORY[lookupMotion(...).type]
+  'motion_type',      // lookupMotion(department, calendar_matter)
+  'outcome',          // classifyOutcome(splitRuling(...).ruling)
+]);
+
+function jsSortKey(row, col) {
+  if (col === 'motion_category') return rowCategory(row) || '';
+  if (col === 'motion_type')     return lookupMotion(row.department, row.calendar_matter).type || '';
+  if (col === 'outcome')         return lookupOutcome(splitRuling(row.ruling, row.department).ruling).outcome || '';
+  return row[col] ?? '';
+}
+
 // ─── Column visibility ──────────────────────────────────────────────────────
 // Each entry maps a logical column key to the CSS class shared by its <th>
 // and every matching <td>. `defaultHidden: true` keeps a column off by
@@ -2305,23 +2325,13 @@ function filterToSql(f) {
 }
 
 // ─── Query ───────────────────────────────────────────────────────────────────
-// Columns that DuckDB doesn't know how to ORDER BY because they're
-// derived in JS from the calendar_matter / ruling text. When sortCol
-// names one of these, we drop the SQL ORDER BY and sort the rows
-// post-fetch in JS — same machinery the outcome filter already uses,
-// just extended to also drive sorting.
-const JS_DERIVED_SORT_COLS = new Set([
-  'motion_category',  // bucketed via MOTION_CATEGORY[lookupMotion(...).type]
-  'motion_type',      // lookupMotion(department, calendar_matter)
-  'outcome',          // classifyOutcome(splitRuling(...).ruling)
-]);
-
-function jsSortKey(row, col) {
-  if (col === 'motion_category') return rowCategory(row) || '';
-  if (col === 'motion_type')     return lookupMotion(row.department, row.calendar_matter).type || '';
-  if (col === 'outcome')         return lookupOutcome(splitRuling(row.ruling, row.department).ruling).outcome || '';
-  return row[col] ?? '';
-}
+// JS_DERIVED_SORT_COLS and jsSortKey were defined here originally but
+// const declarations are scoped to a temporal dead zone until the line
+// is reached, and runQuery — which closes over the const — gets called
+// from the auto-load path at the bottom of the module BEFORE this point
+// in source order. Declarations were therefore hoisted up to the top of
+// the script (just below CIVIL_LAW_MOTION_RULES); the helpers here are
+// the call sites only.
 
 async function runQuery(page = 0) {
   if (!conn) return;
