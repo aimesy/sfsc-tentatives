@@ -123,7 +123,7 @@ python update-readme.py
 ### Coverage
 
 - **Hearing days with data:** 1,542 of 2,790 weekdays in range (55.3%)
-- **Days scanned:** 2,260 (including days the court posted no rulings)
+- **Days scanned:** 2,282 (including days the court posted no rulings)
 - **Earliest harvested:** 2015-01-05 (same as first hearing day)
 - **Latest harvested:** 2026-05-04 (same as last hearing day)
 
@@ -138,7 +138,7 @@ python update-readme.py
 - 2016-07-12 → 2016-09-14
 - 2016-10-12 → 2016-10-13
 - 2016-10-17 → 2016-10-18
-- 2016-12-29 → 2017-12-29
+- 2017-02-01 → 2017-12-29
 - 2018-01-29 → 2018-02-06
 - 2018-03-27
 - 2018-08-06 → 2018-08-31
@@ -186,21 +186,39 @@ _None — all weekdays in range are accounted for._
 
 </details>
 <details>
-<summary><strong>Department 304 — Asbestos Law and Motion/Discovery</strong> &nbsp;·&nbsp; 56 rulings &nbsp;·&nbsp; 2025-04-08 → 2025-06-03 &nbsp;·&nbsp; 9 hearing days &nbsp;·&nbsp; 1 gap</summary>
+<summary><strong>Department 304 — Asbestos Law and Motion/Discovery</strong> &nbsp;·&nbsp; 85 rulings &nbsp;·&nbsp; 2025-04-08 → 2025-08-19 &nbsp;·&nbsp; 15 hearing days &nbsp;·&nbsp; 19 gaps</summary>
 
-56 tentative rulings across 9 hearing days (2025-04-08 → 2025-06-03).
+85 tentative rulings across 15 hearing days (2025-04-08 → 2025-08-19).
 
 ### Coverage
 
-- **Hearing days with data:** 9 of 40 weekdays in range (22.5%)
-- **Days scanned:** 49 (including days the court posted no rulings)
+- **Hearing days with data:** 15 of 93 weekdays in range (16.1%)
+- **Days scanned:** 79 (including days the court posted no rulings)
 - **Earliest harvested:** 2025-04-08 (same as first hearing day)
 - **Latest harvested:** 2026-05-01
 
 
-### Gaps (1)
+### Gaps (19)
 
-- 2025-06-16 → 2026-04-30
+- 2025-06-16 → 2025-06-20
+- 2025-06-24 → 2025-06-25
+- 2025-06-27
+- 2025-07-01
+- 2025-07-03
+- 2025-07-08
+- 2025-07-10
+- 2025-07-14
+- 2025-07-16
+- 2025-07-21
+- 2025-07-23
+- 2025-07-28
+- 2025-07-30
+- 2025-08-04
+- 2025-08-07
+- 2025-08-11
+- 2025-08-14
+- 2025-08-18
+- 2025-08-22 → 2026-04-23
 
 </details>
 <details>
