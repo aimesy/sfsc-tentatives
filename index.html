@@ -1864,6 +1864,32 @@ const ADMIN_SENTENCE_PATTERNS = [
   /\bopposing\s+party\s+(?:does\s+not|is\s+not\s+so\s+notified)/i,
   /\bface\s+coverings\s+are\s+(?:optional|required)/i,
   /\bpursuant\s+to\s+(?:CRC|California\s+Rule(?:s)?\s+of\s+Court|Local\s+Rule)/i,
+  // "All attorneys and parties may appear in Department 302" form —
+  // common prelude to a remote-appearance instruction block.
+  /\ball\s+attorneys?\s+(?:and\s+parties\s+)?may\s+appear\b/i,
+  /\b(?:may|shall)\s+appear\s+in\s+(?:department|dept\.?)\s*\d+\b/i,
+  // Time-of-calendar references that introduce the appearance block.
+  /\b(?:8|9|10|11)\s*:\s*\d{2}\s*(?:a\.?m\.?|p\.?m\.?)\s+(?:law\s*(?:&|and)\s*motion|discovery|civil|calendar|department)\b/i,
+  // Remote-hearing operational sentences ("Remote hearings will be
+  // conducted by videoconference using Zoom").
+  /\bremote\s+hearings?\s+(?:will\s+be|are)\s+conducted\b/i,
+  /\bto\s+appear\s+remotely\s+at\s+the\s+hearing\b/i,
+  /\bgo\s+to\s+the\s+court'?s?\s+website\b/i,
+  /\bdial\s+the\s+(?:corresponding|appropriate)\s+phone\s+number\b/i,
+  /\bnavigate\s+to\s+["']?tentative\s+rulings/i,
+  /\bclick\s+on\s+the\s+(?:appropriate|corresponding)\s+(?:link|number)\b/i,
+  // Email-contest protocol sentences. The two big patterns are
+  // "Subject line of the email shall include..." and "Text of the
+  // email shall include...". Generic "email shall include" catches
+  // both. "Send an email to" prefaces the contestdeptNNN@sftc.org
+  // address — admin even if the address itself isn't quoted in
+  // the same sentence.
+  /\bemail\s+shall\s+include\s+the\b/i,
+  /\b(?:subject|text)\s+(?:line\s+)?of\s+the\s+email\b/i,
+  /\bsend\s+an?\s+email\s+to\b/i,
+  /\bcopy\s+to\s+all\s+(?:other\s+)?parties\s+by\s+\d/i,
+  /\bportion\(s\)\s+of\s+the\s+tentative\s+ruling\s+that\s+the\s+party\s+contests/i,
+  /\bof\s+the\s+attorney\s+or\s+party\s+who\s+will\s+appear\b/i,
   // Order-preparation boilerplate
   /\bcounsel\s+for\s+the\s+prevailing\s+party\b.{0,40}\b(?:prepare|submit|propose)\b/i,
   /\bprevailing\s+party\s+(?:is\s+(?:required|directed)|shall|must)\s+(?:to\s+)?(?:prepare|submit|lodge)\b/i,
@@ -1900,7 +1926,7 @@ const ADMIN_SENTENCE_PATTERNS = [
 // segregated into its own column so the modal can label it separately.
 // Matches against every sentence flagged as admin; non-courtcall admin
 // goes to the admin column, courtcall sentences go to courtcall.
-const COURTCALL_RE = /(?:CourtCall|9:00\s*a\.m\.\s+Discovery\s+calendar|appear\s+remotely|appear\s+(?:in[\s-]?person|telephonically|via\s+zoom)|\bZoom\b|videoconference|sfsuperiorcourt\.org|telephonic\s+appearance|remote\s+appearance|microsoft\s+teams\b|webex\b|webinar\s+id\b|meeting\s+id\b|dial[\s-]?in\b|phone\s+dial\s+in)/i;
+const COURTCALL_RE = /(?:CourtCall|(?:8|9|10|11)\s*:\s*\d{2}\s*a\.?m\.?\s+(?:law\s*(?:&|and)\s*motion|discovery|civil|calendar|department)|appear\s+remotely|appear\s+(?:in[\s-]?person|telephonically|via\s+zoom)|\bzoom\b|videoconference|sfsuperiorcourt\.org|telephonic\s+appearance|remote\s+appearance|microsoft\s+teams\b|webex\b|webinar\s+id\b|meeting\s+id\b|dial[\s-]?in\b|phone\s+dial\s+in|all\s+attorneys?\s+(?:and\s+parties\s+)?may\s+appear|(?:may|shall)\s+appear\s+in\s+(?:department|dept\.?)\s*\d+|remote\s+hearings?\s+(?:will\s+be|are)\s+conducted|to\s+appear\s+remotely\s+at\s+the\s+hearing|go\s+to\s+the\s+court'?s?\s+website|dial\s+the\s+(?:corresponding|appropriate)\s+phone\s+number|click\s+on\s+the\s+(?:appropriate|corresponding)\s+(?:link|number))/i;
 
 function isAdminSentence(s) {
   return ADMIN_SENTENCE_PATTERNS.some(p => p.test(s));
