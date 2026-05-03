@@ -10,20 +10,20 @@
     {
       "department": "301",
       "name": "Department 301 \u2014 Discovery",
-      "rulings": 3061,
-      "size_bytes": 824420,
+      "rulings": 3023,
+      "size_bytes": 814974,
       "latest": "2026-05-04"
     },
     {
       "department": "302",
-      "name": "Department 302 \u2014 Civil Law & Motion",
+      "name": "Department 302 \u2014 Civil Law and Motion",
       "rulings": 60472,
-      "size_bytes": 14052090,
+      "size_bytes": 14051971,
       "latest": "2026-05-04"
     },
     {
       "department": "304",
-      "name": "Department 304",
+      "name": "Department 304 \u2014 Asbestos Law and Motion/Discovery",
       "rulings": 56,
       "size_bytes": 27937,
       "latest": "2025-06-03"
@@ -31,8 +31,8 @@
     {
       "department": "501",
       "name": "Department 501 \u2014 Real Property Court",
-      "rulings": 16322,
-      "size_bytes": 2379824,
+      "rulings": 15832,
+      "size_bytes": 2310720,
       "latest": "2026-05-04"
     }
   ]

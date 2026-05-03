@@ -116,10 +116,11 @@ function detectCaptchaChallenge() {
 // Heuristic ladder (most → least specific):
 //   1. Any heading with "Department <N>" (the canonical case).
 //   2. Heading text matching a known calendar name (Probate → 204,
-//      Discovery → 301, Real Property → 501, Civil Law & Motion → 302).
-//      SFTC's probate page reads "Probate" with no number; the discovery
-//      page is the same — without these branches both scraped into
-//      raw/dept302/ alongside the civil-law-and-motion calendars.
+//      Discovery → 301, Asbestos Law and Motion → 304, Real Property → 501,
+//      Civil Law and Motion → 302). SFTC's probate page reads "Probate"
+//      with no number; several other dept pages do the same — without
+//      these branches every numberless dept scraped into raw/dept302/
+//      alongside the civil-law-and-motion calendars.
 //   3. The page URL's query string. SFTC's GET form preserves the calendar
 //      ID across navigations, so even when the heading is missing
 //      (CAPTCHA-cleared page, partial reload) we can still recover the
@@ -137,6 +138,13 @@ function detectPageDepartment() {
   for (const el of headings) {
     const t = el.textContent || '';
     if (/\bProbate\b/i.test(t)) return '204';
+    // Asbestos must come BEFORE Discovery: SFTC has both an "Asbestos Law
+    // and Motion" calendar and an "Asbestos Discovery" calendar in Dept
+    // 304, and a naive Discovery match would route the asbestos-discovery
+    // page into Dept 301 instead. Both asbestos sub-calendars are heard
+    // in 304; we tag the discovery sub-calendar via isDiscovery() in the
+    // browser, not by routing it to a different department.
+    if (/\bAsbestos\b/i.test(t)) return '304';
     if (/\bDiscovery\b/i.test(t)) return '301';
     if (/\bReal\s+Property\b/i.test(t)) return '501';
     if (/\bCivil\s+Law\s*(?:&|and)?\s*Motion\b/i.test(t)) return '302';

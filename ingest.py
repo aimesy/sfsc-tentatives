@@ -386,7 +386,7 @@ def migrate_existing(df: pd.DataFrame) -> pd.DataFrame:
     """
     if "department" not in df.columns:
         # One-time migration: parquets predating the multi-dept schema only
-        # held Civil Law & Motion (Dept 302) data. New ingests always carry
+        # held Civil Law and Motion (Dept 302) data. New ingests always carry
         # department through, so this branch is never hit twice.
         df.insert(0, "department", "302")
 

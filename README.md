@@ -1,6 +1,12 @@
 # SFSC Tentative Rulings
 
-A searchable archive of every **tentative ruling** posted by the San Francisco Superior Court — Department 204 (Probate), Department 301 (Discovery), Department 302 (Civil Law & Motion), Department 501 (Real Property), and any others added over time. Updated every business day.
+A searchable archive of every **tentative ruling** posted by the San Francisco Superior Court. Departments covered:
+
+- Department 204 (Probate)
+- Department 301 (Discovery)
+- Department 302 (Civil Law and Motion)
+- Department 304 (Asbestos Law and Motion/Discovery)
+- Department 501 (Real Property)
 
 **[Open the searchable database →](https://aimesy.github.io/sfsc-tentatives/)**
 
@@ -59,7 +65,7 @@ Open the SFSC tentative rulings page (<https://webapps.sftc.org/tr/tr.dll>) in y
 ## Glossary
 
 - **Tentative ruling** — the court's preliminary written ruling on a motion, posted the day before the hearing. Becomes final unless a party "contests" it under the local rules.
-- **Department** — a courtroom and the judge assigned to it. Department 204 hears probate matters; Department 301 hears discovery motions; Department 302 hears civil law-and-motion calendars; Department 501 hears real-property matters; etc.
+- **Department** — a courtroom and the judge assigned to it. Department 204 hears probate matters; Department 301 hears discovery motions; Department 302 hears civil law-and-motion calendars; Department 304 hears asbestos law-and-motion matters and asbestos discovery motions; Department 501 hears real-property matters.
 - **Motion type** — the kind of motion (demurrer, summary judgment, motion to compel, anti-SLAPP, etc.). Auto-classified from the calendar caption; you can correct misclassifications by filing a bug report from the ruling's detail view.
 - **Outcome** — whether the motion was granted, denied, continued, taken off calendar, etc. Auto-classified from the ruling text; same correction path as motion type.
 
@@ -129,13 +135,13 @@ python update-readme.py
 
 </details>
 <details>
-<summary><strong>Department 301 — Discovery</strong> &nbsp;·&nbsp; 3,061 rulings &nbsp;·&nbsp; 2024-02-06 → 2026-05-04 &nbsp;·&nbsp; 279 hearing days &nbsp;·&nbsp; 6 gaps</summary>
+<summary><strong>Department 301 — Discovery</strong> &nbsp;·&nbsp; 3,023 rulings &nbsp;·&nbsp; 2024-03-19 → 2026-05-04 &nbsp;·&nbsp; 269 hearing days &nbsp;·&nbsp; 6 gaps</summary>
 
-3,061 tentative rulings across 279 hearing days (2024-02-06 → 2026-05-04).
+3,023 tentative rulings across 269 hearing days (2024-03-19 → 2026-05-04).
 
 ### Coverage
 
-- **Hearing days with data:** 279 of 549 weekdays in range (50.8%)
+- **Hearing days with data:** 269 of 522 weekdays in range (51.5%)
 - **Days scanned:** 888 (including days the court posted no rulings)
 - **Earliest harvested:** 2022-02-02
 - **Latest harvested:** 2026-05-04 (same as last hearing day)
@@ -151,7 +157,7 @@ python update-readme.py
 
 </details>
 <details>
-<summary><strong>Department 302 — Civil Law & Motion</strong> &nbsp;·&nbsp; 60,472 rulings &nbsp;·&nbsp; 2014-01-02 → 2026-05-04 &nbsp;·&nbsp; 2,999 hearing days &nbsp;·&nbsp; 0 gaps</summary>
+<summary><strong>Department 302 — Civil Law and Motion</strong> &nbsp;·&nbsp; 60,472 rulings &nbsp;·&nbsp; 2014-01-02 → 2026-05-04 &nbsp;·&nbsp; 2,999 hearing days &nbsp;·&nbsp; 0 gaps</summary>
 
 60,472 tentative rulings across 2,999 hearing days (2014-01-02 → 2026-05-04).
 
@@ -168,7 +174,7 @@ _None — all weekdays in range are accounted for._
 
 </details>
 <details>
-<summary><strong>Department 304</strong> &nbsp;·&nbsp; 56 rulings &nbsp;·&nbsp; 2025-04-08 → 2025-06-03 &nbsp;·&nbsp; 9 hearing days &nbsp;·&nbsp; 0 gaps</summary>
+<summary><strong>Department 304 — Asbestos Law and Motion/Discovery</strong> &nbsp;·&nbsp; 56 rulings &nbsp;·&nbsp; 2025-04-08 → 2025-06-03 &nbsp;·&nbsp; 9 hearing days &nbsp;·&nbsp; 0 gaps</summary>
 
 56 tentative rulings across 9 hearing days (2025-04-08 → 2025-06-03).
 
@@ -185,19 +191,20 @@ _None — all weekdays in range are accounted for._
 
 </details>
 <details>
-<summary><strong>Department 501 — Real Property Court</strong> &nbsp;·&nbsp; 16,322 rulings &nbsp;·&nbsp; 2019-04-02 → 2026-05-04 &nbsp;·&nbsp; 1,569 hearing days &nbsp;·&nbsp; 1 gap</summary>
+<summary><strong>Department 501 — Real Property Court</strong> &nbsp;·&nbsp; 15,832 rulings &nbsp;·&nbsp; 2019-07-01 → 2026-05-04 &nbsp;·&nbsp; 1,506 hearing days &nbsp;·&nbsp; 2 gaps</summary>
 
-16,322 tentative rulings across 1,569 hearing days (2019-04-02 → 2026-05-04).
+15,832 tentative rulings across 1,506 hearing days (2019-07-01 → 2026-05-04).
 
 ### Coverage
 
-- **Hearing days with data:** 1,569 of 1,745 weekdays in range (89.9%)
-- **Days scanned:** 1,748 (including days the court posted no rulings)
+- **Hearing days with data:** 1,506 of 1,682 weekdays in range (89.5%)
+- **Days scanned:** 1,777 (including days the court posted no rulings)
 - **Earliest harvested:** 2019-01-02
 - **Latest harvested:** 2026-05-04 (same as last hearing day)
 
-### Gaps (1)
+### Gaps (2)
 
-- 2019-01-07 → 2019-03-29
+- 2019-01-07 → 2019-02-13
+- 2019-02-25
 
 </details>
