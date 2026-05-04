@@ -913,7 +913,7 @@
           <span class="col-head"><span class="col-label">Time</span><button class="col-filter-btn" data-filter-col="hearing_time" data-filter-kind="value" title="Filter by Time">▾</button></span>
         </th>
         <th class="col-case    sortable" data-col="case_number">
-          <span class="col-head"><span class="col-label">Case #</span></span>
+          <span class="col-head"><span class="col-label">Case #</span><button class="col-filter-btn" data-filter-col="case_prefix" data-filter-kind="value" title="Filter by case-number prefix">▾</button></span>
         </th>
         <th class="col-prefix  sortable" data-col="case_prefix">
           <span class="col-head"><span class="col-label">Prefix</span><button class="col-filter-btn" data-filter-col="case_prefix" data-filter-kind="value" title="Filter by case-number prefix">▾</button></span>
@@ -1136,7 +1136,19 @@ const CIVIL_LAW_MOTION_RULES = [
   [t => /\bmotion to strike\b|\bmtn to strike\b|\band motion to strike\b|\bmotion (?:and|of) (?:notice )?to strike\b/i.test(t),
     'Motion to Strike'],
   [t => /\bsummary judgment\b|\bsummary adjudication\b|\bmsj\b/i.test(t),
-    'Summary Judgment / Adjudication'],
+    'Summary Judgment / Adjudication',
+    // Subtype: Summary Judgment, Summary Adjudication, or Combined when
+    // the caption mentions both (e.g. "Motion for Summary Judgment, or
+    // in the alternative, Summary Adjudication" or "Summary Judgment /
+    // Adjudication"). MSJ counts as judgment-only.
+    t => {
+      const hasJ = /\bsummary\s+judgment\b|\bmsj\b/i.test(t);
+      const hasA = /\bsummary\s+adjudication\b/i.test(t);
+      if (hasJ && hasA) return 'Combined Summary Judgment/Adjudication';
+      if (hasA) return 'Summary Adjudication';
+      if (hasJ) return 'Summary Judgment';
+      return null;
+    }],
   // Catch the typo'd / abbreviated forms ("Judgmnt", "Mtn for Judg.")
   // and the singular "Pleading" (vs the canonical plural).
   [t => /\bjudg(?:e?ment|mnt)\s+on\s+the\s+pleadings?\b/i.test(t), 'Judgment on the Pleadings'],
@@ -1696,12 +1708,18 @@ const OFF_CAL_SUBTYPE_RULES = [
   //   "off calendar in Department 302. This motion will be heard in Department 501"
   //   "case was transferred to Lake County"
   //   "filed in the wrong department"
-  //   "Real Property/Housing Court"
+  //   "reassigned/transferred to Real Property/Housing Court"
   //   citations to SF Local Rule 8.10 (department assignments).
+  // NOTE: bare "Real Property/Housing Court" is intentionally NOT matched here
+  // because that phrase appears in the boilerplate calendar header of every
+  // Dept 501 ruling; matching it would misclassify untimely-notice and other
+  // off-calendar reasons as reassignments. Only fire when a transfer verb or
+  // "proper/correct department" framing appears alongside the court name.
   [t =>
     /\b(?:will\s+be\s+heard|to\s+be\s+heard|reassigned|reassign(?:ment)?|hear\s+this\s+matter)\s+in\s+(?:Department|Dept\.?)\s*\d+/i.test(t)
     || /\b(?:Department|Dept\.?)\s*\d+\b[^.]{0,80}\b(?:hears?\s+all|hears?\s+this|is\s+the\s+(?:proper|correct))/i.test(t)
-    || /\bReal\s+Property\s*\/\s*Housing\s+Court\b/i.test(t)
+    || /\b(?:will\s+be\s+heard|to\s+be\s+heard|reassigned?|transferred?)\b[^.]{0,80}Real\s+Property\s*(?:\/\s*Housing\s+)?Court/i.test(t)
+    || /\bReal\s+Property\s*(?:\/\s*Housing\s+)?Court\b[^.]{0,80}\b(?:will\s+hear|hears?|is\s+(?:the\s+)?(?:proper|correct|assigned))/i.test(t)
     || /\b(?:San\s+Francisco\s+)?Local\s+Rule\s+8\.10\b/i.test(t)
     || /\b(?:case|matter|action)\s+(?:was|has\s+been)\s+transferred\s+to\b/i.test(t)
     || /\bfiled\s+in\s+the\s+wrong\s+(?:department|dept)\b/i.test(t)
@@ -1775,6 +1793,14 @@ function classifyOffCalendarSubtype(text) {
   return null;
 }
 
+// Returns the text up to and including the first sentence-ending punctuation.
+// Used to anchor "in part" detection to the opening disposition so it doesn't
+// fire on references to prior rulings in the explanatory body of the text
+// (e.g. "...was denied in part due to the terminating-sanctions order...").
+function firstSentence(t) {
+  return t.match(/^[^.!?]*[.!?]/)?.[0] ?? t;
+}
+
 const OUTCOME_RULES = [
   // Procedural / non-merits dispositions first.
   [t => /\boff\s+calendar\b/i.test(t),                         'Off calendar', classifyOffCalendarSubtype],
@@ -1796,7 +1822,7 @@ const OUTCOME_RULES = [
     'Hearing required', null],
   // Granted-family. "Granted in part" wins over plain granted; sustained
   // (with/without leave) lives here too as a subtype.
-  [t => /\bgranted\b.{0,40}\bin\s+part\b/i.test(t),
+  [t => /\bgranted\b.{0,40}\bin\s+part\b/i.test(firstSentence(t)),
     'Granted / Sustained', 'Granted in part'],
   [t => /\bsustained\b.{0,40}\bwith\s+leave\s+to\s+amend\b/i.test(t),
     'Granted / Sustained', 'Sustained with leave to amend'],
@@ -1805,7 +1831,7 @@ const OUTCOME_RULES = [
   [t => /\bsustained\b/i.test(t),                              'Granted / Sustained', 'Sustained'],
   [t => /\bgranted\b/i.test(t),                                'Granted / Sustained', 'Granted'],
   // Denied-family.
-  [t => /\bdenied\b.{0,40}\bin\s+part\b/i.test(t),             'Denied', 'Denied in part'],
+  [t => /\bdenied\b.{0,40}\bin\s+part\b/i.test(firstSentence(t)), 'Denied', 'Denied in part'],
   [t => /\bdenied\s+without\s+prejudice\b/i.test(t),           'Denied', 'Denied without prejudice'],
   [t => /\bdenied\b/i.test(t),                                 'Denied', null],
   [t => /\boverruled\b/i.test(t),                              'Denied', 'Overruled'],
