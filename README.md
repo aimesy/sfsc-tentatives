@@ -176,13 +176,13 @@ _None — all weekdays in range are accounted for._
 ### Coverage
 
 - **Hearing days with data:** 32 of 260 weekdays in range (12.3%)
-- **Days scanned:** 270 (including days the court posted no rulings)
+- **Days scanned:** 288 (including days the court posted no rulings)
 - **Earliest harvested:** 2020-01-02
 - **Latest harvested:** 2026-05-01
 
 ### Gaps (1)
 
-- 2020-01-13 → 2025-04-07
+- 2020-02-07 → 2025-04-07
 
 </details>
 <details>
@@ -191,19 +191,19 @@ _None — all weekdays in range are accounted for._
 _No rulings or scans have landed for this sub-calendar yet. Once the extension records its first scrape it will start showing here, and gaps will be enumerated against the court's posted hearing days._
 </details>
 <details>
-<summary><strong>Department 501 — Real Property Court</strong> &nbsp;·&nbsp; 23,438 rulings &nbsp;·&nbsp; 2016-05-31 → 2026-05-04 &nbsp;·&nbsp; 2,408 hearing days &nbsp;·&nbsp; 0 gaps</summary>
+<summary><strong>Department 501 — Real Property Court</strong> &nbsp;·&nbsp; 23,438 rulings &nbsp;·&nbsp; 2016-05-31 → 2026-05-04 &nbsp;·&nbsp; 2,408 hearing days &nbsp;·&nbsp; 1 gap</summary>
 
 23,438 tentative rulings across 2,408 hearing days (2016-05-31 → 2026-05-04).
 
 ### Coverage
 
 - **Hearing days with data:** 2,408 of 2,443 weekdays in range (98.6%)
-- **Days scanned:** 2,443 (including days the court posted no rulings)
-- **Earliest harvested:** 2016-05-31 (same as first hearing day)
+- **Days scanned:** 2,468 (including days the court posted no rulings)
+- **Earliest harvested:** 2015-01-02
 - **Latest harvested:** 2026-05-04 (same as last hearing day)
 
-### Gaps (0)
+### Gaps (1)
 
-_None — all weekdays in range are accounted for._
+- 2015-02-09 → 2016-05-27
 
 </details>
