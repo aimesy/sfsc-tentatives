@@ -116,21 +116,37 @@ python update-readme.py
 ## Departments
 
 <details>
-<summary><strong>Department 204 — Probate</strong> &nbsp;·&nbsp; 93,441 rulings &nbsp;·&nbsp; 2015-01-05 → 2026-05-04 &nbsp;·&nbsp; 2,092 hearing days &nbsp;·&nbsp; 2 gaps</summary>
+<summary><strong>Department 204 — Probate</strong> &nbsp;·&nbsp; 98,756 rulings &nbsp;·&nbsp; 2014-02-10 → 2026-05-04 &nbsp;·&nbsp; 2,215 hearing days &nbsp;·&nbsp; 18 gaps</summary>
 
-93,441 tentative rulings across 2,092 hearing days (2015-01-05 → 2026-05-04).
+98,756 tentative rulings across 2,215 hearing days (2014-02-10 → 2026-05-04).
 
 ### Coverage
 
-- **Hearing days with data:** 2,092 of 2,790 weekdays in range (75.0%)
-- **Days scanned:** 2,836 (including days the court posted no rulings)
+- **Hearing days with data:** 2,215 of 3,012 weekdays in range (73.5%)
+- **Days scanned:** 2,998 (including days the court posted no rulings)
 - **Earliest harvested:** 2014-01-02
 - **Latest harvested:** 2026-05-04 (same as last hearing day)
 
-### Gaps (2)
+### Gaps (18)
 
-- 2014-02-07 → 2014-11-26
-- 2014-12-02
+- 2014-02-11 → 2014-02-13
+- 2014-02-18 → 2014-02-19
+- 2014-02-25 → 2014-02-27
+- 2014-03-05
+- 2014-03-11 → 2014-03-17
+- 2014-05-16
+- 2014-05-20
+- 2014-07-17
+- 2014-07-22
+- 2014-07-24 → 2014-07-28
+- 2014-08-13
+- 2014-08-19
+- 2014-08-21 → 2014-09-05
+- 2014-09-15
+- 2014-09-24
+- 2014-09-29
+- 2014-10-21 → 2014-10-23
+- 2014-11-03
 
 </details>
 <details>
@@ -170,14 +186,14 @@ _None — all weekdays in range are accounted for._
 
 </details>
 <details>
-<summary><strong>Department 304 — Asbestos Law and Motion</strong> &nbsp;·&nbsp; 146 rulings &nbsp;·&nbsp; 2025-04-08 → 2026-04-28 &nbsp;·&nbsp; 32 hearing days &nbsp;·&nbsp; 6 gaps</summary>
+<summary><strong>Department 304 — Asbestos Law and Motion</strong> &nbsp;·&nbsp; 169 rulings &nbsp;·&nbsp; 2025-03-11 → 2026-04-28 &nbsp;·&nbsp; 37 hearing days &nbsp;·&nbsp; 6 gaps</summary>
 
-146 tentative rulings across 32 hearing days (2025-04-08 → 2026-04-28).
+169 tentative rulings across 37 hearing days (2025-03-11 → 2026-04-28).
 
 ### Coverage
 
-- **Hearing days with data:** 32 of 260 weekdays in range (12.3%)
-- **Days scanned:** 406 (including days the court posted no rulings)
+- **Hearing days with data:** 37 of 279 weekdays in range (13.3%)
+- **Days scanned:** 430 (including days the court posted no rulings)
 - **Earliest harvested:** 2020-01-02
 - **Latest harvested:** 2026-05-01
 
@@ -188,7 +204,7 @@ _None — all weekdays in range are accounted for._
 - 2020-06-22 → 2020-06-24
 - 2020-07-15 → 2020-07-16
 - 2020-07-30 → 2020-08-03
-- 2020-08-13 → 2025-04-07
+- 2020-08-13 → 2025-03-03
 
 </details>
 <details>
@@ -197,21 +213,24 @@ _None — all weekdays in range are accounted for._
 _No rulings or scans have landed for this sub-calendar yet. Once the extension records its first scrape it will start showing here, and gaps will be enumerated against the court's posted hearing days._
 </details>
 <details>
-<summary><strong>Department 501 — Real Property Court</strong> &nbsp;·&nbsp; 25,910 rulings &nbsp;·&nbsp; 2014-03-18 → 2026-05-04 &nbsp;·&nbsp; 2,642 hearing days &nbsp;·&nbsp; 17 gaps</summary>
+<summary><strong>Department 501 — Real Property Court</strong> &nbsp;·&nbsp; 26,536 rulings &nbsp;·&nbsp; 2014-01-14 → 2026-05-04 &nbsp;·&nbsp; 2,691 hearing days &nbsp;·&nbsp; 18 gaps</summary>
 
-25,910 tentative rulings across 2,642 hearing days (2014-03-18 → 2026-05-04).
+26,536 tentative rulings across 2,691 hearing days (2014-01-14 → 2026-05-04).
 
 ### Coverage
 
-- **Hearing days with data:** 2,642 of 2,988 weekdays in range (88.4%)
-- **Days scanned:** 2,909 (including days the court posted no rulings)
+- **Hearing days with data:** 2,691 of 3,030 weekdays in range (88.8%)
+- **Days scanned:** 2,958 (including days the court posted no rulings)
 - **Earliest harvested:** 2014-01-02
 - **Latest harvested:** 2026-05-04 (same as last hearing day)
 
-### Gaps (17)
+### Gaps (18)
 
 - 2014-01-07 → 2014-01-08
-- 2014-01-10 → 2014-02-26
+- 2014-01-10 → 2014-01-13
+- 2014-01-15 → 2014-01-16
+- 2014-01-21 → 2014-01-28
+- 2014-01-30 → 2014-02-26
 - 2014-02-28
 - 2014-03-05 → 2014-03-17
 - 2014-05-19
@@ -220,12 +239,10 @@ _No rulings or scans have landed for this sub-calendar yet. Once the extension r
 - 2014-07-21 → 2014-07-23
 - 2014-09-22
 - 2014-09-25 → 2014-10-14
-- 2014-10-24 → 2014-12-31
 - 2015-09-09
 - 2015-09-24 → 2015-09-25
 - 2015-11-20
 - 2015-11-24 → 2015-12-04
 - 2015-12-10 → 2015-12-11
-- 2016-03-29 → 2016-03-30
 
 </details>

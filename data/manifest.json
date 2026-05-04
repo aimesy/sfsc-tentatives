@@ -3,10 +3,10 @@
     {
       "department": "204",
       "name": "Department 204 \u2014 Probate",
-      "rulings": 93441,
-      "size_bytes": 6681766,
+      "rulings": 98756,
+      "size_bytes": 6931885,
       "latest": "2026-05-04",
-      "extras_size_bytes": 306892
+      "extras_size_bytes": 306581
     },
     {
       "department": "301",
@@ -20,25 +20,25 @@
       "department": "302",
       "name": "Department 302 \u2014 Civil Law and Motion",
       "rulings": 58828,
-      "size_bytes": 12361791,
+      "size_bytes": 12361951,
       "latest": "2026-05-04",
-      "extras_size_bytes": 1868960
+      "extras_size_bytes": 1868980
     },
     {
       "department": "304",
       "name": "Department 304 \u2014 Asbestos Law and Motion / Discovery",
-      "rulings": 146,
-      "size_bytes": 47826,
+      "rulings": 169,
+      "size_bytes": 55043,
       "latest": "2026-04-28",
-      "extras_size_bytes": 9784
+      "extras_size_bytes": 10457
     },
     {
       "department": "501",
       "name": "Department 501 \u2014 Real Property Court",
-      "rulings": 25910,
-      "size_bytes": 3432768,
+      "rulings": 26536,
+      "size_bytes": 3502563,
       "latest": "2026-05-04",
-      "extras_size_bytes": 393206
+      "extras_size_bytes": 393644
     }
   ]
 }
