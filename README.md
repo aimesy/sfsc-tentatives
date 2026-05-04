@@ -190,7 +190,7 @@ _None — all weekdays in range are accounted for._
 ### Coverage
 
 - **Hearing days with data:** 37 of 279 weekdays in range (13.3%)
-- **Days scanned:** 512 (including days the court posted no rulings)
+- **Days scanned:** 537 (including days the court posted no rulings)
 - **Earliest harvested:** 2020-01-02
 - **Latest harvested:** 2026-05-01
 
@@ -201,7 +201,7 @@ _None — all weekdays in range are accounted for._
 - 2020-06-22 → 2020-06-24
 - 2020-07-15 → 2020-07-16
 - 2020-07-30 → 2020-08-03
-- 2020-12-14 → 2025-03-03
+- 2021-01-22 → 2025-03-03
 
 </details>
 <details>
