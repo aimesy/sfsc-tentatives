@@ -5,7 +5,7 @@ A searchable archive of every **tentative ruling** posted by the San Francisco S
 - Department 204 (Probate)
 - Department 301 (Discovery)
 - Department 302 (Civil Law and Motion)
-- Department 304 (Asbestos Law and Motion + Asbestos Discovery)
+- Department 304 (Asbestos Law and Motion)
 - Department 501 (Real Property)
 
 **[Open the searchable database →](https://aimesy.github.io/sfsc-tentatives/)**
@@ -176,19 +176,14 @@ _None — all weekdays in range are accounted for._
 ### Coverage
 
 - **Hearing days with data:** 43 of 337 weekdays in range (12.8%)
-- **Days scanned:** 1,554 (including days the court posted no rulings)
+- **Days scanned:** 1,555 (including days the court posted no rulings)
 - **Earliest harvested:** 2020-01-02
 - **Latest harvested:** 2026-05-01
 
 ### Gaps (1)
 
-- 2021-12-30 → 2022-01-04
+- 2021-12-30 → 2022-01-03
 
-</details>
-<details>
-<summary><strong>Department 304 — Asbestos Discovery</strong> &nbsp;·&nbsp; 0 rulings &nbsp;·&nbsp; no scans yet</summary>
-
-_No rulings or scans have landed for this sub-calendar yet. Once the extension records its first scrape it will start showing here, and gaps will be enumerated against the court's posted hearing days._
 </details>
 <details>
 <summary><strong>Department 501 — Real Property Court</strong> &nbsp;·&nbsp; 26,901 rulings &nbsp;·&nbsp; 2014-01-07 → 2026-05-04 &nbsp;·&nbsp; 2,721 hearing days &nbsp;·&nbsp; 0 gaps</summary>
