@@ -547,23 +547,6 @@
       max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     .mtype-sub { font-size: 0.7rem; color: #888; margin-top: 1px; }
-    /* Category glyph pill — same height as the Motion Type pill, sits
-       to its left, color-coded by category so the broad bucket reads
-       at a glance. The glyph's `title` exposes the category name on
-       hover for users who don't recognise the symbol. Structural
-       properties only here; the actual colors come from the
-       `.mcat-<Category>` palette already used by the (toggleable)
-       Category column, so the glyph pill matches what that column
-       shows. We style the box only and let per-category classes
-       (declared above) supply background / color / border. */
-    .mcat-glyph {
-      display: inline-block; padding: 1px 6px;
-      border: 1px solid transparent;
-      border-radius: 10px; font-size: 0.72rem; line-height: inherit;
-      cursor: help;
-      min-width: 1.1em; text-align: center; vertical-align: baseline;
-      margin-right: 0.3rem; font-variant-emoji: text;
-    }
     .outcome-pill {
       display: inline-block; padding: 1px 6px;
       border-radius: 10px; font-size: 0.72rem;
@@ -1626,38 +1609,6 @@ const MOTION_CATEGORY = {
 function motionCategory(motionType) {
   if (!motionType) return 'Other';
   return MOTION_CATEGORY[motionType] || 'Other';
-}
-
-// Hoverable single-glyph indicator that sits next to the Motion Type
-// in the table — lets a user spot the broad category at a glance
-// without the dedicated Category column eating horizontal space.
-// Hover reveals the category name; the column itself stays toggleable
-// via the 🧰 Columns menu for users who want a sortable / filterable
-// Category cell.
-const CATEGORY_GLYPHS = {
-  'Probate':       '❦',  // ❦  floral heart
-  'Pleadings':     '¶',  // ¶  pilcrow
-  'Procedural':    '⚙',  // ⚙  gear
-  'Discovery':     '⌕',  // ⌕  telephone-recorder
-  'Other':         '?',
-  'Dispositive':   '⚖',  // ⚖  scales
-  'Attorney':      '✑',  // ✑  upper-right pencil
-  'Sanctions':     '⊗',  // ⊗  circled times
-  'Post-Trial':    '↻',  // ↻  clockwise open arrow
-  'Arbitration':   '⚭',  // ⚭  marriage symbol
-  'Settlement':    '☮',  // ☮  peace
-  'Post-Judgment': '⮌',  // ⮌  rightwards arrow with bent tail
-  'Fees & Costs':  '$',
-  'Real Estate':   '⌂',  // ⌂  house
-  'Writ':          '⚔',  // ⚔  crossed swords
-  'Injunctive':    '⚠',  // ⚠  warning
-  'Class Action':  '❉',  // ❉  balloon-spoked asterisk
-  // Unlawful-detainer eviction work — squared X reads as "barred
-  // from the premises".
-  'Unlawful Detainer': '⌧',
-};
-function categoryGlyph(category) {
-  return CATEGORY_GLYPHS[category] || CATEGORY_GLYPHS['Other'];
 }
 
 // Returns the specific Compel-family motion type a caption falls
@@ -3665,7 +3616,7 @@ function renderTable(data) {
       <td class="col-prefix">${esc(casePrefix(r.case_number))}</td>
       <td class="col-title">${r.case_title ? `<span class="case-title-link" data-cn="${esc(r.case_number || '')}" title="See all tentatives for this case">${esc(r.case_title)}</span>` : ''}</td>
       <td class="col-mcat"><span class="mcat-pill ${catClass}">${esc(cat)}</span></td>
-      <td class="col-mtype"><span class="mcat-glyph ${catClass}" title="Category: ${esc(cat)}">${esc(categoryGlyph(cat))}</span><span class="mtype-pill">${esc(m.type)}</span>${sub}</td>
+      <td class="col-mtype"><span class="mtype-pill">${esc(m.type)}</span>${sub}</td>
       <td class="col-outcome"><span class="outcome-pill ${outcomeClass(o.outcome)}">${esc(o.outcome)}</span>${oSub}</td>
       <td class="col-motion">${esc(r.calendar_matter)}</td>
       <td class="col-judge">${judgeCell}</td>
