@@ -169,13 +169,13 @@ _None — all weekdays in range are accounted for._
 
 </details>
 <details>
-<summary><strong>Department 304 — Asbestos Law and Motion</strong> &nbsp;·&nbsp; 187 rulings &nbsp;·&nbsp; 2024-12-10 → 2026-04-28 &nbsp;·&nbsp; 43 hearing days &nbsp;·&nbsp; 1 gap</summary>
+<summary><strong>Department 304 — Asbestos Law and Motion</strong> &nbsp;·&nbsp; 206 rulings &nbsp;·&nbsp; 2024-12-10 → 2026-04-28 &nbsp;·&nbsp; 47 hearing days &nbsp;·&nbsp; 1 gap</summary>
 
-187 tentative rulings across 43 hearing days (2024-12-10 → 2026-04-28).
+206 tentative rulings across 47 hearing days (2024-12-10 → 2026-04-28).
 
 ### Coverage
 
-- **Hearing days with data:** 43 of 337 weekdays in range (12.8%)
+- **Hearing days with data:** 47 of 337 weekdays in range (13.9%)
 - **Days scanned:** 1,555 (including days the court posted no rulings)
 - **Earliest harvested:** 2020-01-02
 - **Latest harvested:** 2026-05-01
