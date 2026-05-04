@@ -20,17 +20,17 @@
       "department": "302",
       "name": "Department 302 \u2014 Civil Law and Motion",
       "rulings": 58828,
-      "size_bytes": 12361469,
+      "size_bytes": 12361452,
       "latest": "2026-05-04",
-      "extras_size_bytes": 1868964
+      "extras_size_bytes": 1868962
     },
     {
       "department": "304",
       "name": "Department 304 \u2014 Asbestos Law and Motion / Discovery",
-      "rulings": 105,
-      "size_bytes": 37299,
+      "rulings": 118,
+      "size_bytes": 39770,
       "latest": "2026-04-28",
-      "extras_size_bytes": 8415
+      "extras_size_bytes": 8966
     },
     {
       "department": "501",
